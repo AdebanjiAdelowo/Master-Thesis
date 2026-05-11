@@ -13,6 +13,7 @@ Time integration: RK45 via scipy.integrate.solve_ivp.
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 
 # ---------------------------------------------------------------------------
@@ -353,7 +354,6 @@ def plot_lp_norms(results_list, ax=None):
         ax.plot(res['t'], res['norm_l2'], 'r-', alpha=0.4, linewidth=0.8)
         ax.plot(res['t'], res['norm_l4'], 'g-', alpha=0.4, linewidth=0.8)
         ax.plot(res['t'], res['norm_l8'], 'b-', alpha=0.4, linewidth=0.8)
-    from matplotlib.lines import Line2D
     ax.legend(handles=[
         Line2D([0], [0], color='r', label='L²'),
         Line2D([0], [0], color='g', label='L⁴'),
@@ -421,3 +421,191 @@ def verify(N=32, F=1.0, a=0.5, t_end=0.5):
     ok = l2_drift < 5e-4 and hm1_final < 1.0
     print(f'  Verification: {"PASS" if ok else "FAIL"}')
     return res, ok
+
+
+# ---------------------------------------------------------------------------
+# Refined mixing-rate plot  (replot_figs.m equivalent)
+# ---------------------------------------------------------------------------
+
+def replot_norms(results_list, a_range, t_trunc_fraction=1/3, ax=None):
+    """
+    Fit mixing rate using only the latter portion of each run (skip transient).
+
+    Mirrors replot_figs.m: fits log H⁻¹ norm over the last
+    (1 - t_trunc_fraction) of each trajectory, plots -1/slope vs a, and
+    (when len(a_range) > 3) overlays a linear fit and prints the power-law
+    exponent relating slope to a.
+
+    Parameters
+    ----------
+    results_list      : list of dicts from run_simulation
+    a_range           : 1-D array of a values
+    t_trunc_fraction  : fraction of time steps to skip at the start (default 1/3)
+    ax                : optional Axes
+
+    Returns
+    -------
+    ax, slopes  (fitted slopes, one per run)
+    """
+    if ax is None:
+        _, ax = plt.subplots()
+
+    a_range = np.asarray(a_range)
+    slopes = []
+    for res in results_list:
+        t   = res['t']
+        hm1 = res['norm_hm1']
+        n_trunc = int(np.floor(len(t) * t_trunc_fraction))
+        p = np.polyfit(t[n_trunc:], np.log(hm1[n_trunc:]), 1)
+        slopes.append(p[0])
+    slopes     = np.array(slopes)
+    inv_rates  = -1.0 / slopes
+
+    ax.plot(a_range, inv_rates, '*')
+    ax.set_xlabel('a')
+    ax.set_ylabel('-1 / slope')
+    ax.set_title('Mixing timescale vs a (refined fit)')
+
+    if len(a_range) > 3:
+        p_log = np.polyfit(np.log(a_range), np.log(-slopes), 1)
+        print(f'Computed decay rate: a^{p_log[0]:.4f}  (predicted a^-1)')
+
+        p_lin = np.polyfit(a_range, inv_rates, 1)
+        ax.plot(a_range, p_lin[0] * a_range + p_lin[1], '--r',
+                label=f'linear: {p_lin[0]:.3f}·a + {p_lin[1]:.3f}')
+        ax.legend()
+
+    return ax, slopes
+
+
+# ---------------------------------------------------------------------------
+# Save / load results
+# ---------------------------------------------------------------------------
+
+def save_results(results_list, a_range, filename):
+    """
+    Save all simulation results to a compressed .npz archive.
+
+    Usage: load with np.load(filename + '.npz', allow_pickle=False) and
+    unpack with load_results().
+    """
+    data = {'a_range': np.asarray(a_range), 'n_runs': np.array(len(results_list))}
+    for i, res in enumerate(results_list):
+        for key, val in res.items():
+            data[f'{key}_{i}'] = np.asarray(val)
+    np.savez_compressed(filename, **data)
+    print(f'Saved {len(results_list)} runs → {filename}.npz')
+
+
+def load_results(filename):
+    """Load results saved by save_results. Returns (results_list, a_range)."""
+    arc      = np.load(filename if filename.endswith('.npz') else filename + '.npz')
+    a_range  = arc['a_range']
+    n_runs   = int(arc['n_runs'])
+    keys     = ['t', 'theta_hat', 'theta', 'norm_l2', 'norm_l4', 'norm_l8', 'norm_hm1']
+    results  = [{k: arc[f'{k}_{i}'] for k in keys} for i in range(n_runs)]
+    return results, a_range
+
+
+# ---------------------------------------------------------------------------
+# Main  (gen_figures.m equivalent)
+# ---------------------------------------------------------------------------
+
+def main(
+    N=64,
+    F=1.0,
+    t_eval=None,
+    a_range=None,
+    idata_fn=None,
+    tol=1e-3,
+    save_path=None,
+):
+    """
+    Run the full optimal-mixing sweep over a_range and generate all figures.
+
+    Parameters
+    ----------
+    N         : int     spectral resolution (power of 2)
+    F         : float   enstrophy constraint
+    t_eval    : array   output times (default 0:0.05:10)
+    a_range   : array   scale parameters (default 0.5:1/16:15/16)
+    idata_fn  : callable initial-data factory (default idata_sin)
+    tol       : float   resolution-check tolerance
+    save_path : str or None  if given, save results here (no extension needed)
+    """
+    import time
+
+    if t_eval   is None: t_eval   = np.arange(0.0, 10.05, 0.05)
+    if a_range  is None: a_range  = np.arange(0.5, 15/16 + 1e-9, 1/16)
+    if idata_fn is None: idata_fn = idata_sin
+
+    a_range = np.asarray(a_range)
+    ops     = build_operators(N)
+
+    # Prepare live figures
+    fig1, ax1 = plt.subplots(figsize=(8, 5))
+    ax1.set_xlabel('t')
+    ax1.set_ylabel('log ‖θ‖_{H⁻¹} / ‖θ₀‖_{H⁻¹}')
+    ax1.set_title('Log mix-norm vs t')
+
+    fig2, ax2 = plt.subplots(figsize=(8, 4))
+    ax2.set_xlabel('t')
+    ax2.set_title('Lp norms (resolution check, should stay ≈ 1)')
+    ax2.legend(handles=[
+        Line2D([0], [0], color='r', label='L²'),
+        Line2D([0], [0], color='g', label='L⁴'),
+        Line2D([0], [0], color='b', label='L⁸'),
+    ])
+
+    colors       = plt.cm.viridis(np.linspace(0.1, 0.9, len(a_range)))
+    results_list = []
+    t0           = time.time()
+
+    for idx, a in enumerate(a_range):
+        print(f'[{idx+1}/{len(a_range)}]  a = {a:.4f} ...', flush=True)
+        res = run_simulation(a, idata_fn, ops, F=F, t_eval=t_eval, tol=tol)
+        results_list.append(res)
+        print(f'         t_end = {res["t"][-1]:.2f},  '
+              f'elapsed = {time.time()-t0:.1f}s')
+
+        c = colors[idx]
+        ax1.plot(res['t'], np.log(res['norm_hm1']), color=c, label=f'a={a:.3f}')
+        ax2.plot(res['t'], res['norm_l2'], color='r', alpha=0.5, linewidth=0.8)
+        ax2.plot(res['t'], res['norm_l4'], color='g', alpha=0.5, linewidth=0.8)
+        ax2.plot(res['t'], res['norm_l8'], color='b', alpha=0.5, linewidth=0.8)
+        plt.pause(0.01)
+
+    ax1.legend(fontsize=7, ncol=2)
+    fig1.tight_layout()
+    fig2.tight_layout()
+
+    # Figure 3: mixing timescale vs a  (basic slope, all data)
+    fig3, ax3 = plt.subplots(figsize=(6, 4))
+    plot_mixing_rate(results_list, a_range, ax=ax3)
+    fig3.tight_layout()
+
+    # Figure 3b: refined fit (last 2/3 of data) + power law
+    fig3b, ax3b = plt.subplots(figsize=(6, 4))
+    replot_norms(results_list, a_range, ax=ax3b)
+    fig3b.tight_layout()
+
+    # Snapshot figures (6 panels per run, shown for last run)
+    last = results_list[-1]
+    fig_snap = plot_snapshots(last['theta'], last['t'], ops, n_frames=6,
+                              title=f'θ snapshots  (a={a_range[-1]:.3f})')
+    fig_snap.tight_layout()
+
+    print(f'\nTotal elapsed: {time.time()-t0:.1f}s')
+
+    if save_path is not None:
+        save_results(results_list, a_range, save_path)
+        for i, fig in enumerate([fig1, fig2, fig3, fig3b, fig_snap], 1):
+            fig.savefig(f'{save_path}_fig{i}.pdf', bbox_inches='tight')
+        print(f'Figures saved to {save_path}_fig*.pdf')
+
+    plt.show()
+    return results_list, a_range, ops
+
+
+if __name__ == '__main__':
+    main()

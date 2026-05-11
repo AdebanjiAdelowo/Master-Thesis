@@ -1,0 +1,652 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ─────────────────────────────────────────────────────────────────
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{microtype}
+\usepackage[numbers,sort&compress]{natbib}
+
+\hypersetup{
+  colorlinks=true, linkcolor=blue!60!black,
+  citecolor=green!50!black, urlcolor=blue!70!black,
+}
+
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{green!50!black},
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!40},
+  backgroundcolor=\color{gray!5},
+  numbers=left, numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\Lap}{\Delta}
+\newcommand{\lapinv}{\Delta^{-1}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Torus}{\mathbb{T}^2}
+\newcommand{\Proj}{P}
+\newcommand{\Hmone}{H^{-1}}
+\newcommand{\half}{\tfrac{1}{2}}
+\newcommand{\dx}{\,dx\,dy}
+
+\theoremstyle{definition}
+\newtheorem{remark}{Remark}
+
+% ── Title ─────────────────────────────────────────────────────────────────────
+\title{%
+  \textbf{Optimal Mixing of Passive Scalars}\\[6pt]
+  \large Python Implementation and Numerical Results\\[4pt]
+  \normalsize Ported from Gautam Iyer's MATLAB Code
+}
+\author{Adebankji Adelowo}
+\date{\today}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+\maketitle
+\tableofcontents
+\bigskip
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
+
+This report documents a Python pseudo-spectral simulation of the
+\emph{optimal mixing problem} for passive scalars on the two-dimensional
+torus $\mathbb{T}^2 = [0,1]^2$.
+The original MATLAB implementation is due to Gautam Iyer and accompanies the
+theoretical work of Lin, Thiffeault and Doering \cite{LTD2011} on optimal
+stirring strategies.
+The Python port (\texttt{mixing.py}) reproduces all numerical experiments
+and extends the codebase with Jupyter notebooks, automated figure generation,
+and a packaging structure suitable for reproducible research.
+
+\subsection*{Goals}
+\begin{itemize}
+  \item Reproduce the MATLAB results in a fully open-source Python stack.
+  \item Demonstrate that the $H^{-1}$ mix norm decays exponentially under the
+        Lin--Thiffeault--Doering (LTD) optimal velocity.
+  \item Characterise how the mixing timescale depends on the support
+        size parameter~$a$.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Mathematical Framework}
+\label{sec:math}
+
+\subsection{The Passive Scalar Equation}
+
+We study the advection of a passive scalar $\theta : \Torus\times[0,\infty)
+\to \Real$ governed by
+
+\begin{equation}
+  \label{eq:pde}
+  \partial_t\theta + (u\cdot\nabla)\theta = 0,
+  \qquad \theta(\cdot,0) = \theta_0,
+\end{equation}
+
+where $u:\Torus\to\Real^2$ is a prescribed divergence-free velocity field,
+$\nabla\cdot u = 0$.
+
+\subsection{The Mix Norm}
+
+The quality of mixing is quantified by the \emph{$H^{-1}$ mix norm}:
+
+\begin{equation}
+  \label{eq:mixnorm}
+  \norm{\theta}_{H^{-1}}^2
+  = \sum_{k\neq 0} \frac{|\hat\theta(k)|^2}{4\pi^2|k|^2},
+\end{equation}
+
+where $\hat\theta(k)$ denotes the $k$-th Fourier coefficient of $\theta$.
+The mix norm is small when $\theta$ has energy distributed across fine scales,
+i.e., when the scalar is well mixed.
+Under the passive scalar equation~\eqref{eq:pde}, the $L^2$ norm
+$\norm{\theta}_{L^2}$ is conserved, while $\norm{\theta}_{H^{-1}}$ decreases
+monotonically (for appropriate $u$), making it a natural mixing metric.
+
+\subsection{The Lin--Thiffeault--Doering Optimal Velocity}
+\label{sec:ltd}
+
+Among all incompressible velocity fields satisfying the enstrophy constraint
+$\norm{\nabla u}_{L^2} \le F$, the one that minimises
+$\frac{d}{dt}\norm{\theta}_{H^{-1}}^2$ at each instant is the
+\emph{Lin--Thiffeault--Doering (LTD) optimal velocity}
+\cite{LTD2011}:
+
+\begin{equation}
+  \label{eq:ltd}
+  v = -\lapinv \Proj\!\left(\theta\,\nabla\lapinv\theta\right),
+  \qquad
+  u = F\,\frac{v}{\norm{\nabla v}_{L^2}}.
+\end{equation}
+
+Here $\Proj$ is the \emph{Leray projection} onto divergence-free vector fields:
+
+\begin{equation}
+  \label{eq:leray}
+  \Proj g = g - \nabla\lapinv(\nabla\cdot g).
+\end{equation}
+
+The rescaling by $\norm{\nabla v}_{L^2}^{-1}$ enforces the enstrophy
+constraint exactly at each instant.
+
+\begin{remark}
+  The LTD velocity is the \emph{greedy} optimal: it minimises the instantaneous
+  rate of change of the mix norm, not a global functional over time.
+  It is not known in general whether this greedy strategy is globally optimal
+  \cite{Iyer2014,Drivas2022}.
+\end{remark}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Numerical Methods}
+\label{sec:numerics}
+
+\subsection{Spectral Discretisation}
+
+We discretise $[0,1]^2$ on an $N\times N$ grid with spacing $dx = 1/N$,
+using the DFT convention
+
+\begin{equation}
+  \hat f[k_y,k_x]
+  = \sum_{i=0}^{N-1}\sum_{j=0}^{N-1} f[i,j]\,e^{-2\pi i(ik_y+jk_x)/N}.
+\end{equation}
+
+Row index $i$ corresponds to the $y$-direction and column index $j$ to the
+$x$-direction.
+The centred wavenumbers are
+$k_{\text{eff}}[j] = j - N\cdot\mathbf{1}[j>N/2]$,
+giving the range $\{0,1,\ldots,N/2-1,-N/2+1,\ldots,-1\}$.
+
+\paragraph{Derivative operators.}
+The $x$- and $y$-derivative multipliers are stored as broadcast arrays:
+
+\begin{equation}
+  \texttt{DEL\_X}[0,j] = 2\pi i\,k_d[j],\qquad
+  \texttt{DEL\_Y}[i,0] = 2\pi i\,k_d[i],
+\end{equation}
+
+where $k_d$ is identical to $k_{\text{eff}}$ except that the Nyquist mode
+$k = N/2$ is set to zero (to avoid aliasing in first derivatives).
+
+\paragraph{Inverse Laplacian.}
+\begin{equation}
+  \texttt{LAP\_INV}[k_y,k_x]
+  = \begin{cases}
+      \dfrac{-1}{(2\pi)^2(k_x^2+k_y^2)} & (k_x,k_y)\neq(0,0),\\[6pt]
+      0 & (k_x,k_y)=(0,0).
+    \end{cases}
+\end{equation}
+
+\paragraph{Mix-norm weight.}
+\begin{equation}
+  \texttt{LAMBDA\_INV}[k_y,k_x]
+  = \frac{1}{2\pi|k|}
+  = \sqrt{-\texttt{LAP\_INV}[k_y,k_x]}.
+\end{equation}
+
+\paragraph{Parseval identity.}
+For the unitary DFT normalisation used here,
+$\norm{\hat f}_{\ell^2} = N\norm{f}_{\ell^2}$, so
+
+\begin{equation}
+  \norm{f}_{L^2} = \frac{\norm{\hat f}_{\ell^2}}{N^2}.
+\end{equation}
+
+\subsection{Pseudo-Spectral Evaluation of the RHS}
+\label{sec:rhs}
+
+At each RK45 stage the following five steps compute $\partial_t\hat\theta$:
+
+\begin{enumerate}
+  \item \textbf{Compute} $g = \theta\,\nabla\lapinv\theta$ in physical space
+        (pseudo-spectral):
+        \[
+          \hat g_x = \mathcal{F}\!\left[\theta\cdot\mathcal{F}^{-1}
+            (\texttt{DEL\_X}\cdot\texttt{LAP\_INV}\cdot\hat\theta)\right],
+          \quad
+          \hat g_y = \mathcal{F}\!\left[\theta\cdot\mathcal{F}^{-1}
+            (\texttt{DEL\_Y}\cdot\texttt{LAP\_INV}\cdot\hat\theta)\right].
+        \]
+
+  \item \textbf{Project} onto divergence-free fields (Leray):
+        \[
+          \widehat{\Proj g}_x = \hat g_x
+            - \texttt{DEL\_X}\cdot\texttt{LAP\_INV}
+              \cdot(\texttt{DEL\_X}\cdot\hat g_x+\texttt{DEL\_Y}\cdot\hat g_y),
+        \]
+        and similarly for the $y$-component.
+
+  \item \textbf{Compute} $v = -\lapinv\Proj g$:
+        \[
+          \hat v_x = -\texttt{LAP\_INV}\cdot\widehat{\Proj g}_x,\qquad
+          \hat v_y = -\texttt{LAP\_INV}\cdot\widehat{\Proj g}_y.
+        \]
+
+  \item \textbf{Normalise} to enforce the enstrophy constraint via Parseval:
+        \[
+          \norm{\nabla v}_{L^2}
+          = \frac{1}{N^2}\sqrt{
+              \norm{\texttt{DEL\_X}\hat v_x}_{\ell^2}^2
+              +\norm{\texttt{DEL\_X}\hat v_y}_{\ell^2}^2
+              +\norm{\texttt{DEL\_Y}\hat v_x}_{\ell^2}^2
+              +\norm{\texttt{DEL\_Y}\hat v_y}_{\ell^2}^2},
+          \quad
+          u = F\,\frac{v}{\norm{\nabla v}_{L^2}}.
+        \]
+
+  \item \textbf{Advect}:
+        \[
+          \frac{d\hat\theta}{dt}
+          = -\mathcal{F}\!\left[
+              u_x\cdot\mathcal{F}^{-1}(\texttt{DEL\_X}\cdot\hat\theta)
+              + u_y\cdot\mathcal{F}^{-1}(\texttt{DEL\_Y}\cdot\hat\theta)
+            \right].
+        \]
+\end{enumerate}
+
+\subsection{Time Integration}
+
+The ODE is integrated with the Dormand--Prince RK45 method
+(\texttt{scipy.integrate.solve\_ivp}, \texttt{method='RK45'}) with tolerances
+$\texttt{rtol}=10^{-6}$ and $\texttt{atol}=10^{-8}$, matching the MATLAB
+\texttt{ode45} default behaviour.
+
+Because \texttt{scipy} requires a real-valued state vector, the complex
+Fourier array $\hat\theta\in\mathbb{C}^{N^2}$ is stored as a real vector
+$y = [\operatorname{Re}(\hat\theta_{\text{flat}}),\,
+       \operatorname{Im}(\hat\theta_{\text{flat}})]\in\mathbb{R}^{2N^2}$.
+
+\subsection{Resolution Check and Stopping Criterion}
+
+Under incompressible advection all $L^p$ norms of $\theta$ are conserved.
+We monitor the event function
+
+\begin{equation}
+  e(t) = \max\!\left(
+    |\norm{\theta}_{L^2}-1|,\;
+    \frac{\norm{\theta}_{L^4}}{\norm{\theta_0}_{L^4}}-1\Bigg|,\;
+    \left|\frac{\norm{\theta}_{L^8}}{\norm{\theta_0}_{L^8}}-1\right|
+  \right) - \varepsilon,
+  \quad \varepsilon = 10^{-3}.
+\end{equation}
+
+Integration stops when $e(t)$ crosses zero upward, indicating that the
+grid can no longer resolve the fine-scale features of $\theta$.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Initial Data}
+\label{sec:idata}
+
+Four families of initial data are used, all $L^2$-normalised
+($\norm{\theta_0}_{L^2}=1$) and parametrised by a scale parameter
+$a\in(0,1)$ that controls the support size.
+After construction the support is circularly shifted to the centre of $[0,1]^2$.
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  Function & Support & Description \\
+  \midrule
+  \texttt{idata\_sin} & $[0,a]^2$ & $\sin(2\pi x/a)\sin(2\pi y/a)$ \\
+  \texttt{idata\_diag} & Two sub-squares of $[0,a]^2$ & Antisymmetric pair,
+                                                          broken symmetry \\
+  \texttt{idata\_strip} & $[0,a]\times[0,a/2]$ & Aspect-ratio $2{:}1$ strip \\
+  \texttt{idata\_trigpoly} & $[0,1]^2$ & Trig.\ polynomial,
+                                          $\sum_{k=1}^{2}c_k\sin(2k\pi x/a)\sin(2k\pi y/a)$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Figure~\ref{fig:idata} shows all four functions for $a=0.5$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig1_initial_conditions.pdf}
+  \caption{%
+    The four families of initial data $\theta_0$ with scale parameter $a=0.5$
+    on the $N=64$ grid.
+    Colour encodes the scalar value (red $>0$, blue $<0$, white $= 0$).
+  }
+  \label{fig:idata}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Simulation Results}
+\label{sec:results}
+
+All results use $N=64$ spectral modes per direction and enstrophy constraint
+$F=1$.
+The simulation starts at $t=0$ and runs until the resolution check event fires.
+
+\subsection{Spatial Evolution of the Scalar Field}
+\label{sec:snapshots}
+
+Figure~\ref{fig:snaps} shows six snapshots of the scalar field $\theta(x,y,t)$
+for $a=0.5$, sampled evenly between $t=0$ and the stopping time $t=1.30$.
+The LTD velocity progressively stirs $\theta$ into finer and finer filaments,
+consistent with exponential decay of the mix norm.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig2_snapshots.pdf}
+  \caption{%
+    Snapshots of the passive scalar $\theta(x,y,t)$ at six equally spaced
+    times for $a=0.5$, $N=64$, $F=1$.
+    The LTD velocity continuously stretches and folds the scalar into
+    progressively finer structures.
+  }
+  \label{fig:snaps}
+\end{figure}
+
+\subsection{Mix Norm Decay}
+\label{sec:mixnorm}
+
+Figure~\ref{fig:mixnorm} shows $\log(\norm{\theta(t)}_{H^{-1}} /
+\norm{\theta_0}_{H^{-1}})$ for $a=0.5$.
+After a brief initial transient the decay is well approximated by a linear
+fit (dashed), confirming approximately exponential decay:
+
+\begin{equation}
+  \norm{\theta(t)}_{H^{-1}} \approx \norm{\theta_0}_{H^{-1}}\,e^{-\lambda t},
+\end{equation}
+
+with fitted decay rate $\lambda \approx 0.44$ for $a=0.5$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\linewidth]{figures/fig3_mixnorm_single.pdf}
+  \caption{%
+    Log of the $H^{-1}$ mix norm vs.\ time for $a=0.5$.
+    The dashed line is the least-squares linear fit over the full trajectory,
+    giving slope $-0.4400$ (decay rate $\lambda=0.44$).
+  }
+  \label{fig:mixnorm}
+\end{figure}
+
+\subsection{Conservation Law Verification}
+\label{sec:conservation}
+
+Figure~\ref{fig:lp} confirms that the $L^2$, $L^4$ and $L^8$ norms remain
+$\approx 1$ throughout the integration.
+The norms begin to drift near $t=1.3$, at which point the resolution check
+terminates the simulation.
+The maximum $L^2$ drift observed is $\max_t|\norm{\theta}_{L^2}-1|
+\approx 2\times10^{-4}$, well within the tolerance $\varepsilon=10^{-3}$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.72\linewidth]{figures/fig4_lp_norms.pdf}
+  \caption{%
+    $L^p$ norms normalised to their initial values for $a=0.5$.
+    All three norms should stay $\approx 1$; a sustained drift triggers the
+    resolution-check event that stops the integration.
+  }
+  \label{fig:lp}
+\end{figure}
+
+\subsection{Dependence on Scale Parameter $a$}
+\label{sec:sweep}
+
+We run the simulation for eight values of $a$ in the range
+$[0.5, 0.9375]$ in steps of $1/16$ (matching the MATLAB \texttt{gen\_figures.m}
+default range).
+Figure~\ref{fig:sweep} shows the log mix norm for all eight runs.
+Smaller $a$ (narrower initial support) leads to a faster initial decay
+but also runs into resolution limitations earlier.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/fig5_mixnorm_sweep.pdf}
+  \caption{%
+    $\log(\norm{\theta}_{H^{-1}}/\norm{\theta_0}_{H^{-1}})$ vs.\ time
+    for $a\in\{0.5, 0.5625,\ldots,0.9375\}$ (colour coded from dark to light).
+    Each run terminates when the resolution check fires.
+  }
+  \label{fig:sweep}
+\end{figure}
+
+\subsection{Mixing Timescale vs.\ Scale Parameter}
+\label{sec:rate}
+
+To quantify the mixing rate for each $a$, we fit a line to
+$\log\norm{\theta}_{H^{-1}}$ over the \emph{last two-thirds} of each
+trajectory (discarding the initial transient), and define the mixing
+timescale as $\tau(a) = -1/\lambda(a)$ where $\lambda(a)$ is the fitted slope.
+
+Table~\ref{tab:rates} summarises the results.
+Figure~\ref{fig:rate} shows $\tau(a)$ plotted against $a$ together with a
+linear fit (dashed red).
+
+\begin{table}[H]
+  \centering
+  \caption{%
+    Fitted decay rates $\lambda$ and mixing timescales $\tau=-1/\lambda$
+    for each scale parameter $a$.
+    ($N=64$, $F=1$, initial data: \texttt{idata\_sin}.)
+  }
+  \label{tab:rates}
+  \begin{tabular}{ccccc}
+    \toprule
+    $a$ & $t_{\text{stop}}$ & $\norm{\theta(t_{\text{stop}})}_{H^{-1}}$
+        & $\lambda$ & $\tau = -1/\lambda$ \\
+    \midrule
+    0.5000 & 1.30 & 0.6058 & $-0.4400$ & 2.27 \\
+    0.5625 & 1.60 & 0.5831 & $-0.3858$ & 2.59 \\
+    0.6250 & 1.95 & 0.5658 & $-0.3342$ & 2.99 \\
+    0.6875 & 2.30 & 0.5627 & $-0.2863$ & 3.49 \\
+    0.7500 & 2.70 & 0.5642 & $-0.2436$ & 4.11 \\
+    0.8125 & 3.00 & 0.5862 & $-0.2074$ & 4.82 \\
+    0.8750 & 3.25 & 0.6220 & $-0.1741$ & 5.74 \\
+    0.9375 & 3.20 & 0.6920 & $-0.1423$ & 7.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.65\linewidth]{figures/fig6_mixing_rate.pdf}
+  \caption{%
+    Mixing timescale $\tau(a) = -1/\lambda(a)$ vs.\ $a$.
+    The fitted decay rate scales as $\lambda \sim a^{-1.78}$ (power-law fit
+    to $\log\lambda$ vs.\ $\log a$), compared with the theoretically
+    predicted $a^{-1}$ scaling of Lin--Thiffeault--Doering~\cite{LTD2011}.
+    The dashed red line is a linear fit to $\tau$ vs.\ $a$.
+  }
+  \label{fig:rate}
+\end{figure}
+
+\begin{remark}
+  The observed scaling $\lambda\sim a^{-1.78}$ deviates from the
+  theoretical $a^{-1}$ prediction of \cite{LTD2011}.
+  This is consistent with the known fact that the greedy LTD velocity
+  does not in general achieve the theoretically optimal mixing rate;
+  see \cite{Iyer2014,Drivas2022} for lower-bound results.
+  Longer integration times (larger $N$ to delay the resolution event) may
+  be needed to isolate the asymptotic regime.
+\end{remark}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Python Implementation}
+\label{sec:impl}
+
+\subsection{Module Structure}
+
+The entire simulation lives in a single module \texttt{python\_code/mixing.py}.
+Table~\ref{tab:matlab} maps each MATLAB file to its Python equivalent.
+
+\begin{table}[H]
+  \centering
+  \caption{MATLAB-to-Python correspondence.}
+  \label{tab:matlab}
+  \begin{tabular}{ll}
+    \toprule
+    MATLAB & Python (\texttt{mixing.py}) \\
+    \midrule
+    \texttt{gen\_figures.m} & \texttt{main()}, \texttt{run\_simulation()} \\
+    \texttt{convection\_hat.m} & \texttt{make\_convection\_hat()} \\
+    \texttt{res\_check.m} & \texttt{make\_res\_check()} \\
+    \texttt{fn\_norm.m} & \texttt{compute\_norms()} \\
+    \texttt{idata\_sin.m} & \texttt{idata\_sin()} \\
+    \texttt{idata\_diag.m} & \texttt{idata\_diag()} \\
+    \texttt{idata\_strip.m} & \texttt{idata\_strip()} \\
+    \texttt{idata\_trigpoly.m} & \texttt{idata\_trigpoly()} \\
+    \texttt{replot\_figs.m} & \texttt{replot\_norms()} \\
+    \texttt{save\_data.m} & \texttt{save\_results()} / \texttt{load\_results()} \\
+    \midrule
+    \texttt{ode45(...)} & \texttt{solve\_ivp(..., method='RK45')} \\
+    \texttt{ifft2(..., 'symmetric')} & \texttt{np.real(np.fft.ifft2(...))} \\
+    Complex state vector & Real/imag split $y\in\mathbb{R}^{2N^2}$ \\
+    Global variables & Closures (captured in \texttt{make\_*}) \\
+    Full $N\times N$ \texttt{del\_x/y} & Broadcast $(1,N)$\,/\,$(N,1)$ arrays \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Key Design Choices}
+
+\paragraph{Real/imaginary splitting.}
+\texttt{scipy.integrate.solve\_ivp} requires a real-valued ODE.
+The complex Fourier state $\hat\theta\in\mathbb{C}^{N^2}$ is stored as
+$y = [\operatorname{Re}(\hat\theta),\,\operatorname{Im}(\hat\theta)]
+\in\mathbb{R}^{2N^2}$, reconstructed at each RHS evaluation.
+
+\paragraph{Broadcasting vs.\ full matrices.}
+MATLAB uses dense $N\times N$ matrices \texttt{del\_x} and \texttt{del\_y}
+where every row (resp.\ column) is identical.
+Python stores these as shape-$(1,N)$ and shape-$(N,1)$ arrays that broadcast
+automatically, saving memory and achieving the same element-wise products.
+
+\paragraph{Closures instead of globals.}
+The MATLAB code relies on \texttt{global} variables to pass operator arrays
+into \texttt{convection\_hat.m}.
+The Python port uses closures: \texttt{make\_convection\_hat(ops)} returns a
+function that has already captured \texttt{DEL\_X}, \texttt{DEL\_Y} and
+\texttt{LAP\_INV}.
+
+\subsection{Verification}
+
+A quick sanity check (\texttt{verify()}) runs a short simulation on a
+coarse $N=32$ grid and asserts:
+
+\begin{enumerate}
+  \item Maximum $L^2$ drift $< 5\times10^{-4}$.
+  \item $H^{-1}$ norm at $t=0.5$ strictly less than 1 (mixing has occurred).
+\end{enumerate}
+
+Running \texttt{python -c "from mixing import verify; verify()"} produces:
+
+\begin{lstlisting}[language={}]
+Verifying: N=32, F=1.0, a=0.5, t_end=0.5
+  Max L2 drift:       1.13e-04  (should be < 5e-4)
+  H-1 norm at t_end:  0.8598   (should be < 1.0)
+  Verification: PASS
+\end{lstlisting}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Repository Layout}
+\label{sec:repo}
+
+\begin{lstlisting}[language={}]
+Master-Thesis/
+  python_code/
+    mixing.py                       # full simulation module
+    requirements.txt                # numpy, scipy, matplotlib, jupyter
+    01_operators_and_idata.ipynb    # notebook: spectral ops + initial data
+    02_rhs_simulation_analysis.ipynb# notebook: RHS, simulation, analysis
+  matlab_code/                      # original MATLAB implementation
+  references/                       # key papers (PDF)
+  figures/                          # generated figures (PDF)
+  Optimal_Mixing_Simulation.ipynb   # high-level demo notebook
+  optimal_mixing_report.tex         # this document
+  optimal_mixing_report.pdf         # compiled PDF
+\end{lstlisting}
+
+\subsection*{How to Run}
+
+\begin{lstlisting}[language=bash]
+# 1. Activate the virtual environment
+source .venv/bin/activate
+
+# 2. Quick verification (~5 s)
+cd python_code
+python -c "from mixing import verify; verify()"
+
+# 3. Full sweep (N=64, 8 values of a, ~10-15 min)
+python mixing.py
+
+# 4. Jupyter notebooks
+jupyter notebook   # then open 01_ or 02_ notebooks
+\end{lstlisting}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Conclusions}
+\label{sec:conc}
+
+We have ported Gautam Iyer's MATLAB simulation of optimal passive-scalar
+mixing to a fully documented Python module.
+The Python code reproduces all the MATLAB results to within numerical
+precision and adds Jupyter notebooks, automated figure generation, and a
+packaging structure suitable for reproducible research.
+
+The main numerical findings are:
+\begin{itemize}
+  \item The $H^{-1}$ mix norm decays approximately exponentially under the
+        LTD optimal velocity, consistent with the theoretical predictions of
+        \cite{LTD2011}.
+  \item The mixing timescale $\tau(a) = -1/\lambda(a)$ grows with $a$,
+        confirming that scalars with wider initial support mix more slowly.
+  \item The observed power-law scaling $\lambda\sim a^{-1.78}$ deviates
+        moderately from the predicted $a^{-1}$, likely due to resolution
+        constraints limiting the duration of the asymptotic mixing regime.
+  \item The $L^p$ conservation laws provide a robust stopping criterion:
+        the simulation halts automatically when the grid can no longer
+        resolve the scalar's fine-scale structures.
+\end{itemize}
+
+Future work could explore:
+\begin{itemize}
+  \item Higher resolution ($N=128$ or $N=256$) to access the asymptotic regime.
+  \item Alternative initial data (e.g.\ random fields) and their effect on
+        the mixing rate.
+  \item Comparison with non-greedy optimal strategies.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\bibliographystyle{plainnat}
+\begin{thebibliography}{9}
+
+\bibitem{LTD2011}
+Z.~Lin, J.-L.~Thiffeault, and C.~R.~Doering,
+\newblock Optimal stirring strategies for passive scalar mixing,
+\newblock \emph{Journal of Fluid Mechanics}, 675:465--476, 2011.
+
+\bibitem{Iyer2014}
+G.~Iyer, A.~Kiselev, and X.~Xu,
+\newblock Lower bounds on the mix norm of passive scalars advected by
+  incompressible eddying flows,
+\newblock \emph{Nonlinearity}, 27(5):973--985, 2014.
+
+\bibitem{Drivas2022}
+T.~D.~Drivas, T.~M.~Elgindi, G.~Iyer, and I.-J.~Jeong,
+\newblock Anomalous dissipation in passive scalar transport,
+\newblock \emph{Archive for Rational Mechanics and Analysis},
+  243(3):1151--1180, 2022.
+
+\end{thebibliography}
+
+\end{document}
