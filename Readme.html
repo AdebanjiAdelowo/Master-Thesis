@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<title>Readme</title>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+<link rel="stylesheet" href="local.css" type="text/css" />
+
+
+
+
+
+
+</head>
+<body>
+
+<article class="page">
+
+<section class="pageheader">
+<header class="header">
+<span>
+<span class="parentlinks">
+
+<a href="./index.html">ikiWiki</a>/ 
+
+</span>
+<span class="title">
+Readme
+
+</span>
+</span>
+
+</header>
+
+
+
+
+
+
+
+</section>
+
+
+
+<div id="pagebody">
+
+<section id="content">
+<h1 id="synopsys">Synopsys</h1>
+
+<p>Stir a passive scalar by the optimal stirring velocity and plot the mix-norm.</p>
+
+<h1 id="instructions">Instructions</h1>
+
+<p>Running command <code>gen_figures</code> from MATLAB computes the optimal mixing of the passive scalar and plots the $H^{-1}$ norm and a few plots of the solution.</p>
+
+<p>Many parameters can be changed from within MATLAB, without editing the code.
+E.g.</p>
+
+<pre><code>global N; N=128; gen_figures
+a_range=.5:1/16:1; idata=@idata_diag; gen_figures
+</code></pre>
+
+<p>Read <code>gen_figures.m</code> for other parameters.</p>
+
+<h1 id="utilityfunctions">Utility functions</h1>
+
+<p><code>save_data</code>: Saves all useful data to a file (prompts for filename).</p>
+
+<p><code>export_figs</code>: Generates EPS figures (existing ones are silently overwritten).</p>
+
+<p><code>dock_figures</code>: Dock all figures.</p>
+
+</section>
+
+
+
+
+
+</div>
+
+<footer id="footer" class="pagefooter">
+
+<nav id="pageinfo">
+
+
+
+
+
+
+<nav id="backlinks">
+Links:
+
+<a href="./index.html">index</a>
+
+
+</nav>
+
+
+
+
+
+
+<div class="pagedate">
+Last edited <time datetime="2013-09-22T02:06:26Z">Sat 21 Sep 2013 10:06:26 PM EDT</time>
+<!-- Created <time datetime="2013-09-22T02:06:26Z" pubdate="pubdate">Sat 21 Sep 2013 10:06:26 PM EDT</time> -->
+</div>
+
+</nav>
+
+
+<!-- from ikiWiki -->
+</footer>
+
+</article>
+
+</body>
+</html>
