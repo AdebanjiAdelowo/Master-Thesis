@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 *.npz
 figures/
+*.aux
+*.log
+*.out
+*.toc
