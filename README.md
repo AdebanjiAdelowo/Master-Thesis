@@ -4,7 +4,7 @@ A Python pseudo-spectral simulation of the **Lin–Thiffeault–Doering optimal
 mixing velocity** for passive scalars on the 2-torus $[0,1]^2$.  
 Ported from [Gautam Iyer's MATLAB code](https://www.math.cmu.edu/~gautam/research/201208-mix-bounds/).
 
-**Full write-up:** [`optimal_mixing_report.pdf`](optimal_mixing_report.pdf)
+**Full write-up:** [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf)
 
 ---
 
@@ -43,8 +43,10 @@ Master-Thesis/
 ├── references/                          # key papers (PDF)
 ├── figures/                             # generated figures (PDF)
 ├── Optimal_Mixing_Simulation.ipynb      # high-level demo notebook
-├── optimal_mixing_report.tex            # LaTeX report source
-├── optimal_mixing_report.pdf            # compiled report (11 pages)
+├── optimal_mixing_report.tex            # LaTeX report source (original)
+├── optimal_mixing_report.pdf            # compiled report (original, 11 pages)
+├── optimal_mixing_thesis_report.tex     # LaTeX report source (corrected)
+├── optimal_mixing_thesis_report.pdf     # compiled report (corrected, 16 pages)
 └── .venv/                               # Python virtual environment
 ```
 
