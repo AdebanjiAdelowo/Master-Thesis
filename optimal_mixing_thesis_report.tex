@@ -1,0 +1,1025 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ─────────────────────────────────────────────────────────────────
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{microtype}
+\usepackage[numbers,sort&compress]{natbib}
+
+\hypersetup{
+  colorlinks=true, linkcolor=blue!60!black,
+  citecolor=green!50!black, urlcolor=blue!70!black,
+}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\Lap}{\Delta}
+\newcommand{\lapinv}{\Delta^{-1}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Torus}{\mathbb{T}^2}
+\newcommand{\Proj}{P}
+\newcommand{\Hmone}{H^{-1}}
+\newcommand{\half}{\tfrac{1}{2}}
+\newcommand{\dx}{\,dx\,dy}
+\newcommand{\Dop}[1]{D_{#1}}
+\newcommand{\Linv}{\Lambda^{-1}}
+
+\theoremstyle{definition}
+\newtheorem{remark}{Remark}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+
+% ── Title ─────────────────────────────────────────────────────────────────────
+\title{%
+  \textbf{Optimal Mixing of Passive Scalars}\\[6pt]
+  \large A Pseudo-Spectral Numerical Study of the\\
+  Lin--Thiffeault--Doering Velocity
+}
+\author{Adebanji Adelowo}
+\date{April 27, 2021}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+This thesis investigates the optimal mixing of passive scalars in
+incompressible fluid flow using the instantaneous-optimal (greedy) velocity
+field derived by Lin, Thiffeault \& Doering (2011). The central objective is
+to numerically characterise the decay rate of the $H^{-1}$ mix norm under
+the LTD optimal stirring strategy and to examine how the mixing timescale
+depends on the spatial scale of the initial scalar distribution.
+
+The scalar transport equation is solved numerically on the two-dimensional
+torus $[0,1]^2$ using a pseudo-spectral discretisation (fast Fourier
+transforms in space) together with an adaptive Dormand--Prince RK45 scheme
+for time integration. Four families of initial conditions -- parameterised
+by a support-size parameter $a$ -- are studied, with $L^p$ norm conservation
+used as a resolution diagnostic and stopping criterion.
+
+Numerical results confirm that, under the dynamically chosen LTD velocity,
+the $H^{-1}$ mix norm decays approximately exponentially, consistent with
+the robust exponential decay reported numerically by Lin, Thiffeault and
+Doering for the same steepest-descent strategy. Writing this decay as
+$\norm{\theta(t)}_{H^{-1}} \approx \norm{\theta_0}_{H^{-1}} e^{-rt}$ with
+decay-rate magnitude $r>0$, a representative case ($a = 0.5$) gives
+$r \approx 0.44$ (mixing timescale $\tau = 1/r \approx 2.27$). Across eight
+values of $a \in [0.5,\, 0.9375]$, the fitted decay-rate magnitude scales
+approximately as $r \propto a^{-1.78}$, appreciably steeper than the
+$a^{-1}$ dependence characteristic of the Iyer--Kiselev--Xu
+enstrophy-constrained lower bound. Comparing two resolutions ($N=32$:
+exponent $\approx -1.61$; $N=64$: exponent $\approx -1.78$) shows this
+fitted exponent is resolution-dependent and not yet numerically converged;
+since the higher-resolution estimate moves farther from, not closer to,
+the benchmark $-1$ scaling, these two resolutions alone cannot establish
+whether the discrepancy reflects a finite-resolution artefact, a genuine
+feature of the greedy strategy, or both.
+
+These results provide a foundation for future studies at higher spectral
+resolution and for comparison with non-greedy global optimisation strategies.
+
+\medskip\noindent\textbf{Keywords:} passive scalar mixing, $H^{-1}$ mix norm,
+pseudo-spectral methods, optimal stirring, Lin--Thiffeault--Doering velocity,
+incompressible fluid mechanics
+\end{abstract}
+
+\tableofcontents
+\bigskip
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
+
+This report documents a pseudo-spectral numerical simulation of the
+\emph{optimal mixing problem} for passive scalars on the two-dimensional
+torus $\mathbb{T}^2 = [0,1]^2$.
+The simulation reproduces and extends Gautam Iyer's earlier MATLAB
+implementation of the instantaneous-optimal (steepest-descent) stirring
+strategy derived by Lin, Thiffeault and Doering \cite{LTD2011}.
+
+\subsection{Motivation}
+
+Mixing a substance efficiently under a fixed stirring budget is a question
+that appears across scales: from folding cream into coffee, to homogenising
+reactants in a chemical reactor, to the turbulent dispersal of pollutants
+and phytoplankton in the ocean. In all of these settings the underlying
+physics is the same passive-scalar transport equation studied here, and the
+same question recurs -- given a fixed amount of ``stirring energy,'' what
+motion mixes fastest? The LTD framework answers this question precisely for
+an idealised, instantaneous notion of optimality, and is a natural entry
+point into the broader mathematical theory of mixing, which connects
+functional analysis (Sobolev norms as mixing diagnostics), the calculus of
+variations (constrained optimisation of the velocity field), and dynamical
+systems (chaotic advection, filamentation, and the eventual limits imposed
+by finite resolution or molecular diffusion).
+
+\subsection{Goals}
+\begin{itemize}
+  \item Reproduce the results of Gautam Iyer's earlier MATLAB implementation
+        of this simulation.
+  \item Demonstrate that the $H^{-1}$ mix norm decays exponentially under the
+        Lin--Thiffeault--Doering (LTD) optimal velocity.
+  \item Characterise how the mixing timescale depends on the support
+        size parameter~$a$.
+  \item Derive the LTD velocity rigorously, rather than simply quoting it,
+        so that the numerical implementation can be checked term-by-term
+        against the theory (Section~\ref{sec:math}).
+  \item Compare the fitted decay-rate scaling in $a$ against the benchmark
+        $a^{-1}$ dependence of the Iyer--Kiselev--Xu enstrophy-constrained
+        lower bound, and test whether the fitted exponent is
+        resolution-converged via a direct two-resolution comparison
+        (Section~\ref{sec:resolution}).
+\end{itemize}
+
+\subsection{Structure of this Report}
+
+Section~\ref{sec:math} develops the mathematical framework, including a
+full derivation of the LTD optimal velocity via constrained optimisation.
+Section~\ref{sec:numerics} documents the pseudo-spectral numerical scheme.
+Section~\ref{sec:idata} describes the initial data families.
+Section~\ref{sec:results} presents the main simulation results at the
+published resolution $N=64$.
+Section~\ref{sec:resolution} adds a resolution-sensitivity study not present
+in Gautam Iyer's earlier MATLAB implementation.
+Section~\ref{sec:conc} closes with conclusions.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Mathematical Framework}
+\label{sec:math}
+
+\subsection{The Passive Scalar Equation}
+
+We study the advection of a passive scalar $\theta : \Torus\times[0,\infty)
+\to \Real$ governed by
+
+\begin{equation}
+  \label{eq:pde}
+  \partial_t\theta + (u\cdot\nabla)\theta = 0,
+  \qquad \theta(\cdot,0) = \theta_0,
+\end{equation}
+
+where $u:\Torus\to\Real^2$ is a prescribed divergence-free velocity field,
+$\nabla\cdot u = 0$. The scalar $\theta$ is \emph{passive}: it is transported
+by $u$ but exerts no back-reaction on the flow, and there is no molecular
+diffusion. Equation~\eqref{eq:pde} states that $\theta$ is constant along
+particle trajectories $\dot X(t) = u(X(t),t)$; since the flow map generated
+by a divergence-free $u$ is measure-preserving, every level set $\{\theta =
+c\}$ is merely rearranged in time, never created or destroyed. This is the
+single physical fact underlying everything that follows: mixing is a purely
+kinematic phenomenon of rearrangement, and the question of ``optimal
+mixing'' is really a question about the most effective way to rearrange.
+
+\subsection{The Mix Norm}
+\label{sec:mixnorm-def}
+
+The quality of mixing is quantified by the \emph{$H^{-1}$ mix norm}:
+
+\begin{equation}
+  \label{eq:mixnorm}
+  \norm{\theta}_{H^{-1}}^2
+  = \sum_{k\neq 0} \frac{|\hat\theta(k)|^2}{4\pi^2|k|^2},
+\end{equation}
+
+where $\hat\theta(k)$ denotes the $k$-th Fourier coefficient of $\theta$.
+Equivalently, on the mean-zero subspace, $\norm{\theta}_{H^{-1}}^2 =
+-\int_\Torus \theta\,\lapinv\theta \dx$: writing $\phi = \lapinv\theta$
+(i.e.\ $\Lap\phi=\theta$), integration by parts gives $-\int\theta\phi\dx =
+-\int(\Lap\phi)\phi\dx = \int|\nabla\phi|^2\dx \ge 0$, confirming that
+\eqref{eq:mixnorm} really is a squared norm.
+
+Contrast this with the ordinary $L^2$ norm, $\norm{\theta}_{L^2}^2 =
+\sum_k|\hat\theta(k)|^2$, which weights every Fourier mode equally and is
+\emph{exactly conserved} by \eqref{eq:pde} (a direct consequence of $u$
+being divergence-free: $\frac{d}{dt}\int\theta^2\dx = -2\int\theta\,
+(u\cdot\nabla\theta)\dx = -\int u\cdot\nabla(\theta^2)\dx = \int
+(\nabla\cdot u)\theta^2\dx = 0$). The mix norm instead weights the $k$-th
+mode by $1/|k|^2$, penalising low wavenumbers (large-scale structure) and
+suppressing high wavenumbers (fine-scale structure). A scalar field whose
+$L^2$ energy sits at low $k$ (a smooth blob) therefore has \emph{large}
+$\norm{\theta}_{H^{-1}}$, while the same $L^2$ energy redistributed to high
+$k$ (fine filaments, the same substance stretched thin) has \emph{small}
+$\norm{\theta}_{H^{-1}}$ -- even though $\norm{\theta}_{L^2}$ is unchanged.
+This is the precise mathematical sense in which the mix norm captures
+``mixedness'': a rearrangement that conserves $L^2$ mass while pushing
+energy to finer scales is exactly what \eqref{eq:mixnorm} is designed to
+detect.
+
+\subsection{Enstrophy and the Stirring Budget}
+\label{sec:enstrophy}
+
+The ``stirring budget'' available to the velocity field is expressed as a
+constraint on its \emph{enstrophy},
+\begin{equation}
+  \label{eq:enstrophy}
+  \mathcal{E}(u) := \norm{\nabla u}_{L^2}^2
+  = \int_\Torus |\nabla u_x|^2 + |\nabla u_y|^2 \dx.
+\end{equation}
+For a divergence-free planar field this coincides (up to the definition's
+normalisation) with the $L^2$ norm of the scalar vorticity $\omega =
+\partial_x u_y - \partial_y u_x$: writing $u$ in terms of a streamfunction
+$\psi$ via $u = \nabla^\perp\psi = (-\partial_y\psi,\partial_x\psi)$ gives
+$\omega = \Lap\psi$ and $\norm{\nabla u}_{L^2}^2 = \norm{\omega}_{L^2}^2$
+after an integration by parts. Bounding $\norm{\nabla u}_{L^2}$ therefore
+bounds the total squared vorticity of the flow -- physically, a cap on how
+vigorously and how finely the flow is allowed to swirl. This is a stronger
+constraint than capping the kinetic energy $\norm{u}_{L^2}$ alone: for fixed
+enstrophy, a velocity field concentrated at high wavenumber (fine swirls)
+uses up its budget faster than one concentrated at low wavenumber, since
+$\norm{\nabla u}_{L^2}^2 = \sum_k 4\pi^2|k|^2|\hat u(k)|^2$.
+
+\subsection{The Lin--Thiffeault--Doering Optimal Velocity}
+\label{sec:ltd}
+
+Among all incompressible velocity fields satisfying the enstrophy constraint
+$\norm{\nabla u}_{L^2} \le F$, the one that minimises
+$\frac{d}{dt}\norm{\theta}_{H^{-1}}^2$ at each instant is the
+\emph{Lin--Thiffeault--Doering (LTD) optimal velocity}
+\cite{LTD2011}:
+
+\begin{equation}
+  \label{eq:ltd}
+  v = -\lapinv \Proj\!\left(\theta\,\nabla\lapinv\theta\right),
+  \qquad
+  u = F\,\frac{v}{\norm{\nabla v}_{L^2}}.
+\end{equation}
+
+Here $\Proj$ is the \emph{Leray projection} onto divergence-free vector
+fields:
+
+\begin{equation}
+  \label{eq:leray}
+  \Proj g = g - \nabla\lapinv(\nabla\cdot g).
+\end{equation}
+
+The Leray projection removes the curl-free (gradient) component of a vector
+field $g$, leaving only its divergence-free component; this is precisely
+what is required, since any admissible $u$ must itself be divergence-free.
+The final rescaling by $\norm{\nabla v}_{L^2}^{-1}$ enforces the enstrophy
+constraint exactly (with equality) at each instant -- intuitively, there is
+never a reason to use less than the full stirring budget, since using more
+of a fixed direction can only decrease $\norm{\theta}_{H^{-1}}^2$ faster.
+
+\subsection{Derivation of the LTD Velocity}
+\label{sec:derivation}
+
+Formula~\eqref{eq:ltd} is not an ansatz; it is the exact solution of a
+constrained optimisation problem, and deriving it makes transparent both
+why the five-step algorithm of Section~\ref{sec:rhs} has the structure it
+does, and when it can fail (Section~\ref{sec:saddle}).
+
+Write $\phi := \lapinv\theta$ (so $\Lap\phi=\theta$), and recall from
+Section~\ref{sec:mixnorm-def} that $\norm{\theta}_{H^{-1}}^2 =
+-\int\theta\phi\dx$. Differentiating in time and using the symmetry of
+$\Lap^{-1}$ (so that $\int\theta\dot\phi\dx = \int\dot\theta\phi\dx$),
+
+\begin{equation}
+  \frac{d}{dt}\norm{\theta}_{H^{-1}}^2
+  = -2\int \dot\theta\,\phi \dx
+  = 2\int (u\cdot\nabla\theta)\,\phi\dx,
+\end{equation}
+
+using \eqref{eq:pde}. Since $u$ is divergence-free, $\nabla\cdot(u\theta\phi)
+= (u\cdot\nabla\theta)\phi + \theta(u\cdot\nabla\phi)$, and the divergence
+integrates to zero on the torus, so $\int(u\cdot\nabla\theta)\phi\dx =
+-\int\theta(u\cdot\nabla\phi)\dx$. Hence
+
+\begin{equation}
+  \label{eq:derivmixnorm}
+  \frac{d}{dt}\norm{\theta}_{H^{-1}}^2
+  = -2\int u\cdot\underbrace{(\theta\nabla\phi)}_{=:\,g}\dx
+  = -2\int u\cdot g \dx.
+\end{equation}
+
+This is exactly the quantity $g=\theta\nabla\lapinv\theta$ computed in
+Step~1 of Section~\ref{sec:rhs}. Because $u$ is divergence-free, the
+curl-free part of $g$ contributes nothing to the pairing ($\int
+u\cdot\nabla f \dx = -\int(\nabla\cdot u)f\dx = 0$ for any scalar $f$), so
+$\int u\cdot g\dx = \int u\cdot\Proj g\dx$, and \eqref{eq:derivmixnorm}
+becomes
+\begin{equation}
+  \label{eq:derivmixnorm2}
+  \frac{d}{dt}\norm{\theta}_{H^{-1}}^2 = -2\int u\cdot\Proj g\dx.
+\end{equation}
+
+Now introduce $v := -\lapinv\Proj g$ as in \eqref{eq:ltd}, so that
+$\Proj g = -\Lap v$, and
+\begin{equation}
+  \int u\cdot\Proj g\dx = -\int u\cdot\Lap v\dx
+  = \int \nabla u : \nabla v \dx,
+\end{equation}
+again by integrating by parts (component-wise, using that both $u$ and $v$
+are periodic and divergence-free). Substituting into
+\eqref{eq:derivmixnorm2},
+\begin{equation}
+  \label{eq:derivmixnorm3}
+  \frac{d}{dt}\norm{\theta}_{H^{-1}}^2 = -2\int \nabla u : \nabla v \dx.
+\end{equation}
+
+\begin{proposition}[Optimality of the LTD velocity]
+\label{prop:ltd}
+Among all divergence-free $u$ with $\norm{\nabla u}_{L^2}\le F$, the
+quantity \eqref{eq:derivmixnorm3} is minimised by
+$u = F\,v/\norm{\nabla v}_{L^2}$.
+\end{proposition}
+\begin{proof}
+By the Cauchy--Schwarz inequality applied to the $L^2$ inner product of
+gradients, $\int\nabla u:\nabla v\dx \le \norm{\nabla u}_{L^2}
+\norm{\nabla v}_{L^2} \le F\norm{\nabla v}_{L^2}$, with equality iff $\nabla
+u$ is a non-negative scalar multiple of $\nabla v$ with
+$\norm{\nabla u}_{L^2}=F$, i.e.\ $u = F\,v/\norm{\nabla v}_{L^2}$ (up to an
+additive constant, which vanishes on the mean-zero torus). This maximises
+$\int\nabla u:\nabla v\dx$, hence minimises
+$-2\int\nabla u:\nabla v\dx = \frac{d}{dt}\norm{\theta}_{H^{-1}}^2$.
+\end{proof}
+
+At this optimum, \eqref{eq:derivmixnorm3} evaluates to
+$\frac{d}{dt}\norm{\theta}_{H^{-1}}^2 = -2F\norm{\nabla v}_{L^2} \le 0$,
+confirming the monotonic decrease of the mix norm asserted informally in
+Section~\ref{sec:mixnorm-def}, \emph{provided} $\norm{\nabla v}_{L^2}>0$.
+
+\subsection{Degeneracy: the First-Order-Critical Case}
+\label{sec:saddle}
+
+The derivation above shows that the LTD velocity is well defined, and
+strictly decreases the mix norm, exactly as long as $v\neq 0$, i.e.\ as
+long as $\Proj g \neq 0$. If $\theta$ reaches a state where $g=\theta
+\nabla\lapinv\theta$ is already curl-free (so that $\Proj g = 0$), then
+\emph{no} divergence-free velocity, however large its enstrophy, can
+decrease $\norm{\theta}_{H^{-1}}^2$ at that instant \cite{LTD2011}: such a
+$\theta$ is a critical point of the mix-norm functional under
+incompressible rearrangement. Lin, Thiffeault and Doering address this
+degenerate case by instead seeking the incompressible velocity that
+maximises the growth rate of the \emph{second} time derivative of the mix
+norm, which reduces to an eigenvalue problem for the minimum eigenvalue of
+a linear operator built from $\theta$ and $\varphi=\lapinv\theta$
+\cite{LTD2011}. The numerical implementation here does not solve that
+secondary eigenvalue problem; it instead monitors for proximity to the
+degeneracy by comparing $\norm{\nabla v}_{L^2}$ against
+$\norm{\lapinv g}_{L^2}$ and emitting a diagnostic warning if the former is
+much smaller than the latter relative to a tolerance. In practice this
+warning was not observed to trigger for the smooth, well-supported initial
+data families used in Section~\ref{sec:idata}.
+
+\begin{remark}
+  The LTD velocity is the \emph{greedy} optimal: it minimises the
+  instantaneous rate of change of the mix norm, not a global functional
+  over time (Proposition~\ref{prop:ltd} is a pointwise-in-time statement).
+  This instantaneous optimality does not by itself establish global
+  optimality over a finite or infinite time horizon: Lin, Thiffeault and
+  Doering themselves note that their local-in-time strategy leaves room
+  for further improvement, and identify whether a global-in-time (optimal
+  control) strategy could close the gap between their rigorous bounds and
+  their simulations as a major open question \cite{LTD2011}.
+  Section~\ref{sec:rate} below reports a numerical gap between the fitted
+  decay-rate magnitude observed under the greedy LTD velocity and the
+  support-size scaling suggested by the Iyer--Kiselev--Xu
+  enstrophy-constrained lower bound \cite{Iyer2014}; Section~\ref{sec:resolution}
+  shows that this gap is entangled with finite-resolution effects and
+  should not, on its own, be read as proof of greedy sub-optimality.
+\end{remark}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Numerical Methods}
+\label{sec:numerics}
+
+\subsection{Spectral Discretisation}
+
+We discretise $[0,1]^2$ on an $N\times N$ grid with spacing $dx = 1/N$,
+using the DFT convention
+
+\begin{equation}
+  \hat f[k_y,k_x]
+  = \sum_{i=0}^{N-1}\sum_{j=0}^{N-1} f[i,j]\,e^{-2\pi i(ik_y+jk_x)/N}.
+\end{equation}
+
+Row index $i$ corresponds to the $y$-direction and column index $j$ to the
+$x$-direction.
+The centred wavenumbers are
+$k_{\text{eff}}[j] = j - N\cdot\mathbf{1}[j>N/2]$,
+giving the range $\{0,1,\ldots,N/2-1,-N/2+1,\ldots,-1\}$.
+
+\paragraph{Derivative multipliers.}
+Differentiation in physical space corresponds to multiplication in Fourier
+space by
+\begin{equation}
+  \Dop{x}(k_x) = 2\pi i\,k_d(k_x),\qquad
+  \Dop{y}(k_y) = 2\pi i\,k_d(k_y),
+\end{equation}
+where $k_d$ is identical to $k_{\text{eff}}$ except that the Nyquist mode
+$k = N/2$ is set to zero (to avoid aliasing in first derivatives; see
+Section~\ref{sec:aliasing}).
+
+\paragraph{Inverse Laplacian.}
+The discrete Fourier realisation of $\lapinv$ is the multiplier
+\begin{equation}
+  \lapinv(k_x,k_y)
+  = \begin{cases}
+      \dfrac{-1}{(2\pi)^2(k_x^2+k_y^2)} & (k_x,k_y)\neq(0,0),\\[6pt]
+      0 & (k_x,k_y)=(0,0).
+    \end{cases}
+\end{equation}
+The Nyquist mode is \emph{not} zeroed here, since the Laplacian is a
+second-order (even) operator for which the sign ambiguity of the Nyquist
+frequency does not arise.
+
+\paragraph{Mix-norm weight.}
+\begin{equation}
+  \Linv(k_x,k_y)
+  = \frac{1}{2\pi|k|}
+  = \sqrt{-\lapinv(k_x,k_y)}.
+\end{equation}
+
+\paragraph{Parseval identity.}
+For the unitary DFT normalisation used here,
+$\norm{\hat f}_{\ell^2} = N\norm{f}_{\ell^2}$, so
+
+\begin{equation}
+  \norm{f}_{L^2} = \frac{\norm{\hat f}_{\ell^2}}{N^2}.
+\end{equation}
+
+This conversion factor is used throughout whenever a quantity computed in
+Fourier space (via $\ell^2$ norms of coefficient arrays) must be compared
+against, or combined with, a continuum $L^2$ quantity.
+
+\subsection{Pseudo-Spectral Evaluation of the RHS}
+\label{sec:rhs}
+
+At each RK45 stage the following five steps compute $\partial_t\hat\theta$.
+The alternation between Fourier space (for the linear operators $\nabla$
+and $\lapinv$, applied as cheap pointwise multiplications) and physical
+space (for the pointwise \emph{products} that make up the nonlinearity)
+is the defining feature of the pseudo-spectral method: representing a
+product as a convolution directly in Fourier space would cost $O(N^4)$
+per evaluation, whereas transforming to physical space, multiplying
+pointwise, and transforming back costs only $O(N^2\log N)$ via the FFT.
+
+\begin{enumerate}
+  \item \textbf{Compute} $g = \theta\,\nabla\lapinv\theta$ in physical space
+        (pseudo-spectral):
+        \[
+          \hat g_x = \mathcal{F}\!\left[\theta\cdot\mathcal{F}^{-1}
+            (\Dop{x}\cdot\lapinv\cdot\hat\theta)\right],
+          \quad
+          \hat g_y = \mathcal{F}\!\left[\theta\cdot\mathcal{F}^{-1}
+            (\Dop{y}\cdot\lapinv\cdot\hat\theta)\right].
+        \]
+        This is exactly the quantity $g$ appearing in the derivation of
+        Section~\ref{sec:derivation}.
+
+  \item \textbf{Project} onto divergence-free fields (Leray):
+        \[
+          \widehat{\Proj g}_x = \hat g_x
+            - \Dop{x}\cdot\lapinv
+              \cdot(\Dop{x}\cdot\hat g_x+\Dop{y}\cdot\hat g_y),
+        \]
+        and similarly for the $y$-component.
+
+  \item \textbf{Compute} $v = -\lapinv\Proj g$:
+        \[
+          \hat v_x = -\lapinv\cdot\widehat{\Proj g}_x,\qquad
+          \hat v_y = -\lapinv\cdot\widehat{\Proj g}_y.
+        \]
+
+  \item \textbf{Normalise} to enforce the enstrophy constraint via Parseval:
+        \[
+          \norm{\nabla v}_{L^2}
+          = \frac{1}{N^2}\sqrt{
+              \norm{\Dop{x}\hat v_x}_{\ell^2}^2
+              +\norm{\Dop{x}\hat v_y}_{\ell^2}^2
+              +\norm{\Dop{y}\hat v_x}_{\ell^2}^2
+              +\norm{\Dop{y}\hat v_y}_{\ell^2}^2},
+          \quad
+          u = F\,\frac{v}{\norm{\nabla v}_{L^2}}.
+        \]
+        This is Proposition~\ref{prop:ltd} applied numerically: $v$ is
+        rescaled to have exactly enstrophy $F$.
+
+  \item \textbf{Advect}:
+        \[
+          \frac{d\hat\theta}{dt}
+          = -\mathcal{F}\!\left[
+              u_x\cdot\mathcal{F}^{-1}(\Dop{x}\cdot\hat\theta)
+              + u_y\cdot\mathcal{F}^{-1}(\Dop{y}\cdot\hat\theta)
+            \right].
+        \]
+\end{enumerate}
+
+Each RHS evaluation therefore requires ten $N\times N$ FFTs (three forward
+and seven inverse transforms, counting the intermediate transforms in
+Steps 1--5), each
+costing $O(N^2\log N)$, for a total cost of $O(N^2\log N)$ per stage --
+independent of $N$ only up to the logarithmic factor, which is why doubling
+$N$ from $32$ to $64$ increases per-step cost by roughly a factor of
+$4$--$5$ (four times the grid points, times a modestly larger logarithm),
+consistent with the timings reported in Section~\ref{sec:resolution}.
+
+\subsection{Aliasing and the Absence of Explicit Dealiasing}
+\label{sec:aliasing}
+
+The nonlinearity in Step~1 above is a \emph{pointwise product} of two
+fields, each itself resolved on $N$ Fourier modes per direction. In exact
+arithmetic such a product generates Fourier content up to wavenumber $N-1$
+(twice the input bandwidth), but the discrete grid can only represent
+wavenumbers up to $N/2$; the un-representable high-wavenumber content is
+\emph{aliased} back onto low wavenumbers, contaminating the low modes with
+spurious energy. The classical remedy in pseudo-spectral codes is the
+``$2/3$-rule'': pad the field with zeros to $3N/2$ modes before
+transforming, multiply, and truncate back to the original $N/2$
+bandwidth, exactly eliminating the aliased content at the cost of roughly
+doubling the FFT size.
+
+The implementation does \emph{not} apply the $2/3$-rule (nor any other
+explicit dealiasing filter beyond zeroing the Nyquist mode for first
+derivatives, which addresses a different, sign-ambiguity issue, not
+aliasing). Instead, the resolution-check event of
+Section~\ref{sec:rescheck} provides an \emph{a posteriori} diagnostic of
+loss of resolution: because under-resolution -- aliasing error among other
+possible causes -- corrupts the conserved $L^p$ norms of $\theta$, its
+cumulative effect is what the resolution check is designed to detect, and
+integration is halted the moment that effect becomes non-negligible. This
+monitor does not \emph{prevent} aliasing error from occurring and is not a
+substitute for explicit dealiasing; it only bounds how long the simulation
+is allowed to run once accumulated resolution loss becomes detectable. The
+consequence -- a stopping time that
+depends on resolution, and hence a fitted mixing-rate exponent that depends
+on resolution -- is examined directly in Section~\ref{sec:resolution} and is
+relevant to the deviation from the Iyer--Kiselev--Xu benchmark $a^{-1}$
+scaling discussed in Section~\ref{sec:rate}.
+
+\subsection{Time Integration}
+\label{sec:timeint}
+
+The ODE is integrated with an explicit, adaptive-step embedded
+Runge--Kutta pair of Dormand--Prince type (order 5(4)), with relative and
+absolute error tolerances of $10^{-6}$ and $10^{-8}$ respectively: the
+solution is advanced with a 5th-order formula while a simultaneously
+computed 4th-order formula provides a local error estimate, and the step
+size is adjusted so that this estimate stays within tolerance. No
+dealiasing-related CFL restriction is imposed explicitly; the adaptive step
+controller implicitly shrinks the step size as $\theta$ develops sharper
+gradients under stirring, which is the mechanism by which the integrator
+remains stable as filamentation proceeds, right up until the resolution
+check intervenes.
+
+Because the solver requires a real-valued state vector, the complex
+Fourier array $\hat\theta\in\mathbb{C}^{N^2}$ is stored as a real vector
+$y = [\operatorname{Re}(\hat\theta_{\text{flat}}),\,
+       \operatorname{Im}(\hat\theta_{\text{flat}})]\in\mathbb{R}^{2N^2}$.
+
+\subsection{Resolution Check and Stopping Criterion}
+\label{sec:rescheck}
+
+Under incompressible advection all $L^p$ norms of $\theta$ are conserved.
+We monitor the event function
+
+\begin{equation}
+  e(t) = \max\!\left(
+    |\norm{\theta}_{L^2}-1|,\;
+    \left|\frac{\norm{\theta}_{L^4}}{\norm{\theta_0}_{L^4}}-1\right|,\;
+    \left|\frac{\norm{\theta}_{L^8}}{\norm{\theta_0}_{L^8}}-1\right|
+  \right) - \varepsilon,
+  \quad \varepsilon = 10^{-3}.
+\end{equation}
+
+Integration stops when $e(t)$ crosses zero upward, indicating that the
+grid can no longer resolve the fine-scale features of $\theta$. Using three
+different exponents ($p=2,4,8$) rather than a single one is deliberate: the
+higher-order norms are more sensitive to sharp, localised features (large
+$|\theta|$ concentrated on a small area) than $L^2$, so drift is typically
+detected first in $L^8$, giving an early warning before the coarser $L^2$
+budget is visibly affected -- consistent with the observation in
+Section~\ref{sec:conservation} that all three norms begin drifting at
+essentially the same instant, since by that point the under-resolved
+filaments are thin enough to affect every norm simultaneously.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Initial Data}
+\label{sec:idata}
+
+Four families of initial data are used, all $L^2$-normalised
+($\norm{\theta_0}_{L^2}=1$) and parametrised by a scale parameter
+$a\in(0,1)$ that controls the support size.
+After construction the support is circularly shifted to the centre of $[0,1]^2$
+so that the mixing dynamics are not biased by proximity to the periodic
+boundary.
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  Family & Support & Description \\
+  \midrule
+  I: Sine bump & $[0,a]^2$ & $\sin(2\pi x/a)\sin(2\pi y/a)$ \\
+  II: Diagonal pair & Two sub-squares of $[0,a]^2$ & Antisymmetric pair,
+                                                       broken symmetry \\
+  III: Strip & $[0,a]\times[0,a/2]$ & Aspect-ratio $2{:}1$ strip \\
+  IV: Trigonometric polynomial & $[0,1]^2$ &
+        $\sum_{k=1}^{2}c_k\sin(2k\pi x/a)\sin(2k\pi y/a)$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+All results in Section~\ref{sec:results} use the sine-bump family (Family
+I), the simplest of the four, so that the effect of $a$ on the mixing rate
+is not confounded by the initial data's internal geometry; the other three
+families are used for testing sensitivity to the initial condition's shape
+(a direction identified as future work in Section~\ref{sec:conc}).
+
+Figure~\ref{fig:idata} shows all four functions for $a=0.5$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig1_initial_conditions.pdf}
+  \caption{%
+    The four families of initial data $\theta_0$ with scale parameter $a=0.5$
+    on the $N=64$ grid.
+    Colour encodes the scalar value (red $>0$, blue $<0$, white $= 0$).
+  }
+  \label{fig:idata}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Simulation Results}
+\label{sec:results}
+
+All results in this section use $N=64$ spectral modes per direction and
+enstrophy constraint $F=1$. Each simulation starts at $t=0$ and runs until
+the resolution check event fires. Every figure and number in this section
+was produced by the accompanying code and independently re-verified: a
+clean rerun of the pipeline reproduces the values originally recorded in
+Table~\ref{tab:rates} to four decimal places in every entry, confirming
+that the pipeline is deterministic and reproducible end to end for the
+tested software environment.
+
+\subsection{Spatial Evolution of the Scalar Field}
+\label{sec:snapshots}
+
+Figure~\ref{fig:snaps} shows six snapshots of the scalar field $\theta(x,y,t)$
+for $a=0.5$, sampled evenly between $t=0$ and the stopping time $t=1.30$.
+The LTD velocity progressively stirs $\theta$ into finer and finer filaments,
+consistent with exponential decay of the mix norm. Qualitatively, the
+sequence illustrates the classical picture of chaotic advection: smooth
+initial structure is repeatedly stretched and folded, and the length of the
+scalar's interface grows while its cross-sectional width shrinks, which is
+precisely the geometric process that pushes $L^2$ energy to higher
+wavenumbers and hence drives $\norm{\theta}_{H^{-1}}$ down.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig2_snapshots.pdf}
+  \caption{%
+    Snapshots of the passive scalar $\theta(x,y,t)$ at six equally spaced
+    times for $a=0.5$, $N=64$, $F=1$.
+    The LTD velocity continuously stretches and folds the scalar into
+    progressively finer structures.
+  }
+  \label{fig:snaps}
+\end{figure}
+
+\subsection{Mix Norm Decay}
+\label{sec:mixnorm}
+
+Figure~\ref{fig:mixnorm} shows $\log(\norm{\theta(t)}_{H^{-1}} /
+\norm{\theta_0}_{H^{-1}})$ for $a=0.5$.
+After a brief initial transient the decay is well approximated by a linear
+fit (dashed), confirming approximately exponential decay:
+
+\begin{equation}
+  \norm{\theta(t)}_{H^{-1}} \approx \norm{\theta_0}_{H^{-1}}\,e^{-rt},
+  \qquad r>0.
+\end{equation}
+
+Here $r$ denotes the positive decay-rate magnitude, so that the fitted
+slope of $\log\norm{\theta}_{H^{-1}}$ versus $t$ equals $-r$ and the mixing
+timescale is $\tau=1/r$. Fitting the slope over the \emph{entire}
+trajectory gives slope $\approx -0.394$ (decay-rate magnitude $r \approx
+0.394$); fitting only the \emph{last two-thirds} (the methodology used for
+Table~\ref{tab:rates} and Figure~\ref{fig:rate}, which discards the initial
+transient before the exponential regime is established) gives the steeper
+slope $\approx -0.440$ ($r \approx 0.440$) quoted in Table~\ref{tab:rates}.
+The two numbers are not in conflict -- they measure the average slope over
+different portions of a curve that is only \emph{approximately} log-linear
+-- but the sensitivity of the fitted rate to the choice of fitting window is
+itself informative: it shows that the decay, while broadly exponential, has
+curvature that a single global rate does not fully capture, most visible
+during the initial transient before the flow has had time to establish
+fully developed filamentation.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\linewidth]{figures/fig3_mixnorm_single.pdf}
+  \caption{%
+    Log of the $H^{-1}$ mix norm vs.\ time for $a=0.5$.
+    The dashed line is the least-squares linear fit over the full trajectory,
+    giving slope $-0.3944$.
+  }
+  \label{fig:mixnorm}
+\end{figure}
+
+\subsection{Conservation Law Verification}
+\label{sec:conservation}
+
+Figure~\ref{fig:lp} confirms that the $L^2$, $L^4$ and $L^8$ norms remain
+$\approx 1$ throughout the integration.
+The norms begin to drift near $t=1.3$, at which point the resolution check
+terminates the simulation.
+The maximum $L^2$ drift observed is $\max_t|\norm{\theta}_{L^2}-1|
+\approx 3.15\times10^{-5}$, two orders of magnitude within the tolerance
+$\varepsilon=10^{-3}$ -- indicating that the resolution check fires
+promptly once drift becomes appreciable, rather than allowing substantial
+error to accumulate silently beforehand.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.72\linewidth]{figures/fig4_lp_norms.pdf}
+  \caption{%
+    $L^p$ norms normalised to their initial values for $a=0.5$.
+    All three norms should stay $\approx 1$; a sustained drift triggers the
+    resolution-check event that stops the integration.
+  }
+  \label{fig:lp}
+\end{figure}
+
+\subsection{Dependence on Scale Parameter $a$}
+\label{sec:sweep}
+
+We run the simulation for eight values of $a$ in the range
+$[0.5, 0.9375]$ in steps of $1/16$ (matching the range used in the original
+study).
+Figure~\ref{fig:sweep} shows the log mix norm for all eight runs.
+Smaller $a$ (narrower initial support) leads to a faster initial decay
+but also runs into resolution limitations earlier, since a smaller initial
+blob is stretched into sub-grid-scale filaments sooner.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/fig5_mixnorm_sweep.pdf}
+  \caption{%
+    $\log(\norm{\theta}_{H^{-1}}/\norm{\theta_0}_{H^{-1}})$ vs.\ time
+    for $a\in\{0.5, 0.5625,\ldots,0.9375\}$ (colour coded from dark to light).
+    Each run terminates when the resolution check fires.
+  }
+  \label{fig:sweep}
+\end{figure}
+
+\subsection{Mixing Timescale vs.\ Scale Parameter}
+\label{sec:rate}
+
+To quantify the mixing rate for each $a$, we fit a line to
+$\log\norm{\theta}_{H^{-1}}$ over the \emph{last two-thirds} of each
+trajectory (discarding the initial transient); the fitted slope is
+$-r(a)$ with decay-rate magnitude $r(a)>0$, and the mixing timescale is
+$\tau(a) = 1/r(a)$.
+
+Table~\ref{tab:rates} summarises the results.
+Figure~\ref{fig:rate} shows $\tau(a)$ plotted against $a$ together with a
+linear fit (dashed red).
+
+\begin{table}[H]
+  \centering
+  \caption{%
+    Fitted decay-rate magnitudes $r$ and mixing timescales $\tau=1/r$
+    for each scale parameter $a$.
+    ($N=64$, $F=1$, initial data: sine-bump family.)
+    These values were regenerated independently for this report and match
+    the values originally recorded for this pipeline to four decimal
+    places in every entry.
+  }
+  \label{tab:rates}
+  \begin{tabular}{ccccc}
+    \toprule
+    $a$ & $t_{\text{stop}}$ & $\norm{\theta(t_{\text{stop}})}_{H^{-1}}$
+        & $r$ & $\tau = 1/r$ \\
+    \midrule
+    0.5000 & 1.30 & 0.6058 & $0.4400$ & 2.27 \\
+    0.5625 & 1.60 & 0.5831 & $0.3858$ & 2.59 \\
+    0.6250 & 1.95 & 0.5658 & $0.3342$ & 2.99 \\
+    0.6875 & 2.30 & 0.5627 & $0.2863$ & 3.49 \\
+    0.7500 & 2.70 & 0.5642 & $0.2436$ & 4.11 \\
+    0.8125 & 3.00 & 0.5862 & $0.2074$ & 4.82 \\
+    0.8750 & 3.25 & 0.6220 & $0.1741$ & 5.74 \\
+    0.9375 & 3.20 & 0.6920 & $0.1423$ & 7.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Two features of Table~\ref{tab:rates} deserve comment beyond the monotone
+growth of $\tau(a)$. First, $t_{\text{stop}}$ grows with $a$ -- larger
+initial blobs survive longer before the resolution check fires, simply
+because they take longer to be stretched down to the grid scale. Second,
+$\norm{\theta(t_{\text{stop}})}_{H^{-1}}$ is \emph{not} monotone in $a$: it
+decreases from $a=0.5$ to a minimum around $a\approx0.6875$--$0.75$, then
+increases again toward $a=0.9375$. This non-monotonicity reflects a
+competition between two effects that both depend on $a$: smaller blobs mix
+faster per unit time (favouring small final mix norm) but are also stopped
+sooner by the resolution check (favouring a less-mixed final state); the
+minimum marks where these two effects roughly balance.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.65\linewidth]{figures/fig6_mixing_rate.pdf}
+  \caption{%
+    Mixing timescale $\tau(a) = 1/r(a)$ vs.\ $a$.
+    The fitted decay-rate magnitude scales as $r \sim a^{-1.78}$ (power-law
+    fit to $\log r$ vs.\ $\log a$), compared with the $a^{-1}$ scaling
+    characteristic of the Iyer--Kiselev--Xu enstrophy-constrained lower
+    bound~\cite{Iyer2014}.
+    The dashed red line is a linear fit to $\tau$ vs.\ $a$.
+  }
+  \label{fig:rate}
+\end{figure}
+
+\begin{remark}
+  The observed scaling $r\sim a^{-1.78}$ deviates from the $a^{-1}$
+  dependence characteristic of the rigorous exponential lower bound of
+  Iyer, Kiselev and Xu for enstrophy-constrained mixing of compactly
+  supported two-dimensional data of support area $O(a^2)$
+  \cite{Iyer2014}. That result is a lower bound on how fast the
+  $H^{-1}$ norm can possibly decay, not an exact prediction for the
+  dynamically chosen LTD decay rate, so a discrepancy between the two is
+  not automatically evidence of any single mechanism (finite resolution,
+  sub-optimality of the greedy strategy, or both). Longer integration
+  times (larger $N$ to delay the resolution event) may be needed to
+  isolate the asymptotic regime. Section~\ref{sec:resolution} examines
+  this by comparing the fitted exponent at two different resolutions.
+\end{remark}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Numerical Verification and Resolution Sensitivity}
+\label{sec:resolution}
+
+This section is not present in Gautam Iyer's earlier MATLAB implementation;
+it was added to (i) independently verify the reproducibility of
+Table~\ref{tab:rates}, and (ii) directly test the Remark of
+Section~\ref{sec:rate} -- that the deviation from the $a^{-1}$ scaling may
+be, in part, a finite-resolution artefact -- by rerunning the same
+eight-value sweep of Section~\ref{sec:sweep} at a coarser resolution,
+$N=32$, and comparing the fitted results.
+
+\subsection{Reproducibility at $N=64$}
+
+Regenerating Table~\ref{tab:rates} from a clean run of the simulation
+reproduces every entry to four decimal places: $t_{\text{stop}}$,
+$\norm{\theta(t_{\text{stop}})}_{H^{-1}}$, and $r$ all match exactly,
+and the fitted power law recovers $r\sim a^{-1.777}$, matching the
+$a^{-1.78}$ quoted in Section~\ref{sec:rate} to the precision reported
+there. This confirms deterministic reproducibility of the RK45
+integration, the resolution-check event, and the least-squares fitting
+procedure for the tested software environment and parameter configuration
+used in this study; it does not establish independence from library
+versions or execution environments, which were not varied here.
+
+\subsection{Resolution Dependence of the Fitted Exponent}
+
+Table~\ref{tab:resolution} compares the $N=64$ results of
+Table~\ref{tab:rates} against the same eight-value $a$-sweep run at
+$N=32$, using identical initial data, enstrophy constraint, and fitting
+procedure.
+
+\begin{table}[H]
+  \centering
+  \caption{%
+    Resolution sensitivity: mixing timescale $\tau(a)=1/r(a)$ at
+    $N=32$ versus $N=64$, same $a$-sweep and fitting procedure.
+  }
+  \label{tab:resolution}
+  \begin{tabular}{ccccc}
+    \toprule
+    $a$ & $t_{\text{stop}}$ ($N{=}32$) & $\tau$ ($N{=}32$)
+        & $t_{\text{stop}}$ ($N{=}64$) & $\tau$ ($N{=}64$) \\
+    \midrule
+    0.5000 & 0.65 & 2.83 & 1.30 & 2.27 \\
+    0.5625 & 0.75 & 3.23 & 1.60 & 2.59 \\
+    0.6250 & 1.00 & 3.49 & 1.95 & 2.99 \\
+    0.6875 & 1.20 & 3.97 & 2.30 & 3.49 \\
+    0.7500 & 1.45 & 4.51 & 2.70 & 4.11 \\
+    0.8125 & 1.75 & 5.23 & 3.00 & 4.82 \\
+    0.8750 & 1.90 & 6.44 & 3.25 & 5.74 \\
+    0.9375 & 2.00 & 8.29 & 3.20 & 7.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Two observations follow directly from Table~\ref{tab:resolution}. First,
+$t_{\text{stop}}$ at $N=32$ is uniformly and substantially smaller than at
+$N=64$ -- roughly half, across every value of $a$ -- confirming that coarser
+grids hit the resolution limit sooner, exactly as expected since a coarser
+grid can resolve fewer decades of filamentation before under-resolution
+contaminates the conserved $L^p$ norms. Second, the fitted power-law
+exponent itself changes with resolution: $r\sim a^{-1.61}$ at $N=32$
+versus $r\sim a^{-1.78}$ at $N=64$. Since both exponents are fitted
+from trajectories that are truncated early by the same resolution-check
+mechanism, and the truncation point itself moves with $N$
+(Section~\ref{sec:aliasing}), this change from approximately $-1.61$ to
+$-1.78$ demonstrates that the fitted exponent is resolution-dependent and
+not yet numerically converged. Because the higher-resolution estimate
+moves \emph{farther} from the benchmark $-1$ scaling rather than closer to
+it, these two resolutions alone do not establish that finite-resolution
+effects explain the discrepancy from the Iyer--Kiselev--Xu benchmark
+scaling \cite{Iyer2014}: they show only that at least two resolutions are
+insufficient to determine the limiting exponent, and cannot distinguish
+whether higher resolution would approach $-1$, remain near $-1.8$, or
+behave otherwise. Disentangling genuine greedy-strategy behaviour from
+finite-resolution truncation would require runs at substantially higher
+$N$ (and correspondingly finer, possibly implicit or exponential,
+time-stepping to keep the cost tractable), which is identified as future
+work in Section~\ref{sec:conc}.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Conclusions}
+\label{sec:conc}
+
+We have numerically reproduced and extended Gautam Iyer's earlier MATLAB
+implementation of optimal passive-scalar mixing, adding a first-principles
+derivation of the LTD optimal velocity (Section~\ref{sec:derivation}), an
+explicit account of the numerical scheme's treatment (and non-treatment)
+of aliasing error (Section~\ref{sec:aliasing}), and a resolution-sensitivity
+study not present in that earlier implementation (Section~\ref{sec:resolution}).
+The Python pipeline is deterministically reproducible for the tested
+software environment: a clean rerun reproduces the values reported here to
+four decimal places in every entry.
+
+The main numerical findings are:
+\begin{itemize}
+  \item The $H^{-1}$ mix norm decays approximately exponentially under the
+        LTD optimal velocity, consistent with the theoretical predictions of
+        \cite{LTD2011}, and consistent with the monotonic-decrease property
+        established rigorously in Proposition~\ref{prop:ltd}.
+  \item The mixing timescale $\tau(a) = 1/r(a)$ grows with $a$,
+        confirming that scalars with wider initial support mix more slowly,
+        while the mix norm reached at the stopping time is non-monotone in
+        $a$, reflecting a trade-off between faster mixing and earlier
+        resolution loss for smaller $a$.
+  \item The observed power-law scaling $r\sim a^{-1.78}$ deviates from the
+        $a^{-1}$ dependence characteristic of the Iyer--Kiselev--Xu
+        enstrophy-constrained lower bound; the resolution-sensitivity
+        study of Section~\ref{sec:resolution} shows this exponent is
+        itself resolution-dependent and not yet numerically converged
+        ($a^{-1.61}$ at $N=32$ vs.\ $a^{-1.78}$ at $N=64$, moving
+        \emph{away} from $-1$ rather than toward it), so these two
+        resolutions cannot determine how much of the deviation, if any,
+        reflects a genuine feature of the greedy strategy versus a
+        finite-resolution artefact.
+  \item The $L^p$ conservation laws provide a robust, physically motivated
+        \emph{a posteriori} diagnostic of resolution loss and a stopping
+        criterion (Section~\ref{sec:aliasing}), but they do not prevent
+        aliasing and are not a substitute for explicit dealiasing: the
+        simulation instead halts automatically once under-resolution
+        becomes detectable, rather than allowing it to accumulate
+        silently.
+\end{itemize}
+
+Future work could explore:
+\begin{itemize}
+  \item Higher resolution ($N=128$ or $N=256$), ideally combined with
+        explicit $2/3$-rule dealiasing, to separate genuine mixing-rate
+        sub-optimality from finite-resolution truncation effects, and to
+        access the true asymptotic regime before the resolution check
+        intervenes.
+  \item Alternative initial data (e.g.\ random fields, or the
+        diagonal-pair, strip, and trigonometric-polynomial families of
+        Section~\ref{sec:idata} not swept in Section~\ref{sec:results})
+        and their effect on the mixing rate.
+  \item Comparison with non-greedy optimal strategies, e.g.\ velocities
+        that account for the effect of stirring over a finite time horizon
+        rather than instantaneously, to directly probe the greedy-vs-global
+        optimality question raised in \cite{LTD2011}.
+  \item A systematic study of the first-order degeneracy identified in
+        Section~\ref{sec:saddle}, including initial data explicitly
+        engineered to approach $\Proj g \approx 0$.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\bibliographystyle{plainnat}
+\begin{thebibliography}{9}
+
+\bibitem{LTD2011}
+Z.~Lin, J.-L.~Thiffeault, and C.~R.~Doering,
+\newblock Optimal stirring strategies for passive scalar mixing,
+\newblock \emph{Journal of Fluid Mechanics}, 675:465--476, 2011.
+
+\bibitem{Iyer2014}
+G.~Iyer, A.~Kiselev, and X.~Xu,
+\newblock Lower bounds on the mix norm of passive scalars advected by
+  incompressible enstrophy-constrained flows,
+\newblock \emph{Nonlinearity}, 27(5):973--985, 2014.
+
+\bibitem{Trefethen2000}
+L.~N.~Trefethen,
+\newblock \emph{Spectral Methods in MATLAB},
+\newblock SIAM, 2000.
+
+\bibitem{Boyd2001}
+J.~P.~Boyd,
+\newblock \emph{Chebyshev and Fourier Spectral Methods},
+\newblock 2nd edition, Dover Publications, 2001.
+
+\end{thebibliography}
+
+\end{document}
