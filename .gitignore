@@ -7,3 +7,5 @@ figures/
 *.log
 *.out
 *.toc
+*.fls
+*.fdb_latexmk

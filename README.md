@@ -4,8 +4,14 @@ Master's thesis project by Adebanji Adelowo: a Python pseudo-spectral simulation
 **Lin-Thiffeault-Doering optimal mixing velocity** for passive scalars on the 2-torus $[0,1]^2$,
 ported from [Gautam Iyer's MATLAB code](https://www.math.cmu.edu/~gautam/research/201208-mix-bounds/).
 
-**Full write-up:** [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf)  
+**Full write-up (current):** [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf)  
 **Abstract:** [`abstract.md`](abstract.md) / [`abstract.pdf`](abstract.pdf)
+
+An earlier draft, [`optimal_mixing_report.pdf`](optimal_mixing_report.pdf), is kept in this
+repository for the historical record only. It is superseded by the write-up linked above,
+which fixes a mismatched reference file and tightens several claims (see "Repository Layout"
+below). The draft itself now carries a notice to this effect on its first page; do not cite it
+as the current version of this work.
 
 ---
 
@@ -66,10 +72,10 @@ Master-Thesis/
 ├── references/                          # key papers (PDF)
 ├── figures/                             # generated figures (PDF)
 ├── Optimal_Mixing_Simulation.ipynb      # high-level demo notebook
-├── optimal_mixing_report.tex            # LaTeX report source (original)
-├── optimal_mixing_report.pdf            # compiled report (original, 11 pages)
-├── optimal_mixing_thesis_report.tex     # LaTeX report source (corrected)
-├── optimal_mixing_thesis_report.pdf     # compiled report (corrected, 16 pages)
+├── optimal_mixing_report.tex            # SUPERSEDED draft source, kept for record only
+├── optimal_mixing_report.pdf            # SUPERSEDED draft, 21 pages (see notice on p.1)
+├── optimal_mixing_thesis_report.tex     # current report source (corrected)
+├── optimal_mixing_thesis_report.pdf     # current report, 16 pages: cite this one
 └── .venv/                               # Python virtual environment
 ```
 
