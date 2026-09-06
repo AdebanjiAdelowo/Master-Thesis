@@ -1,10 +1,11 @@
 # Optimal Mixing of Passive Scalars
 
-A Python pseudo-spectral simulation of the **Lin–Thiffeault–Doering optimal
-mixing velocity** for passive scalars on the 2-torus $[0,1]^2$.  
-Ported from [Gautam Iyer's MATLAB code](https://www.math.cmu.edu/~gautam/research/201208-mix-bounds/).
+Master's thesis project by Adebanji Adelowo: a Python pseudo-spectral simulation of the
+**Lin-Thiffeault-Doering optimal mixing velocity** for passive scalars on the 2-torus $[0,1]^2$,
+ported from [Gautam Iyer's MATLAB code](https://www.math.cmu.edu/~gautam/research/201208-mix-bounds/).
 
-**Full write-up:** [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf)
+**Full write-up:** [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf)  
+**Abstract:** [`abstract.md`](abstract.md) / [`abstract.pdf`](abstract.pdf)
 
 ---
 
@@ -15,18 +16,40 @@ The passive scalar $\theta(x,y,t)$ evolves by
 $$\partial_t\theta + (u\cdot\nabla)\theta = 0$$
 
 The velocity $u$ is chosen at each instant to minimise the rate of change of
-the **$H^{-1}$ mix norm** — the theoretically optimal greedy mixing strategy:
+the **$H^{-1}$ mix norm**, the instantaneous-optimal (greedy) mixing strategy:
 
 $$v = -\Delta^{-1} P(\theta\,\nabla\Delta^{-1}\theta), \qquad u = F\,\frac{v}{\|\nabla v\|_{L^2}}$$
 
-where $P$ is the Leray projection and $F$ is the enstrophy constraint.
+where $P$ is the Leray projection and $F$ is the enstrophy constraint. The scalar transport
+equation is solved on $[0,1]^2$ using FFTs for spatial discretisation and an adaptive
+Dormand-Prince RK45 scheme for time integration.
 
 **References**  
-- Lin, Thiffeault & Doering (2011) — *Optimal stirring strategies*, J. Fluid Mech.  
-- Iyer, Kiselev & Xu (2014) — *Lower bounds on the mix norm*, Nonlinearity  
-- Drivas, Elgindi, Iyer & Jeong (2022) — *Anomalous dissipation*, ARMA  
+- Lin, Thiffeault & Doering (2011): *Optimal stirring strategies*, J. Fluid Mech.  
+- Iyer, Kiselev & Xu (2014): *Lower bounds on the mix norm*, Nonlinearity  
 
 PDFs are in [`references/`](references/).
+
+---
+
+## Results
+
+Four families of initial conditions, parameterised by a support-size scale $a$, are studied
+under $L^p$ norm conservation as a resolution diagnostic and stopping criterion.
+
+For a representative case ($a = 0.5$), the $H^{-1}$ mix norm decays approximately
+exponentially under LTD stirring, consistent with theoretical predictions, with fitted decay
+rate $r \approx 0.44$ (mixing timescale $\tau = 1/r \approx 2.27$). Across eight values of
+$a \in [0.5,\, 0.9375]$, the decay rate scales as $r \propto a^{-1.78}$, appreciably steeper
+than the $a^{-1}$ scaling characteristic of the Iyer-Kiselev-Xu enstrophy-constrained lower
+bound. A two-resolution comparison ($N=32$: exponent $\approx -1.61$; $N=64$: exponent
+$\approx -1.78$) shows this fitted exponent is resolution-dependent and not yet numerically
+converged; since the higher-resolution estimate moves farther from, not closer to, the
+benchmark $-1$ scaling, these two resolutions alone cannot establish whether the discrepancy
+reflects a finite-resolution artefact, a genuine feature of the greedy strategy, or both.
+
+See the abstract and full report for the complete derivation, all six figures, and the
+resolution-dependence discussion.
 
 ---
 
@@ -193,4 +216,4 @@ Jupyter kernel registered as **"Python (Master Thesis)"**.
 ## License
 
 Code: MIT.  
-Original MATLAB implementation © Gautam Iyer — used with permission for research purposes.
+Original MATLAB implementation © Gautam Iyer, used with permission for research purposes.
