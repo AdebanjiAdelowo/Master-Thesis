@@ -7,12 +7,6 @@ ported from [Gautam Iyer's MATLAB code](https://www.math.cmu.edu/~gautam/researc
 **Full write-up (current):** [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf)  
 **Abstract:** [`abstract.md`](abstract.md) / [`abstract.pdf`](abstract.pdf)
 
-An earlier draft, [`optimal_mixing_report.pdf`](optimal_mixing_report.pdf), is kept in this
-repository for the historical record only. It is superseded by the write-up linked above,
-which fixes a mismatched reference file and tightens several claims (see "Repository Layout"
-below). The draft itself now carries a notice to this effect on its first page; do not cite it
-as the current version of this work.
-
 ---
 
 ## Background
