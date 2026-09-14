@@ -213,6 +213,15 @@ Jupyter kernel registered as **"Python (Master Thesis)"**.
 
 ---
 
+## Remaining Work
+
+The next planned extension is Bayesian uncertainty quantification for the fitted mixing-rate
+exponent: bootstrap confidence intervals and Richardson extrapolation across an extended
+resolution ladder (N=32/64/128/256), to determine whether the exponent's observed
+resolution-dependence is a numerical artefact or a genuine feature of the greedy stirring
+strategy. Not yet started. Portfolio-wide project status is tracked centrally in the author's
+Selected Projects documentation; this project's status there is DEFERRED RESEARCH (high priority).
+
 ## License
 
 Code: MIT.  
