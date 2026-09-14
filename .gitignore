@@ -9,3 +9,4 @@ figures/
 *.toc
 *.fls
 *.fdb_latexmk
+.DS_Store

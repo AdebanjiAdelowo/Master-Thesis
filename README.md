@@ -213,6 +213,17 @@ Jupyter kernel registered as **"Python (Master Thesis)"**.
 
 ---
 
+## Additional Resources
+
+* [`dft_beginners_guide.md`](dft_beginners_guide.md): a from-scratch introduction to the
+  Discrete Fourier Transform and spectral methods, written for readers of this thesis.
+* [`python_code/00_dft_for_beginners.ipynb`](python_code/00_dft_for_beginners.ipynb): the
+  companion interactive notebook.
+* [`python_code/mixing_exp.md`](python_code/mixing_exp.md): function-by-function reference
+  documentation for `python_code/mixing.py`.
+
+---
+
 ## Remaining Work
 
 The next planned extension is Bayesian uncertainty quantification for the fitted mixing-rate
