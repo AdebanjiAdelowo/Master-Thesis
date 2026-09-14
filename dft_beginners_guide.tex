@@ -1,0 +1,1049 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ─────────────────────────────────────────────────────────────────
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{mdframed}
+\usepackage{tocloft}
+
+% ── Hyperref colours (match existing report) ─────────────────────────────────
+\hypersetup{
+  colorlinks=true, linkcolor=blue!60!black,
+  citecolor=green!50!black, urlcolor=blue!70!black,
+}
+
+% ── Python listings style (match existing report) ────────────────────────────
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{green!50!black},
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!40},
+  backgroundcolor=\color{gray!5},
+  numbers=left, numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  literate={←}{{$\leftarrow$}}1 {→}{{$\rightarrow$}}1
+           {∂}{{$\partial$}}1 {≈}{{$\approx$}}1
+           {‖}{{$\|$}}1,
+}
+
+% Plain listings (pseudocode, no syntax highlighting)
+\lstdefinestyle{plain}{
+  language={},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{gray!40},
+  backgroundcolor=\color{gray!5},
+  numbers=none,
+}
+
+% ── Custom commands ───────────────────────────────────────────────────────────
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\Lap}{\Delta}
+\newcommand{\lapinv}{\Delta^{-1}}
+\newcommand{\hminusone}{H^{-1}}
+\newcommand{\code}[1]{\texttt{#1}}
+% Code identifiers that appear in display math
+\newcommand{\LAPINV}{\text{\texttt{LAP\_INV}}}
+\newcommand{\LAMBDAINV}{\text{\texttt{LAMBDA\_INV}}}
+\newcommand{\DELX}{\text{\texttt{DEL\_X}}}
+\newcommand{\DELY}{\text{\texttt{DEL\_Y}}}
+
+% Highlight box for key insights
+\newmdenv[
+  backgroundcolor=blue!4,
+  linecolor=blue!40,
+  linewidth=1pt,
+  innertopmargin=6pt,
+  innerbottommargin=6pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  skipabove=8pt,
+  skipbelow=8pt,
+]{insightbox}
+
+\theoremstyle{definition}
+\newtheorem{remark}{Remark}
+
+% ── Title ─────────────────────────────────────────────────────────────────────
+\title{%
+  \textbf{A Beginner's Guide to the Discrete Fourier Transform\\
+  and Spectral Methods}\\[8pt]
+  \large For Readers of \textit{Optimal Mixing of Passive Scalars}\\[4pt]
+  \normalsize Python Implementation and Numerical Results
+}
+\author{Adebanji Adelowo}
+\date{\today}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+\maketitle
+\tableofcontents
+\bigskip\hrule\bigskip
+
+% ── Preface ───────────────────────────────────────────────────────────────────
+\section*{Why This Guide Exists}
+\addcontentsline{toc}{section}{Why This Guide Exists}
+
+The Numerical Methods section (Section~3) of the optimal mixing report uses
+concepts from Fourier analysis and spectral methods — tools from signal
+processing and applied mathematics that can feel very abstract at first.
+This guide explains every concept from the ground up.
+
+\begin{insightbox}
+\textbf{If you have studied calculus and basic linear algebra, you have
+everything you need to follow this guide.}
+\end{insightbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 1: The Big Picture — What Is a Spectral Method?}
+
+\subsection{The Problem We Want to Solve}
+
+The mixing simulation involves solving a partial differential equation (PDE):
+\begin{equation}
+  \frac{\partial \theta}{\partial t} + u \cdot \nabla \theta = 0.
+\end{equation}
+This describes how a scalar field $\theta(x,y,t)$ — think of it as the
+concentration of ink in water — changes over time under a velocity field $u$.
+The term $\nabla\theta$ means ``gradient of $\theta$'': a vector pointing in
+the direction of steepest increase.
+
+To solve this on a computer we must \emph{discretise} it: approximate it on a
+finite grid of points.  There are many ways to do this.  The
+\textbf{spectral method} is one of the most accurate.
+
+\subsection{Two Ways to Represent a Function}
+
+Imagine a wiggly function $f(x)$ defined on $[0,1]$:
+
+\begin{description}
+  \item[Way 1 — Physical space.] Store the values
+    $f(x_0), f(x_1), \ldots, f(x_{N-1})$ at grid points.  Think of it as a
+    bar chart of heights.
+  \item[Way 2 — Frequency space (Fourier space).] Represent $f$ as a sum of
+    sine and cosine waves of different frequencies.  Instead of storing
+    heights, store \emph{how much of each frequency is present}.
+\end{description}
+
+These are just two descriptions of the same function — like describing a song
+by its audio waveform versus its sheet music.  You can switch between them
+freely.
+
+\begin{insightbox}
+\textbf{Key insight:} Some operations that are hard in physical space (like
+computing derivatives) become trivially simple in frequency space — just
+multiply by a number.
+\end{insightbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 2: Waves and Frequencies}
+
+\subsection{What Is a Frequency?}
+
+A pure wave of frequency $k$ on $[0,1]$ looks like:
+\[
+  f_k(x) = \sin(2\pi k x) \qquad \text{or} \qquad f_k(x) = \cos(2\pi k x).
+\]
+The number $k$ counts how many complete oscillations fit inside $[0,1]$:
+\begin{itemize}
+  \item $k=1$: one full oscillation — a single gentle curve.
+  \item $k=2$: two full oscillations — a slightly wigglier curve.
+  \item $k=10$: ten oscillations — a rapidly oscillating wave.
+\end{itemize}
+Higher $k$ = higher frequency = finer (smaller-scale) features.
+
+\subsection{Any Periodic Function Is a Sum of Waves}
+
+This is the central claim of Fourier analysis:
+\textbf{any periodic function can be built by adding up sine and cosine waves}.
+This sum is the \textbf{Fourier series}:
+\begin{equation}
+  f(x) = a_0 + \sum_{k=1}^{\infty}\bigl[a_k\cos(2\pi kx) + b_k\sin(2\pi kx)\bigr].
+\end{equation}
+The coefficients $a_k$ and $b_k$ tell you how much of each frequency is present.
+
+\paragraph{A concrete example.}
+A square wave (alternating $+1$ and $-1$) can be written as:
+\[
+  f(x) = \frac{4}{\pi}\!\left[\sin(2\pi x)
+    + \frac{1}{3}\sin(6\pi x)
+    + \frac{1}{5}\sin(10\pi x) + \cdots\right].
+\]
+Adding the first few terms already gives a recognisable approximation; the
+infinite series is exact.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_fourier_series.pdf}
+  \caption{Left: the first three sine-wave components of the square wave's Fourier
+    series.  Right: adding more and more terms ($1$, $3$, $9$) progressively
+    improves the approximation.  The Gibbs overshoot near the jumps shrinks as
+    more terms are included but never entirely disappears.}
+  \label{fig:fourier_series}
+\end{figure}
+
+\subsection{Complex Exponentials — A Compact Notation}
+
+Instead of writing $\sin$ and $\cos$ separately, mathematicians use
+\textbf{complex exponentials} via Euler's formula:
+\[
+  e^{2\pi ikx} = \cos(2\pi kx) + i\sin(2\pi kx).
+\]
+The Fourier series then takes the symmetric form:
+\begin{equation}
+  f(x) = \sum_{k=-\infty}^{\infty} \hat{f}(k)\,e^{2\pi ikx}.
+\end{equation}
+The complex number $\hat{f}(k)$ is the \textbf{Fourier coefficient} at
+wavenumber $k$.  Its magnitude $|\hat{f}(k)|$ is the amplitude of that
+frequency, and its argument $\arg(\hat{f}(k))$ is the phase shift.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 3: The Discrete Fourier Transform (DFT)}
+
+\subsection{From Continuous to Discrete}
+
+The Fourier series works for continuous functions.  Computers work with finite
+lists of numbers.  We need a discrete version.
+
+Suppose we have $N$ equally spaced sample points:
+\[
+  x_j = \frac{j}{N}, \quad j = 0, 1, 2, \ldots, N-1.
+\]
+The \textbf{Discrete Fourier Transform (DFT)} takes the $N$ values
+$f[0], f[1], \ldots, f[N-1]$ and produces $N$ Fourier coefficients:
+\begin{equation}
+  \hat{f}[k] = \sum_{j=0}^{N-1} f[j]\,e^{-2\pi ijk/N},
+  \quad k = 0, 1, \ldots, N-1.
+\end{equation}
+The \textbf{Inverse DFT (IDFT)} goes back:
+\begin{equation}
+  f[j] = \frac{1}{N}\sum_{k=0}^{N-1}\hat{f}[k]\,e^{2\pi ijk/N}.
+\end{equation}
+
+\begin{insightbox}
+\textbf{No information is lost.}  Going forward and back is exact.  The DFT
+and IDFT are just two different representations of the same data — like
+converting between Celsius and Fahrenheit.
+\end{insightbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_dft_spectrum.pdf}
+  \caption{Left: a signal composed of three sine waves at $k=3$, $7$, and $13$.
+    Right: the magnitude of its DFT reveals exactly those three frequencies as
+    sharp peaks — the DFT has ``heard'' each component separately, even though
+    they are all jumbled together in physical space.}
+  \label{fig:dft_spectrum}
+\end{figure}
+
+\subsection{What Do the Fourier Coefficients Mean?}
+
+$\hat{f}[k]$ is a complex number whose:
+\begin{itemize}
+  \item \textbf{Magnitude} $|\hat{f}[k]|$ tells you how much of frequency $k$
+    is present in $f$.
+  \item \textbf{Phase} $\arg(\hat{f}[k])$ tells you how that wave is shifted
+    (its offset).
+\end{itemize}
+If $f$ is real-valued (as physical quantities always are), the
+negative-frequency coefficients are redundant:
+$\hat{f}[-k] = \overline{\hat{f}[k]}$ (complex conjugate).
+
+\subsection{The FFT — The Practical Tool}
+
+Computing the DFT directly requires $O(N^2)$ operations — for $N=1000$, that
+is $10^6$ multiplications.  The \textbf{Fast Fourier Transform (FFT)} algorithm
+computes the \emph{exact same result} in $O(N\log N)$ operations — for
+$N=1000$, that is only $\approx 10{,}000$.
+
+\medskip
+\noindent\emph{FFT vs.\ DFT: the algorithm is different, the result is
+identical.}
+
+\begin{lstlisting}
+f_hat  = np.fft.fft(f)        # 1D FFT
+f_back = np.fft.ifft(f_hat)   # 1D inverse FFT
+
+F_hat  = np.fft.fft2(F)       # 2D FFT (applied to each axis)
+F_back = np.fft.ifft2(F_hat)  # 2D inverse FFT
+\end{lstlisting}
+
+\subsection{The 2D DFT}
+
+For a 2D function $f(x,y)$ defined on an $N\times N$ grid, the DFT is applied
+in both directions independently:
+\begin{equation}
+  \hat{f}[k_y,k_x]
+  = \sum_{i=0}^{N-1}\sum_{j=0}^{N-1} f[i,j]\,e^{-2\pi i(ik_y+jk_x)/N}.
+\end{equation}
+
+\paragraph{Index convention used in this project (and NumPy).}
+\begin{itemize}
+  \item Row index $i$ corresponds to the \textbf{$y$-direction}.
+  \item Column index $j$ corresponds to the \textbf{$x$-direction}.
+  \item So \code{theta\_hat[ky, kx]} is the coefficient for wavenumber
+    $(k_x, k_y)$.
+\end{itemize}
+This is why \code{DEL\_X} has shape \code{(1,~N)} (acts on columns) and
+\code{DEL\_Y} has shape \code{(N,~1)} (acts on rows).
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 4: Wavenumbers — What Are They?}
+
+\subsection{The Wavenumber Array}
+
+After computing \code{fft(f)} on an array of length $N$, the output has $N$
+entries corresponding to $N$ different frequencies stored in a specific order.
+
+For $N=8$, the array indices and their corresponding effective wavenumbers are:
+
+\begin{center}
+\begin{tabular}{lcccccccc}
+  \toprule
+  Index      & 0 & 1 & 2 & 3 & 4   & 5  & 6  & 7  \\
+  \midrule
+  Wavenumber & 0 & 1 & 2 & 3 & $\pm4$ & $-3$ & $-2$ & $-1$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+  \item \textbf{Index 0}: the constant (DC) component, $k=0$ — the average
+    value of $f$.
+  \item \textbf{Indices 1 to $N/2-1$}: positive frequencies.
+  \item \textbf{Index $N/2$}: the Nyquist frequency $k=N/2$ (special case,
+    see below).
+  \item \textbf{Indices $N/2+1$ to $N-1$}: negative frequencies.
+\end{itemize}
+
+In the code:
+\begin{lstlisting}
+k     = np.arange(N)
+k_eff = k - N * (k > N // 2)   # convert index to effective wavenumber
+\end{lstlisting}
+
+This is called ``centring'' the wavenumbers.  To visualise a 2D spectrum with
+zero in the middle, use \code{np.fft.fftshift}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_wavenumber_order.pdf}
+  \caption{Wavenumber storage for $N=16$.  Left: the raw output of
+    \texttt{np.fft.fft}.  Indices $0$--$7$ hold positive frequencies; index
+    $8$ is the Nyquist; indices $9$--$15$ hold negative frequencies (wrapped
+    around).  Right: after \texttt{np.fft.fftshift} the zero-frequency bin
+    sits in the middle, which is more intuitive for visualisation.}
+  \label{fig:wavenumber_order}
+\end{figure}
+
+\subsection{Why Negative Frequencies?}
+
+Negative frequencies arise naturally from the complex exponential formulation.
+For a real-valued function $f$, the $k$ and $-k$ modes always come in
+complex-conjugate pairs.  Together they produce a real-valued signal:
+\[
+  \hat{f}[k]\,e^{2\pi ikx} + \hat{f}[-k]\,e^{-2\pi ikx}
+  = 2|\hat{f}[k]|\cos(2\pi kx + \phi).
+\]
+So negative frequencies represent the ``mirror image'' of positive frequencies
+— they are not physically different, just part of the mathematical convention.
+
+\subsection{The Nyquist Frequency — The Highest Representable Frequency}
+
+The grid has spacing $dx = 1/N$.  The finest feature representable is a wave
+that alternates sign at every grid point — one oscillation per $2\,dx$.  That
+frequency is:
+\[
+  k_{\text{Nyquist}} = \frac{N}{2}.
+\]
+\textbf{You cannot represent frequencies higher than $N/2$ on a grid with $N$
+points.}  If a function has fine-scale features at $k > N/2$, the DFT
+\emph{cannot see them} — they get wrapped around and appear as lower-frequency
+noise.  This is called \textbf{aliasing}.
+
+\begin{insightbox}
+\textbf{Real-world analogy.}  A movie camera shoots at 24~frames per second.
+A car wheel spinning at more than 12~revolutions per second appears to spin
+\emph{backwards} in the footage — this is aliasing.  The camera cannot
+represent frequencies faster than 12~Hz.
+\end{insightbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/fig_aliasing.pdf}
+  \caption{Aliasing on a grid with $N=16$ points (Nyquist limit $= 8$).
+    The wave $k=3$ (solid blue) and the wave $k=13$ (dashed red) produce
+    \emph{identical} values at every grid point (filled circles), so the
+    DFT cannot distinguish them.  Any frequency above the Nyquist is
+    silently folded back into a lower frequency.}
+  \label{fig:aliasing}
+\end{figure}
+
+\subsection{The Nyquist Mode and Why It Is Zeroed for First Derivatives}
+
+At $k = N/2$, the wave $e^{2\pi i(N/2)x}$ sampled at grid points
+$x_j = j/N$ gives:
+\[
+  e^{2\pi i(N/2)(j/N)} = e^{\pi ij} = (-1)^j.
+\]
+This alternates $+1,-1,+1,-1,\ldots$ — the same as $e^{-2\pi i(N/2)x}$.
+So $k = +N/2$ and $k = -N/2$ are \textbf{identical on the grid} — they are
+ambiguous.
+
+\begin{itemize}
+  \item For the \textbf{Laplacian} (second derivative), this is fine:
+    $(-k)^2 = k^2$, so the sign does not matter.
+  \item For \textbf{first derivatives}, the sign matters: $+k$ and $-k$
+    give derivatives with opposite signs.  Since the mode is ambiguous, we
+    zero it out:
+\end{itemize}
+\begin{lstlisting}
+k_d = k_eff.copy()
+k_d[N//2] = 0.0   # zero the Nyquist mode for first derivatives
+\end{lstlisting}
+\code{DEL\_X} and \code{DEL\_Y} use \code{k\_d}; \code{LAP\_INV} uses
+\code{k\_eff}.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 5: Spectral Differentiation — The Core Magic Trick}
+
+\subsection{Why Differentiation Becomes Multiplication}
+
+This is the single most important idea in spectral methods.  Consider a
+function written as a sum of waves:
+\[
+  f(x) = \sum_k \hat{f}(k)\,e^{2\pi ikx}.
+\]
+Take the derivative term by term:
+\[
+  \frac{df}{dx}
+  = \sum_k \hat{f}(k)\cdot\frac{d}{dx}\!\left[e^{2\pi ikx}\right]
+  = \sum_k \hat{f}(k)\cdot(2\pi ik)\,e^{2\pi ikx}.
+\]
+
+\begin{insightbox}
+\textbf{In Fourier space, taking a derivative simply means multiplying each
+coefficient by $2\pi ik$.}
+\end{insightbox}
+
+\paragraph{Recipe for computing $df/dx$ spectrally.}
+\begin{enumerate}
+  \item Compute $\hat{f} = \mathrm{FFT}(f)$.
+  \item Multiply: $\widehat{df/dx}[k] = (2\pi ik)\,\hat{f}[k]$.
+  \item Transform back: $df/dx = \mathrm{real}\bigl(\mathrm{IFFT}(\widehat{df/dx})\bigr)$.
+\end{enumerate}
+\begin{lstlisting}
+f_hat  = np.fft.fft(f)
+df_hat = (2j * np.pi * k_d) * f_hat     # k_d has Nyquist zeroed
+df_dx  = np.real(np.fft.ifft(df_hat))   # discard tiny numerical imaginary part
+\end{lstlisting}
+
+\paragraph{Accuracy.}
+Spectral differentiation is \textbf{spectrally accurate} — the error decreases
+faster than any polynomial in $N$ as $N\to\infty$ (for smooth periodic
+functions).  It is far more accurate than finite differences, which are only
+$O(dx^p)$ accurate for some fixed order $p$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_spectral_derivative.pdf}
+  \caption{Left: spectral differentiation (blue) matches the exact derivative
+    perfectly at $N=16$, while second-order finite differences (red) show
+    visible error.  Right: the convergence plot shows that spectral errors
+    drop to machine precision by $N=16$ for this smooth function, whereas
+    finite-difference errors decay only as $O(N^{-2})$.  For rough functions
+    the spectral advantage is smaller, but for the smooth fields in the mixing
+    simulation it is enormous.}
+  \label{fig:spectral_derivative}
+\end{figure}
+
+\subsection{Second Derivatives and the Laplacian}
+
+Two derivatives each contribute a factor of $2\pi ik$:
+\[
+  (2\pi ik)^2 = -4\pi^2 k^2.
+\]
+So the second-derivative multiplier is $-4\pi^2 k^2$ (real and negative).
+
+In 2D, the Laplacian $\Delta f = \partial_{xx}f + \partial_{yy}f$ becomes:
+\begin{equation}
+  \widehat{\Delta f}[k_y,k_x]
+  = \bigl[-(2\pi k_x)^2-(2\pi k_y)^2\bigr]\,\hat{f}[k_y,k_x]
+  = -4\pi^2(k_x^2+k_y^2)\,\hat{f}[k_y,k_x].
+\end{equation}
+
+\subsection{The Operators \code{DEL\_X} and \code{DEL\_Y} in the Code}
+
+\begin{lstlisting}
+DEL_X = (2j * np.pi * k_d)[np.newaxis, :]   # shape (1, N)
+DEL_Y = (2j * np.pi * k_d)[:, np.newaxis]   # shape (N, 1)
+\end{lstlisting}
+
+For a 2D field $\theta$:
+\begin{itemize}
+  \item \code{DEL\_X * theta\_hat} multiplies each \emph{column}
+    ($x$-direction) by the corresponding $2\pi ik_x$ — giving
+    $\widehat{\partial_x\theta}$.
+  \item \code{DEL\_Y * theta\_hat} multiplies each \emph{row}
+    ($y$-direction) by $2\pi ik_y$ — giving $\widehat{\partial_y\theta}$.
+\end{itemize}
+
+\paragraph{Why shapes $(1,N)$ and $(N,1)$?}
+NumPy broadcasting means \code{(1,N)} is automatically repeated along rows to
+become \code{(N,N)} when multiplied with an \code{(N,N)} array.  This saves
+memory without storing any redundant data.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 6: The Laplacian and Its Inverse}
+
+\subsection{\code{LAP\_INV} — The Inverse Laplacian}
+
+We established that the Laplacian in Fourier space is multiplication by
+$-4\pi^2|k|^2$.  The \textbf{inverse Laplacian} is therefore division by the
+same factor:
+\begin{equation}
+  \LAPINV[k_y,k_x]
+  = \begin{cases}
+      \dfrac{-1}{(2\pi)^2(k_x^2+k_y^2)}, & (k_x,k_y)\neq(0,0),\\[6pt]
+      0, & (k_x,k_y)=(0,0).
+    \end{cases}
+\end{equation}
+
+\paragraph{To apply $\lapinv$ to a field $\theta$:}
+\begin{enumerate}
+  \item Compute $\hat\theta = \mathrm{FFT2}(\theta)$.
+  \item Multiply: $\widehat{\lapinv\theta} = \LAPINV\cdot\hat\theta$.
+  \item Transform back: $\lapinv\theta = \mathrm{real}
+    \bigl(\mathrm{IFFT2}(\widehat{\lapinv\theta})\bigr)$.
+\end{enumerate}
+
+\paragraph{Why zero the DC mode?}
+At $k=(0,0)$ we would be dividing by zero.  The DC mode represents the spatial
+mean $\langle\theta\rangle = \int\theta\,dx\,dy$.  This mean is conserved and
+decoupled from the rest of the dynamics, so we set it to zero.
+
+\paragraph{Physical interpretation of $\lapinv$.}
+The inverse Laplacian \textbf{smooths} a function.  High-frequency
+(small-scale) features are suppressed by the large $|k|^2$ in the denominator.
+If $\theta$ is a concentrated blob, $\lapinv\theta$ is a broad, smooth
+distribution.
+
+\subsection{Why We Need $\lapinv$ for the Velocity}
+
+In the LTD optimal velocity formula:
+\[
+  v = -\lapinv P\!\left(\theta\,\nabla\lapinv\theta\right),
+\]
+the $\lapinv$ appears \textbf{twice}:
+\begin{enumerate}
+  \item The inner $\lapinv\theta$ converts the scalar into a
+    stream-function-like field (smoother, large-scale).
+  \item The outer $-\lapinv$ converts the nonlinear term into the velocity
+    itself.
+\end{enumerate}
+This ensures the velocity has the right structure: divergence-free with
+controlled enstrophy.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 7: Parseval's Identity — Connecting Norms}
+
+\subsection{The Statement}
+
+For a 1D DFT with $N$ points:
+\[
+  \sum_{j=0}^{N-1}|f[j]|^2 = \frac{1}{N}\sum_{k=0}^{N-1}|\hat{f}[k]|^2.
+\]
+In the NumPy convention (non-unitary), $\|\hat{f}\|^2 = N\|f\|^2$, so:
+\[
+  \|f\|_{L^2} \approx \frac{\|\hat{f}\|_{\ell^2}}{N}.
+\]
+In 2D (with $N^2$ points):
+\begin{equation}
+  \|f\|_{L^2} \approx \frac{\|\hat{f}\|_{\ell^2}}{N^2}.
+\end{equation}
+
+\subsection{What It Means}
+
+Parseval's identity says: \textbf{the total energy (sum of squares) is the
+same in physical space and Fourier space}, up to a normalisation factor.
+
+This is analogous to the Pythagorean theorem: if you rotate a vector, its
+length does not change.  The DFT is a rotation in an $N$-dimensional space, so
+it preserves lengths.
+
+\subsection{How It Is Used in the Code}
+
+To compute $\|\nabla v\|_{L^2}$ (needed for the enstrophy normalisation), the
+code computes in Fourier space:
+\begin{lstlisting}
+grad_v_norm = (1/N**2) * np.sqrt(
+    np.sum(np.abs(DEL_X * v_x_hat)**2) +
+    np.sum(np.abs(DEL_Y * v_x_hat)**2) +
+    np.sum(np.abs(DEL_X * v_y_hat)**2) +
+    np.sum(np.abs(DEL_Y * v_y_hat)**2)
+)
+\end{lstlisting}
+Each \code{DEL\_X * v\_x\_hat} is $\widehat{\partial_x v_x}$ in Fourier space,
+and the Parseval factor $1/N^2$ converts the Fourier-space norm to the
+physical-space $L^2$ norm.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 8: The \texorpdfstring{$H^{-1}$}{H\^{}\{-1\}} Mix Norm}
+
+\subsection{Why Not Just Use the $L^2$ Norm?}
+
+Under the passive scalar equation $\partial_t\theta + u\cdot\nabla\theta = 0$
+with divergence-free $u$, all $L^p$ norms are \textbf{conserved}:
+\[
+  \|\theta(t)\|_{L^2} = \|\theta_0\|_{L^2} \quad \text{for all } t.
+\]
+So the $L^2$ norm cannot tell us anything about mixing — it is constant
+regardless of how well the dye has been stirred.  We need a norm that
+\emph{decreases} as the scalar gets mixed into finer and finer structures.
+
+\subsection{The $H^{-1}$ Norm}
+
+The \textbf{$\hminusone$ norm} is defined as:
+\begin{equation}
+  \|\theta\|_{H^{-1}}^2
+  = \sum_{k\neq 0}\frac{|\hat\theta(k)|^2}{4\pi^2|k|^2}.
+\end{equation}
+Compare with the $L^2$ norm: $\|\theta\|_{L^2}^2 = \sum_k|\hat\theta(k)|^2$.
+
+The difference: the $\hminusone$ norm divides each mode's contribution by
+$|k|^2$, giving \textbf{much less weight to high-frequency (fine-scale)
+content}.
+
+\paragraph{What happens when we stir?}
+Initially, the scalar's energy is concentrated at low wavenumbers (smooth,
+large blobs).  As the velocity stirs it, energy is transferred to higher and
+higher wavenumbers (finer filaments).  The $\hminusone$ norm penalises low-$k$
+content heavily — so as energy moves to high $k$, the norm decreases.
+
+\subsection{Intuition for the $H^{-1}$ Norm}
+
+Think of it this way:
+\begin{itemize}
+  \item A scalar with all its energy at low $k$ (one big blob) has
+    \textbf{large} $\hminusone$ norm — it is unmixed.
+  \item A scalar with its energy spread uniformly across many $k$ values has
+    \textbf{small} $\hminusone$ norm — it is well-mixed.
+  \item A perfectly uniform scalar ($\theta = \mathrm{const}$, all energy at
+    $k=0$) has zero $\hminusone$ norm — perfectly mixed.
+\end{itemize}
+
+\subsection{The $\lambda^{-1}$ Weight}
+
+In code, the mix norm is computed via \code{LAMBDA\_INV}:
+\begin{equation}
+  \LAMBDAINV[k] = \frac{1}{2\pi|k|} = \sqrt{-\LAPINV[k]},
+\end{equation}
+\begin{equation}
+  \|\theta\|_{H^{-1}}^2
+  = \frac{\|\LAMBDAINV\cdot\hat\theta\|_{\ell^2}^2}{N^4}.
+\end{equation}
+\begin{lstlisting}
+LAMBDA_INV  = np.sqrt(np.where(LAP_INV != 0, -LAP_INV, 0.0))
+mix_norm_sq = np.sum(np.abs(LAMBDA_INV * theta_hat)**2) / N**4
+\end{lstlisting}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_hminus1_norm.pdf}
+  \caption{The $H^{-1}$ norm as a measure of mixing quality.  Left: an
+    unmixed Gaussian blob — all energy concentrated at low wavenumbers,
+    $\|\theta\|_{H^{-1}}$ is large.  Centre: a fine-scale chequerboard
+    pattern with the \emph{same} $L^2$ norm — energy spread to high
+    wavenumbers, $\|\theta\|_{H^{-1}}$ is much smaller.  Right: the
+    energy spectrum confirms the shift from low-$k$ to high-$k$ content.
+    As the mixing simulation runs, the $H^{-1}$ norm decreases monotonically.}
+  \label{fig:hminus1}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 9: The Leray Projection — Enforcing Incompressibility}
+
+\subsection{What Is Incompressibility?}
+
+The velocity field $u = (u_x, u_y)$ must satisfy $\nabla\cdot u = 0$:
+\[
+  \frac{\partial u_x}{\partial x} + \frac{\partial u_y}{\partial y} = 0.
+\]
+This is the \textbf{incompressibility condition}: fluid is not created or
+destroyed anywhere.  In physical terms, any fluid flowing into a region must
+flow out equally.
+
+\subsection{The Helmholtz Decomposition}
+
+Any vector field $g$ can be split into two parts:
+\[
+  g = \underbrace{g_{\text{div-free}}}_{\nabla\cdot g_{\text{div-free}}=0}
+    + \underbrace{\nabla\phi}_{\text{pure gradient}},
+\]
+where $\phi$ is some scalar potential.  The \textbf{Leray projection} extracts
+just the divergence-free part:
+\[
+  Pg = g - \nabla\phi, \qquad \phi = \lapinv(\nabla\cdot g).
+\]
+
+\paragraph{Step by step:}
+\begin{enumerate}
+  \item Compute the divergence: $D = \nabla\cdot g = \partial_x g_x + \partial_y g_y$.
+  \item Solve $\Lap\phi = D$, i.e.\ $\phi = \lapinv D$.
+  \item Subtract the gradient: $Pg = g - \nabla\phi$.
+\end{enumerate}
+
+\subsection{In Fourier Space — It's Just Multiplication}
+
+Everything becomes element-wise multiplication in Fourier space:
+\begin{equation}
+  \widehat{Pg_x}[k]
+  = \hat g_x[k]
+  - \DELX[k]\cdot\LAPINV[k]\cdot\bigl(\DELX[k]\cdot\hat g_x[k]
+    + \DELY[k]\cdot\hat g_y[k]\bigr).
+\end{equation}
+In code:
+\begin{lstlisting}
+div_g_hat = DEL_X * gx_hat + DEL_Y * gy_hat        # divergence of g
+Pgx_hat   = gx_hat - DEL_X * LAP_INV * div_g_hat   # project x-component
+Pgy_hat   = gy_hat - DEL_Y * LAP_INV * div_g_hat   # project y-component
+\end{lstlisting}
+No iteration required — just a handful of array multiplications.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 10: The Pseudo-Spectral Method}
+
+\subsection{The Problem with Products}
+
+A purely spectral method would compute \emph{everything} in Fourier space.
+But the term $\theta\cdot\nabla\lapinv\theta$ involves a
+\textbf{product of two functions in physical space}.
+
+In Fourier space, a product becomes a \textbf{convolution}:
+\[
+  \widehat{f\cdot g}[k] = \sum_m \hat f[m]\,\hat g[k-m].
+\]
+Computing this naively costs $O(N^2)$ per wavenumber — far more expensive than
+FFTs.
+
+\subsection{The Pseudo-Spectral Solution}
+
+The \textbf{pseudo-spectral trick}: compute products in physical space
+(cheap, pointwise), and everything else in Fourier space:
+\begin{enumerate}
+  \item Transform the fields you need from Fourier space to physical space (IFFT).
+  \item Compute the product pointwise (simple array multiplication).
+  \item Transform the result back to Fourier space (FFT).
+\end{enumerate}
+Each FFT/IFFT costs $O(N^2\log N)$ in 2D.  The total cost is much lower than
+convolution.
+
+\subsection{The 5-Step RHS Pipeline}
+
+Every time the ODE solver requests $d\hat\theta/dt$, the following five steps
+run.
+
+\paragraph{Step 1 — Compute $g = \theta\,\nabla\lapinv\theta$ (pseudo-spectral).}
+\begin{enumerate}[label=\alph*.]
+  \item Apply $\lapinv$ in Fourier space:
+    $\hat\psi = \LAPINV\cdot\hat\theta$.
+  \item Compute $\psi = \mathrm{real}(\mathrm{IFFT2}(\hat\psi))$ (physical
+    space stream-function-like field).
+  \item Compute derivatives:
+    $\partial_x\psi = \mathrm{real}(\mathrm{IFFT2}(\DELX\cdot\hat\psi))$ and
+    $\partial_y\psi$ similarly.
+  \item Compute the nonlinear product in physical space:
+    $g_x = \theta\cdot\partial_x\psi$, $g_y = \theta\cdot\partial_y\psi$.
+  \item Transform back: $\hat g_x = \mathrm{FFT2}(g_x)$,
+    $\hat g_y = \mathrm{FFT2}(g_y)$.
+\end{enumerate}
+
+\paragraph{Step 2 — Apply Leray projection (pure Fourier-space multiplication).}
+\[
+  (\hat g_x,\hat g_y)\;\longrightarrow\;(\widehat{Pg_x},\widehat{Pg_y}).
+\]
+
+\paragraph{Step 3 — Apply $-\lapinv$ to get velocity $v = -\lapinv Pg$.}
+\[
+  \hat v_x = -\LAPINV\cdot\widehat{Pg_x}, \qquad
+  \hat v_y = -\LAPINV\cdot\widehat{Pg_y}.
+\]
+
+\paragraph{Step 4 — Normalise to enforce the enstrophy constraint $\|\nabla u\|_{L^2} = F$ (via Parseval).}
+\[
+  \|\nabla v\|_{L^2}
+  = \frac{1}{N^2}\sqrt{\|\DELX\hat v_x\|^2+\|\DELY\hat v_x\|^2
+                     +\|\DELX\hat v_y\|^2+\|\DELY\hat v_y\|^2},
+  \qquad
+  \hat u = F\,\frac{\hat v}{\|\nabla v\|_{L^2}}.
+\]
+
+\paragraph{Step 5 — Advect to compute $d\hat\theta/dt = -\mathcal{F}[u\cdot\nabla\theta]$.}
+\[
+  \frac{d\hat\theta}{dt}
+  = -\mathrm{FFT2}\!\left[u_x\cdot\mathrm{IFFT2}(\DELX\cdot\hat\theta)
+    + u_y\cdot\mathrm{IFFT2}(\DELY\cdot\hat\theta)\right].
+\]
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 11: Time Integration with RK45}
+
+\subsection{The ODE}
+
+After spectral discretisation, the PDE becomes a large system of ODEs:
+\begin{equation}
+  \frac{d\hat\theta}{dt} = F(\hat\theta,t),
+  \qquad \hat\theta(0) = \widehat{\theta_0},
+\end{equation}
+where $F$ is the RHS from the five steps above and $\hat\theta$ has $N^2$
+complex components.
+
+\subsection{What Is RK45?}
+
+The \textbf{Runge--Kutta 4/5} (Dormand--Prince) method is a classical
+adaptive ODE solver.  Here is the idea:
+\begin{itemize}
+  \item At each time step $t_n$, evaluate $F$ at several cleverly chosen
+    intermediate points between $t_n$ and $t_n + h$.
+  \item Combine these evaluations to get a 4th-order \emph{and} a 5th-order
+    estimate of $\hat\theta(t_n+h)$.
+  \item Use the difference between these two estimates to measure the local
+    error.
+  \item If the error is too large, halve the step size $h$ and retry; if it
+    is very small, increase $h$ to speed up.
+\end{itemize}
+This is called an \textbf{adaptive} time integrator — it automatically picks a
+step size that balances accuracy and speed.
+
+\paragraph{Why RK45 and not simpler methods?}
+Euler's method (first order) is too inaccurate.  Fourth-order Runge--Kutta
+with a fixed step is accurate but wastes evaluations when the solution is
+smooth.  RK45 is the standard workhorse for stiff-to-moderate ODEs and matches
+MATLAB's \code{ode45}.
+
+\begin{lstlisting}
+sol = scipy.integrate.solve_ivp(
+    rhs,
+    t_span=(0, T),
+    y0=theta_hat_flat_real,
+    method='RK45',
+    rtol=1e-6,
+    atol=1e-8
+)
+\end{lstlisting}
+
+\subsection{Real/Imaginary Splitting}
+
+\code{solve\_ivp} requires a real-valued state vector.  The complex array
+$\hat\theta\in\mathbb{C}^{N^2}$ is stored as:
+\[
+  y = \bigl[\mathrm{Re}(\hat\theta_{\mathrm{flat}}),\;
+            \mathrm{Im}(\hat\theta_{\mathrm{flat}})\bigr]
+    \in \mathbb{R}^{2N^2}.
+\]
+At each RHS call, the code reconstructs $\hat\theta$ from $y$, performs the
+five-step computation, and returns $dy/dt$ in real form.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Part 12: The Resolution Check — When to Stop}
+
+\subsection{Why the Simulation Must Stop}
+
+As the velocity stirs $\theta$ into finer and finer filaments, the scalar
+develops features at increasingly high wavenumbers.  Eventually these features
+become smaller than the grid spacing $dx = 1/N$ — the grid can no longer
+represent them.  Beyond this point, the simulation is no longer physically
+meaningful.
+
+\subsection{What Is Conserved?}
+
+Under exact incompressible advection, \textbf{all $L^p$ norms are conserved}:
+\[
+  \|\theta(t)\|_{L^p} = \|\theta_0\|_{L^p}
+  \quad \text{for all } t\geq 0,\ \text{all } p\geq 1.
+\]
+This is a mathematical fact following from the change-of-variables formula for
+divergence-free flows.  Numerically, these norms should remain constant as long
+as the grid can resolve the solution.
+
+\subsection{The Event Function}
+
+The code monitors:
+\begin{equation}
+  e(t) = \max\!\left(
+    \bigl|\|\theta\|_{L^2}-1\bigr|,\;
+    \left|\frac{\|\theta\|_{L^4}}{\|\theta_0\|_{L^4}}-1\right|,\;
+    \left|\frac{\|\theta\|_{L^8}}{\|\theta_0\|_{L^8}}-1\right|
+  \right) - \varepsilon,
+  \qquad \varepsilon = 10^{-3}.
+\end{equation}
+When $e(t) > 0$ (any norm drifts by more than $0.1\%$), the solver stops.
+
+\paragraph{Why also use $L^4$ and $L^8$?}
+The $L^2$ norm is quadratic and relatively forgiving.  Higher $L^p$ norms are
+more sensitive to large values and sharp gradients — exactly the kind of
+structures that appear when the grid is under-resolving.  Using three norms
+gives an earlier and more reliable warning.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Recommended Books and Resources}
+
+\subsection*{Introductory — Start Here}
+
+\begin{description}[leftmargin=0pt]
+  \item[\normalfont\textbf{``A Student's Guide to Fourier Transforms''}]
+    J.\,F.\ James, Cambridge University Press, 3rd~ed., 2011.\\
+    The most accessible introduction.  Written specifically for science
+    students without a heavy maths background.  Short chapters, physical
+    intuition, minimal prerequisites.
+
+  \item[\normalfont\textbf{``The Fourier Transform and Its Applications''}]
+    Ronald Bracewell, McGraw-Hill, 3rd~ed., 2000.\\
+    A classic with excellent hand-drawn visualisations.  Bracewell's ``picket
+    fence'' picture of the DFT and his sampling-theorem explanations are
+    famous for being unusually clear.
+
+  \item[\normalfont\textbf{``Fourier Analysis: An Introduction''}]
+    Elias Stein \& Rami Shakarchi, Princeton Lectures in Analysis, Vol.~1,
+    2003.\\
+    More rigorous, but very clearly written.  Good for understanding
+    \emph{why} the theorems hold, not just how to use them.
+\end{description}
+
+\subsection*{Spectral / Numerical Methods — Directly Relevant}
+
+\begin{description}[leftmargin=0pt]
+  \item[\normalfont\textbf{``Spectral Methods in MATLAB''}]
+    Lloyd N.\ Trefethen, SIAM, 2000.  \emph{Free PDF online.}\\
+    The perfect companion to this project.  40~short programs (easily
+    translated from MATLAB to Python) explaining spectral methods for PDEs.
+    Very readable; starts from scratch.  This book will make Section~3 of the
+    report completely transparent.
+
+  \item[\normalfont\textbf{``Numerical Methods for Engineers''}]
+    Chapra \& Canale, McGraw-Hill, 7th~ed., 2015.\\
+    Covers FFT, ODE solvers (including RK45), and numerical differentiation at
+    an introductory engineering level.  Very practical and hands-on.
+
+  \item[\normalfont\textbf{``A Practical Guide to Pseudospectral Methods''}]
+    Bengt Fornberg, Cambridge University Press, 1996.\\
+    Specifically about pseudo-spectral methods — exactly the approach used in
+    the mixing simulation.  More technical than Trefethen's book, but the most
+    thorough treatment of the subject.
+
+  \item[\normalfont\textbf{``Numerical Methods for Fluid Dynamics''}]
+    Dale Durran, Springer, 2nd~ed., 2010.\\
+    Covers spectral methods, pseudo-spectral methods, and time integration at
+    a graduate level.  Bridges the gap between numerical methods and physical
+    simulation.
+\end{description}
+
+\subsection*{PDEs and the Physical Problem}
+
+\begin{description}[leftmargin=0pt]
+  \item[\normalfont\textbf{``Introduction to Partial Differential Equations''}]
+    Walter Strauss, Wiley, 2nd~ed., 2008.\\
+    Good introductory PDE text covering Fourier series and transforms from a
+    mathematical perspective.  Accessible to anyone with calculus.
+
+  \item[\normalfont\textbf{``An Introduction to Fluid Dynamics''}]
+    G.\,K.\ Batchelor, Cambridge University Press, 2000.\\
+    The definitive fluid dynamics reference.  Chapters~1--3 are accessible and
+    explain divergence-free velocity fields, the incompressibility condition,
+    and passive scalar transport.
+\end{description}
+
+\subsection*{Online Resources}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  Resource & What It Covers \\
+  \midrule
+  3Blue1Brown ``But What Is the Fourier Transform?'' (YouTube)
+    & Best 20-min visual intro to Fourier transforms \\
+  3Blue1Brown ``But What Is a Fourier Series?'' (YouTube)
+    & Visual intuition for decomposing functions into waves \\
+  NumPy FFT documentation
+    & Exact conventions used in \code{np.fft.fft2} \\
+  Trefethen's ATAP (free PDF)
+    & Rigorous approximation theory, spectral methods \\
+  SciPy \code{solve\_ivp} documentation
+    & Full details of the RK45 implementation \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Summary Table}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lll}
+  \toprule
+  Concept & What It Is & Code Equivalent \\
+  \midrule
+  DFT
+    & Decompose discrete function into frequencies
+    & \code{np.fft.fft2} \\
+  FFT
+    & Fast $O(N\log N)$ algorithm for DFT
+    & \code{np.fft.fft2} \\
+  Wavenumber $k$
+    & Frequency index; oscillations per unit length
+    & \code{k\_eff} \\
+  Centred wavenumbers
+    & Remap DFT indices to $\{-N/2,\ldots,N/2\}$
+    & \code{k - N*(k > N//2)} \\
+  Nyquist frequency
+    & Maximum representable frequency $= N/2$
+    & Index \code{N//2} \\
+  Spectral derivative
+    & Multiply $\hat f$ by $2\pi ik$
+    & \code{DEL\_X}, \code{DEL\_Y} \\
+  Inverse Laplacian
+    & Multiply $\hat f$ by $-1/(4\pi^2\|k\|^2)$
+    & \code{LAP\_INV} \\
+  Parseval identity
+    & $\|f\|_{L^2} = \|\hat f\|_{\ell^2}/N^2$ (2D)
+    & Norm computations \\
+  $H^{-1}$ mix norm
+    & Weighted norm that decreases with mixing
+    & \code{LAMBDA\_INV} \\
+  Leray projection
+    & Extracts divergence-free part of vector field
+    & Step~2 of RHS \\
+  Pseudo-spectral
+    & Products in physical, derivatives in Fourier
+    & RHS evaluation \\
+  RK45
+    & Adaptive-step 4/5 Runge--Kutta ODE solver
+    & \code{solve\_ivp} \\
+  Resolution check
+    & Stop when $L^p$ norms drift beyond tolerance
+    & \code{make\_res\_check()} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\bigskip
+\noindent\textit{This guide accompanies the notebook
+\code{00\_dft\_for\_beginners.ipynb} in the \code{python\_code/} folder,
+which provides interactive Python demonstrations of every concept described
+here.}
+
+\end{document}
