@@ -1,0 +1,590 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,tabularx,array}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{hyperref}
+
+\definecolor{codebg}{RGB}{247,248,250}
+\definecolor{codeblue}{RGB}{28,82,135}
+\definecolor{codegreen}{RGB}{38,115,75}
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{codeblue}\bfseries,
+  commentstyle=\color{codegreen},
+  stringstyle=\color{purple!70!black},
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{black!18},
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=0.5em,
+  xrightmargin=0.5em
+}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=green!45!black,
+  urlcolor=blue!65!black,
+  pdftitle={Optimal Mixing of Passive Scalars: Expanded Mathematical and Computational Guide},
+  pdfauthor={Adebanji Adelowo}
+}
+\setlength{\emergencystretch}{3em}
+\setlist[itemize]{leftmargin=*,itemsep=0.35em,topsep=0.45em}
+\setlist[enumerate]{leftmargin=*,itemsep=0.45em,topsep=0.45em}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\Torus}{\mathbb{T}^2}
+\newcommand{\Lap}{\Delta}
+\newcommand{\lapinv}{\Delta^{-1}}
+\newcommand{\Proj}{P}
+\newcommand{\dx}{\,dx\,dy}
+
+\theoremstyle{definition}
+\newtheorem{example}{Worked example}[section]
+\newtheorem{remark}{Interpretation}[section]
+
+\title{\textbf{Optimal Mixing of Passive Scalars}\\[5pt]
+\large Expanded Mathematical, Algorithmic, and Computational Guide}
+\author{Adebanji Adelowo}
+\date{September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This companion report expands the mathematical and computational ideas in
+the thesis \emph{Optimal Mixing of Passive Scalars}. It derives the
+Lin--Thiffeault--Doering velocity step by step, explains the Fourier
+pseudo-spectral discretisation from continuous operators to NumPy arrays,
+and connects each equation to the corresponding Python implementation. It
+also describes the adaptive Runge--Kutta solver, the conservation-based
+stopping event, the extraction of mixing rates, and the interpretation of
+the resolution study. The aim is not to replace the original thesis, but to
+make its reasoning and code easier to study, reproduce, and extend.
+\end{abstract}
+
+\tableofcontents
+\clearpage
+
+\section{Problem in Plain Language}
+
+A passive scalar is a quantity carried by a flow without changing that
+flow. Dye in water is the standard example. The scalar field
+$\theta(x,y,t)$ records the dye concentration, while $u(x,y,t)$ is the
+velocity of the fluid. With no molecular diffusion, the governing equation
+is
+\begin{equation}
+  \partial_t\theta+u\cdot\nabla\theta=0,
+  \qquad \nabla\cdot u=0.
+  \label{eq:transport}
+\end{equation}
+The first relation says that the concentration observed along a fluid
+trajectory does not change. The second says that the flow is
+incompressible: it rearranges area but does not create or destroy it.
+
+Mixing therefore does not mean that $\theta$ becomes pointwise smaller.
+Instead, stirring stretches large patches into increasingly thin positive
+and negative filaments. A coarse observer sees those nearby values cancel,
+even though the full distribution of scalar values is preserved.
+
+The computational question is:
+\begin{quote}
+Given a fixed stirring budget, which incompressible velocity produces the
+largest instantaneous decrease in a measure of unmixed large-scale
+structure?
+\end{quote}
+The LTD strategy answers this question at every instant. It is a greedy
+strategy: locally optimal in time, but not necessarily optimal over an
+entire finite horizon \cite{LTD2011}.
+
+\section{Why the \texorpdfstring{$H^{-1}$}{H-1} Norm Measures Mixing}
+
+Let the periodic domain be $\Torus=[0,1]^2$, and write a mean-zero scalar as
+\begin{equation}
+  \theta(x)=\sum_{k\in\mathbb{Z}^2\setminus\{0\}}
+  \widehat\theta_k e^{2\pi i k\cdot x}.
+\end{equation}
+Its squared $L^2$ norm is
+\begin{equation}
+  \norm{\theta}_{L^2}^2=\sum_{k\ne0}|\widehat\theta_k|^2.
+\end{equation}
+Every Fourier mode receives the same weight. In contrast,
+\begin{equation}
+  \norm{\theta}_{H^{-1}}^2
+  =\sum_{k\ne0}\frac{|\widehat\theta_k|^2}{4\pi^2|k|^2}.
+  \label{eq:hm1-fourier}
+\end{equation}
+The factor $|k|^{-2}$ strongly weights low wavenumbers and suppresses high
+wavenumbers. Transferring scalar variance from a broad structure
+($|k|$ small) to a fine filament ($|k|$ large) therefore reduces the
+$H^{-1}$ norm without changing the $L^2$ norm.
+
+\begin{example}
+Suppose one unit of Fourier energy lies entirely in a mode with $|k|=1$.
+Its contribution to \eqref{eq:hm1-fourier} is $1/(4\pi^2)$. Moving the same
+energy to $|k|=10$ leaves the $L^2$ contribution equal to one, but reduces
+the squared $H^{-1}$ contribution by a factor of $100$. This is precisely
+the large-to-small-scale transfer that mixing is meant to detect.
+\end{example}
+
+If $\phi=\lapinv\theta$, so that $\Lap\phi=\theta$, integration by parts on
+the torus gives an equivalent physical-space formula:
+\begin{equation}
+  \norm{\theta}_{H^{-1}}^2
+  =-\int_{\Torus}\theta\phi\dx
+  =\int_{\Torus}|\nabla\phi|^2\dx.
+  \label{eq:hm1-physical}
+\end{equation}
+This identity is central to the velocity derivation.
+
+\section{Deriving the Instantaneously Optimal Velocity}
+
+\subsection{Step 1: Differentiate the objective}
+
+Differentiate \eqref{eq:hm1-physical}. Since $\lapinv$ is self-adjoint,
+the two differentiated terms are equal:
+\begin{align}
+  \frac{d}{dt}\norm{\theta}_{H^{-1}}^2
+  &=-2\int_{\Torus}(\partial_t\theta)\lapinv\theta\dx \\
+  &=2\int_{\Torus}(u\cdot\nabla\theta)\phi\dx,
+\end{align}
+where \eqref{eq:transport} was used in the second line. Incompressibility
+and periodicity move the derivative from $\theta$ to $\phi$:
+\begin{equation}
+  \frac{d}{dt}\norm{\theta}_{H^{-1}}^2
+  =-2\int_{\Torus}u\cdot
+  \underbrace{(\theta\nabla\lapinv\theta)}_{g}\dx.
+  \label{eq:first-variation}
+\end{equation}
+
+\subsection{Step 2: Keep only the divergence-free component}
+
+The vector field $g$ need not be divergence-free. The Leray projection
+\begin{equation}
+  \Proj g=g-\nabla\lapinv(\nabla\cdot g)
+  \label{eq:leray}
+\end{equation}
+removes its gradient component. For every divergence-free $u$,
+$\int u\cdot\nabla q\dx=0$, so
+\begin{equation}
+  \int u\cdot g\dx=\int u\cdot\Proj g\dx.
+\end{equation}
+The discarded component cannot affect the objective under the admissible
+velocity constraint.
+
+\subsection{Step 3: Express the objective in the enstrophy inner product}
+
+Define
+\begin{equation}
+  v=-\lapinv\Proj g.
+  \label{eq:vdef}
+\end{equation}
+Then $\Proj g=-\Lap v$, and another integration by parts yields
+\begin{equation}
+  \frac{d}{dt}\norm{\theta}_{H^{-1}}^2
+  =-2\int_{\Torus}\nabla u:\nabla v\dx.
+  \label{eq:gradient-pairing}
+\end{equation}
+The colon denotes the Frobenius product: sum the products of all four
+entries of the two velocity-gradient matrices.
+
+\subsection{Step 4: Saturate the stirring budget}
+
+The admissible velocities satisfy $\norm{\nabla u}_{L^2}\le F$. By
+Cauchy--Schwarz,
+\begin{equation}
+  \int\nabla u:\nabla v\dx
+  \le \norm{\nabla u}_{L^2}\norm{\nabla v}_{L^2}
+  \le F\norm{\nabla v}_{L^2}.
+\end{equation}
+Equality holds when $u$ points in the same direction as $v$ in the
+gradient inner product and uses the entire budget. Hence
+\begin{equation}
+  \boxed{u=F\frac{v}{\norm{\nabla v}_{L^2}},\qquad
+  v=-\lapinv\Proj(\theta\nabla\lapinv\theta).}
+  \label{eq:ltd}
+\end{equation}
+Substitution into \eqref{eq:gradient-pairing} gives
+\begin{equation}
+  \frac{d}{dt}\norm{\theta}_{H^{-1}}^2
+  =-2F\norm{\nabla v}_{L^2}\le0.
+\end{equation}
+Thus the method cannot increase the mix norm unless numerical error
+overwhelms the continuous argument.
+
+\subsection{The degenerate case}
+
+If $\Proj g=0$, then $v=0$ and the normalization in \eqref{eq:ltd} is
+undefined. Mathematically, every admissible velocity has zero first-order
+effect on the mix norm. The LTD paper treats this case through a
+second-derivative optimization and an eigenvalue problem \cite{LTD2011}.
+The implementation does not solve that secondary problem; it compares
+$\norm{\nabla v}_{L^2}$ with $\norm{\lapinv g}_{L^2}$ and prints a warning
+when their ratio becomes very small.
+
+\section{From Fourier Analysis to NumPy Arrays}
+
+\subsection{Grid and transform convention}
+
+The code samples the unit torus on an $N\times N$ grid with spacing
+$h=1/N$. NumPy's forward transform is unnormalized and its inverse includes
+$1/N^2$. With the array indexing convention used in the code,
+\begin{equation}
+  \widehat f[k_y,k_x]
+  =\sum_{i,j=0}^{N-1}f[i,j]
+    e^{-2\pi i(ik_y+jk_x)/N}.
+\end{equation}
+Rows correspond to $y$ and columns to $x$. This small convention matters:
+the $x$ multiplier must broadcast across columns, while the $y$ multiplier
+must broadcast across rows.
+
+\subsection{Wavenumbers and derivatives}
+
+For even $N$, the FFT-ordered wavenumbers are
+\begin{equation}
+  0,1,\ldots,N/2-1,N/2,-N/2+1,\ldots,-1.
+\end{equation}
+The code constructs these values with
+\begin{lstlisting}[style=python]
+k = np.arange(N)
+k_eff = (k - N * (k > N // 2)).astype(float)
+kx = (2j * np.pi * k_eff)[np.newaxis, :]
+ky = (2j * np.pi * k_eff)[:, np.newaxis]
+\end{lstlisting}
+For a Fourier mode $e^{2\pi i k\cdot x}$, differentiation multiplies its
+coefficient by $2\pi i k_x$ or $2\pi i k_y$. Therefore an entire derivative
+is computed by one elementwise multiplication in Fourier space.
+
+For first derivatives, the code sets the Nyquist multiplier to zero. At
+that frequency, the positive and negative representations coincide on an
+even grid, so the sign required by an odd derivative is ambiguous. This is
+a symmetry treatment, not a complete dealiasing method.
+
+\subsection{Inverse Laplacian and zero mode}
+
+Since
+\begin{equation}
+  \Lap e^{2\pi i k\cdot x}=-4\pi^2|k|^2e^{2\pi i k\cdot x},
+\end{equation}
+the inverse-Laplacian multiplier is
+\begin{equation}
+  \widehat{\lapinv f}_k=
+  -\frac{\widehat f_k}{4\pi^2|k|^2},\qquad k\ne0.
+\end{equation}
+The zero mode is set to zero because constants lie in the kernel of the
+Laplacian. This selects the mean-zero solution. In code:
+\begin{lstlisting}[style=python]
+lap = kx**2 + ky**2
+LAP_INV = np.zeros_like(lap)
+nz = lap != 0
+LAP_INV[nz] = 1.0 / lap[nz]
+\end{lstlisting}
+
+\subsection{Discrete norm factors}
+
+For grid samples on a unit square,
+\begin{equation}
+  \norm{f}_{L^p}\approx
+  \left(h^2\sum_{i,j}|f_{ij}|^p\right)^{1/p}
+  =h^{2/p}\norm{f}_{\ell^p}.
+\end{equation}
+Consequently the code multiplies the vector $\ell^2$, $\ell^4$, and
+$\ell^8$ norms by $h$, $h^{1/2}$, and $h^{1/4}$, respectively. For the
+unnormalized NumPy FFT, Parseval gives
+\begin{equation}
+  \norm{f}_{L^2}\approx\frac{\norm{\widehat f}_{\ell^2}}{N^2}.
+  \label{eq:parseval-discrete}
+\end{equation}
+The factor $N^{-2}$ in the velocity normalization is therefore essential:
+without it, the effective stirring budget would change with resolution.
+
+\section{The Right-Hand Side Algorithm}
+
+At each Runge--Kutta stage, the solver receives $\widehat\theta$ and must
+return $\partial_t\widehat\theta$. Algorithmically, the calculation is:
+\begin{enumerate}
+  \item Compute $\phi=\lapinv\theta$ in Fourier space.
+  \item Transform $\theta$, $\partial_x\phi$, and $\partial_y\phi$ to
+        physical space.
+  \item Multiply pointwise to obtain
+        $g=(\theta\partial_x\phi,\theta\partial_y\phi)$, then transform
+        both components back to Fourier space.
+  \item Apply the Leray projection \eqref{eq:leray} mode by mode.
+  \item Apply $-\lapinv$ to obtain $v$.
+  \item Compute $\norm{\nabla v}_{L^2}$ using four spectral derivatives and
+        the Parseval factor in \eqref{eq:parseval-discrete}.
+  \item Normalize $v$ to obtain $u$ with
+        $\norm{\nabla u}_{L^2}=F$.
+  \item Transform $u$, $\partial_x\theta$, and $\partial_y\theta$ to
+        physical space; form $u\cdot\nabla\theta$; transform back; negate.
+\end{enumerate}
+
+The core implementation follows the same order:
+\begin{lstlisting}[style=python]
+linv_th = LAP_INV * theta_hat
+theta = np.real(np.fft.ifft2(theta_hat))
+gx_hat = np.fft.fft2(
+    theta * np.real(np.fft.ifft2(DEL_X * linv_th)))
+gy_hat = np.fft.fft2(
+    theta * np.real(np.fft.ifft2(DEL_Y * linv_th)))
+
+div_g = DEL_X * gx_hat + DEL_Y * gy_hat
+pgx = gx_hat - DEL_X * LAP_INV * div_g
+pgy = gy_hat - DEL_Y * LAP_INV * div_g
+
+vx_hat = -LAP_INV * pgx
+vy_hat = -LAP_INV * pgy
+\end{lstlisting}
+
+The final transport step is
+\begin{lstlisting}[style=python]
+dtheta_hat = -np.fft.fft2(
+    ux * np.real(np.fft.ifft2(DEL_X * theta_hat))
+  + uy * np.real(np.fft.ifft2(DEL_Y * theta_hat)))
+\end{lstlisting}
+
+\subsection{Why products are formed in physical space}
+
+Multiplication in physical space is convolution in Fourier space. A direct
+two-dimensional convolution over all mode pairs costs $O(N^4)$. Two FFTs,
+a pointwise multiplication, and an inverse FFT cost $O(N^2\log N)$, which
+is why the method is called pseudo-spectral.
+
+The speed comes with aliasing. Products create frequencies above the grid's
+Nyquist limit, and those frequencies fold onto lower modes. The current code
+does not apply explicit dealiasing. A standard improvement would retain the
+lower two-thirds of the modes and use $3/2$ zero-padding for each quadratic
+product. The conservation event detects accumulated resolution loss, but it
+does not prevent aliasing before that threshold is crossed.
+
+\section{State Representation and Adaptive Time Integration}
+
+SciPy's \texttt{solve\_ivp} expects a real vector in the workflow used here,
+whereas $\widehat\theta$ is complex. The code stores
+\begin{equation}
+  y=\begin{bmatrix}
+     \operatorname{Re}(\widehat\theta)\\
+     \operatorname{Im}(\widehat\theta)
+  \end{bmatrix}\in\Real^{2N^2}.
+\end{equation}
+Each call to the right-hand side reconstructs the complex $N\times N$
+array, performs the spectral calculation, and returns the real and imaginary
+parts in the same flattened order.
+
+The time integrator is RK45, the Dormand--Prince embedded pair. At each
+candidate step it computes approximations of orders five and four. Their
+difference estimates the local truncation error. The step is accepted when
+the scaled error is below one and rejected otherwise; the next step size is
+adjusted according to the observed error. Here
+\begin{equation}
+  \mathrm{rtol}=10^{-6},\qquad \mathrm{atol}=10^{-8}.
+\end{equation}
+The relative tolerance controls error proportional to the solution scale,
+while the absolute tolerance protects components near zero.
+
+\section{Resolution Check as an Event Function}
+
+Exact incompressible transport preserves every $L^p$ norm. A numerical
+change in these norms therefore signals spatial or temporal error. The code
+monitors
+\begin{equation}
+  E(t)=\max\left(
+  |L_2(t)-1|,
+  \left|\frac{L_4(t)}{L_4(0)}-1\right|,
+  \left|\frac{L_8(t)}{L_8(0)}-1\right|
+  \right)-10^{-3}.
+  \label{eq:event}
+\end{equation}
+SciPy searches for an upward zero crossing of $E$. When one is found, the
+event is terminal and integration stops.
+
+The higher norms serve a purpose. $L^8$ weights extreme localized values
+more strongly than $L^2$, so it can reveal damage to sharp filaments sooner.
+Using all three norms makes the diagnostic sensitive to different forms of
+under-resolution.
+
+\begin{remark}
+The event is an error detector, not an error estimator with a rigorous bound
+on every observable. A mixing rate fitted close to the stopping time can
+still depend on resolution, which is exactly what the $N=32$ and $N=64$
+comparison demonstrates.
+\end{remark}
+
+\section{Initial Data and Normalization}
+
+Each initial-data function performs three conceptual operations:
+\begin{enumerate}
+  \item evaluate an analytic pattern on the grid;
+  \item restrict or rearrange its support;
+  \item divide by its discrete $L^2$ norm and shift it to the domain centre.
+\end{enumerate}
+For the sine bump,
+\begin{equation}
+  \theta_0(x,y)=
+  \sin(2\pi x/a)\sin(2\pi y/a)
+  \mathbf{1}_{[0,a)^2}(x,y),
+\end{equation}
+before normalization and centering. The parameter $a$ changes both the
+support size and the characteristic spatial frequency. Smaller $a$ begins
+with finer structure and reaches the grid scale sooner.
+
+Normalization is implemented as
+\begin{lstlisting}[style=python]
+f /= np.linalg.norm(f.ravel()) * dx
+\end{lstlisting}
+because $dx=h$ and, in two dimensions,
+$\norm{f}_{L^2}\approx h\norm{f}_{\ell^2}$.
+
+\section{Extracting and Interpreting Mixing Rates}
+
+If the normalized mix norm obeys
+\begin{equation}
+  M(t)=\frac{\norm{\theta(t)}_{H^{-1}}}
+             {\norm{\theta_0}_{H^{-1}}}
+  \approx e^{-rt},
+\end{equation}
+then
+\begin{equation}
+  \log M(t)\approx -rt.
+\end{equation}
+A least-squares line fitted to $\log M$ therefore has slope $-r$, and the
+mixing timescale is $\tau=1/r$. The thesis fits the last two-thirds of each
+trajectory to reduce the influence of the initial transient.
+
+For $a=0.5$ and $N=64$, the reported late-window fit gives
+$r\approx0.440$ and $\tau\approx2.27$. A full-trajectory fit gives
+$r\approx0.394$. Both values are correct for their respective windows; the
+difference shows that the curve is only approximately log-linear.
+
+Across eight values of $a$, a second log-log regression fits
+\begin{equation}
+  r(a)\approx C a^{-\alpha}.
+\end{equation}
+Taking logarithms produces
+\begin{equation}
+  \log r\approx\log C-\alpha\log a,
+\end{equation}
+so $-\alpha$ is the slope of a linear fit to $(\log a,\log r)$. The study
+finds $\alpha\approx1.61$ at $N=32$ and $\alpha\approx1.78$ at $N=64$.
+Because the exponent changes materially with $N$, it is not yet numerically
+converged. The two resolutions cannot establish its limiting value or
+separate finite-resolution effects from the behavior of the greedy control.
+
+\section{End-to-End Code Map}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Relationship between mathematical tasks and Python functions.}
+\begin{tabularx}{\linewidth}{@{}
+  >{\raggedright\arraybackslash}p{3.2cm}
+  >{\raggedright\arraybackslash}p{4.0cm}
+  >{\raggedright\arraybackslash}X@{}}
+\toprule
+Task & Function & Main output \\
+\midrule
+Build grid and multipliers & \texttt{build\_operators} & Derivatives,
+inverse Laplacian, mix-norm weight, and coordinate arrays \\
+Construct $\theta_0$ & \texttt{idata\_sin}, \texttt{idata\_diag},
+\texttt{idata\_strip}, \texttt{idata\_trigpoly} & Centered,
+$L^2$-normalized physical array \\
+Evaluate the ODE & \texttt{make\_convection\_hat} & Closure returning
+$d\widehat\theta/dt$ in real-split form \\
+Detect resolution loss & \texttt{make\_res\_check} & Terminal event based
+on $L^2$, $L^4$, and $L^8$ drift \\
+Integrate one case & \texttt{run\_simulation} & Times, fields, spectra,
+and diagnostic norms \\
+Fit decay rates & \texttt{replot\_norms} & Late-window slopes, timescales,
+and scaling plots \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The complete execution path is:
+\begin{enumerate}
+  \item call \texttt{build\_operators(N)} once;
+  \item choose an initial-data function and a value of $a$;
+  \item construct $\theta_0$, transform it, and pack the real state;
+  \item build the right-hand side and resolution event as closures;
+  \item call \texttt{solve\_ivp};
+  \item unpack each saved state and compute diagnostic norms;
+  \item repeat for the parameter sweep and fit the rates.
+\end{enumerate}
+
+\section{Numerical Risks and Recommended Extensions}
+
+\begin{enumerate}
+  \item \textbf{Add explicit dealiasing.} Implement $3/2$ padding for every
+        quadratic product and compare against the present event-only
+        safeguard.
+  \item \textbf{Run a resolution ladder.} Use at least
+        $N=32,64,128,256$ where feasible, and compare rates over a common
+        physical fitting interval as well as each run's late window.
+  \item \textbf{Quantify fit uncertainty.} Report standard errors or
+        bootstrap intervals for $r$ and $\alpha$, and test sensitivity to
+        the fitting window.
+  \item \textbf{Guard the degenerate normalization.} Replace a diagnostic
+        print with a documented fallback or controlled termination when
+        $\norm{\nabla v}_{L^2}$ approaches machine precision.
+  \item \textbf{Test invariants directly.} Add automated tests for the
+        discrete divergence of $\Proj g$, the achieved stirring budget,
+        Hermitian symmetry, mean preservation, and monotone initial
+        decrease of the mix norm.
+  \item \textbf{Compare control strategies.} Use finite-horizon or adjoint
+        optimization to measure the performance gap between greedy and
+        non-greedy stirring.
+\end{enumerate}
+
+\section{Summary}
+
+The method can be understood as a short chain of ideas. The $H^{-1}$ norm
+measures large-scale inhomogeneity. Differentiating it converts mixing into
+an inner product between the velocity and
+$\theta\nabla\lapinv\theta$. The Leray projection keeps the part that an
+incompressible velocity can use. Applying $-\lapinv$ moves the problem into
+the enstrophy inner product, and Cauchy--Schwarz identifies the steepest
+admissible direction. FFT multipliers realize every differential operator,
+while physical-space products evaluate the nonlinearity efficiently.
+Adaptive RK45 advances the resulting ODE, and conservation drift determines
+when the grid is no longer trustworthy.
+
+This chain also clarifies the main limitation of the reported scaling law:
+the fitted exponent changes with resolution because the usable trajectory
+length changes with the grid. The present calculations establish a
+reproducible framework and a clear finite-resolution result, but not an
+asymptotic exponent.
+
+\clearpage
+\bibliographystyle{plainnat}
+\begin{thebibliography}{9}
+\bibitem{LTD2011}
+Z.~Lin, J.-L.~Thiffeault, and C.~R.~Doering,
+\newblock Optimal stirring strategies for passive scalar mixing,
+\newblock \emph{Journal of Fluid Mechanics}, 675:465--476, 2011.
+
+\bibitem{Iyer2014}
+G.~Iyer, A.~Kiselev, and X.~Xu,
+\newblock Lower bounds on the mix norm of passive scalars advected by
+incompressible enstrophy-constrained flows,
+\newblock \emph{Nonlinearity}, 27(5):973--985, 2014.
+
+\bibitem{Trefethen2000}
+L.~N.~Trefethen,
+\newblock \emph{Spectral Methods in MATLAB},
+\newblock SIAM, 2000.
+\end{thebibliography}
+
+\end{document}
