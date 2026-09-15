@@ -4,7 +4,7 @@ Master's thesis project by Adebanji Adelowo: a Python pseudo-spectral simulation
 **Lin-Thiffeault-Doering optimal mixing velocity** for passive scalars on the 2-torus $[0,1]^2$,
 ported from [Gautam Iyer's MATLAB code](https://www.math.cmu.edu/~gautam/research/201208-mix-bounds/).
 
-**Full write-up (current):** [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf)  
+**Full write-up (authoritative):** [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf)  
 **Abstract:** [`abstract.md`](abstract.md) / [`abstract.pdf`](abstract.pdf)
 
 ---
@@ -221,17 +221,24 @@ Jupyter kernel registered as **"Python (Master Thesis)"**.
   companion interactive notebook.
 * [`python_code/mixing_exp.md`](python_code/mixing_exp.md): function-by-function reference
   documentation for `python_code/mixing.py`.
+* [`optimal_mixing_thesis_report_expanded.pdf`](optimal_mixing_thesis_report_expanded.pdf): a
+  supplementary, code-oriented companion, not the submitted thesis, walking through the LTD
+  velocity derivation and its NumPy implementation step by step with annotated code listings.
+  `optimal_mixing_thesis_report.pdf` above is the authoritative document to cite.
 
 ---
 
-## Remaining Work
+## Limitations
 
-The next planned extension is Bayesian uncertainty quantification for the fitted mixing-rate
-exponent: bootstrap confidence intervals and Richardson extrapolation across an extended
-resolution ladder (N=32/64/128/256), to determine whether the exponent's observed
-resolution-dependence is a numerical artefact or a genuine feature of the greedy stirring
-strategy. Not yet started. Portfolio-wide project status is tracked centrally in the author's
-Selected Projects documentation; this project's status there is DEFERRED RESEARCH (high priority).
+The two-resolution comparison (N=32, N=64) is not sufficient to establish whether the
+fitted decay exponent's resolution-dependence is a numerical artefact or a genuine feature
+of the greedy stirring strategy: the higher-resolution estimate moves farther from, not
+closer to, the theoretical $a^{-1}$ benchmark. Resolving this would require a wider
+resolution ladder and a proper convergence study (e.g. Richardson extrapolation), which is
+not attempted here.
+
+See [`ERRATA.md`](ERRATA.md) for corrections made to the report after the original draft
+(citation attribution, a sign-convention fix, and related terminology changes).
 
 ## License
 
