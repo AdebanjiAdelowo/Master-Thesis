@@ -24,6 +24,27 @@ where $P$ is the Leray projection and $F$ is the enstrophy constraint. The scala
 equation is solved on $[0,1]^2$ using FFTs for spatial discretisation and an adaptive
 Dormand-Prince RK45 scheme for time integration.
 
+One evaluation of the right-hand side (`make_convection_hat` in `python_code/mixing.py`), and the
+loop that integrates it. Derivatives and $\Delta^{-1}$ are applied in Fourier space; products are
+formed in physical space:
+
+```mermaid
+flowchart TD
+    TH["θ̂ (Fourier coefficients)"] --> LI["Δ⁻¹θ̂"]
+    LI --> G["g = θ ∇(Δ⁻¹θ)<br/>product in physical space"]
+    TH --> G
+    G --> P["Leray projection<br/>P(g) = g − ∇Δ⁻¹(∇·g)"]
+    P --> V["v = −Δ⁻¹ P(g)"]
+    V --> U["u = F v / ‖∇v‖_L²<br/>enstrophy constraint"]
+    U --> R["∂θ̂/∂t = −FFT(u·∇θ)"]
+    TH --> R
+    R --> I["solve_ivp, RK45<br/>rtol 1e-6, atol 1e-8"]
+    I --> E{"L², L⁴, L⁸ norms<br/>conserved to within tol?"}
+    E -->|yes| TH
+    E -->|no: terminal event| S["stop: resolution lost"]
+    I --> M["H⁻¹ mix norm history<br/>exponential fit, rate r(a)"]
+```
+
 **References**  
 - Lin, Thiffeault & Doering (2011): *Optimal stirring strategies*, J. Fluid Mech.  
 - Iyer, Kiselev & Xu (2014): *Lower bounds on the mix norm*, Nonlinearity  
@@ -64,13 +85,12 @@ Master-Thesis/
 │   └── 02_rhs_simulation_analysis.ipynb # notebook: RHS, simulation, analysis
 ├── matlab_code/                         # original MATLAB implementation
 ├── references/                          # key papers (PDF)
-├── figures/                             # generated figures (PDF)
+├── figures/                             # generated figures (PDF, created locally, not committed)
 ├── Optimal_Mixing_Simulation.ipynb      # high-level demo notebook
 ├── optimal_mixing_report.tex            # SUPERSEDED draft source, kept for record only
 ├── optimal_mixing_report.pdf            # SUPERSEDED draft, 21 pages (see notice on p.1)
 ├── optimal_mixing_thesis_report.tex     # current report source (corrected)
-├── optimal_mixing_thesis_report.pdf     # current report, 16 pages: cite this one
-└── .venv/                               # Python virtual environment
+└── optimal_mixing_thesis_report.pdf     # current report, 16 pages: cite this one
 ```
 
 ---
@@ -83,10 +103,7 @@ Master-Thesis/
 # Clone and enter the project
 cd Master-Thesis
 
-# Activate the virtual environment (already created)
-source .venv/bin/activate
-
-# Or create it fresh
+# Create a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r python_code/requirements.txt
@@ -124,7 +141,7 @@ jupyter notebook
 | `02_rhs_simulation_analysis.ipynb` | ODE RHS step-by-step, simulation, norm analysis |
 | `../Optimal_Mixing_Simulation.ipynb` | High-level demo with all plots |
 
-Select kernel **"Python (Master Thesis)"** when prompted.
+Select a kernel that uses the virtual environment created above.
 
 ### Full sweep
 
@@ -199,17 +216,6 @@ plt.show()
 | `idata_sin/diag/strip/trigpoly.m` | same names in `mixing.py` |
 | `replot_figs.m` | `replot_norms()` |
 | `save_data.m` | `save_results()` / `load_results()` |
-
----
-
-## Python Virtual Environment
-
-```
-.venv/bin/python   →   /opt/anaconda3/bin/python3  (3.12.2)
-.venv/lib/python3.12/site-packages/   →   project packages
-```
-
-Jupyter kernel registered as **"Python (Master Thesis)"**.
 
 ---
 
