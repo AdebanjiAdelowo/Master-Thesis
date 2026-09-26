@@ -11,3 +11,5 @@ figures/
 *.fdb_latexmk
 *.synctex.gz
 .DS_Store
+optimal_mixing_report.pdf
+optimal_mixing_thesis_report_expanded.pdf
