@@ -1,0 +1,2406 @@
+\documentclass[12pt]{report}   % you have 10pt, 11pt, or 12pt options
+\usepackage{empheq}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{latexsym}
+\usepackage{amsfonts,accents,verbatim,xcolor, geometry}
+\usepackage{cite,caption,subcaption,titlefoot}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{etextools}
+\usepackage{enumerate}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{titlesec}
+\titlespacing{\section}{0pt}{2.4ex plus 0.8ex minus 0.3ex}{1.2ex plus 0.2ex}
+\titlespacing{\subsection}{0pt}{2ex plus 0.6ex minus 0.2ex}{1ex plus 0.2ex}
+\titlespacing{\subsubsection}{0pt}{1.6ex plus 0.4ex minus 0.2ex}{0.8ex plus 0.2ex}
+%\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage [autostyle, english = american]{csquotes}
+\usepackage{fancyhdr}
+\usepackage{truncate}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\nouppercase{\leftmark}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{lastpage}
+\usepackage{url}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+\providecommand*{\showkeyslabelformat}[1]{%
+  \fcolorbox{blue!50!black}{cyan!5!white}{%
+    \itshape\fontfamily{\rmdefault}%
+    %\fontsize{4.5pt}{5.4pt}\selectfont%
+    \tiny%
+    #1%
+  }
+}
+%\RequirePackage[notref,notcite]{showkeys}
+
+\usepackage{hyperref}% Put this last
+
+% Package options.
+\definecolor{link1}{rgb}{0,0,.7}
+\definecolor{link2}{rgb}{0,0.25,0.5}
+\hypersetup{final,colorlinks,allcolors=link1,citecolor=link2}
+\MakeOuterQuote{"} % csquotes
+\geometry{
+	%total={170mm,257mm},left=28mm,right=28mm, top=30mm, bottom = 35mm
+	left=28mm,right=28mm, top=30mm, bottom = 35mm, headheight=14.5pt
+}
+
+\newcommand{\defeq}{\stackrel{\scriptscriptstyle\textup{def}}{=}}
+\colorlet{darkgreen}{green!40!black}
+\providecommand{\email}[1]{\href{mailto:#1}{#1}}
+\providecommand{\cites}[1]{\cite{#1}}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\geq}{\geqslant}
+\newcommand{\grad}{\nabla}
+\renewcommand{\epsilon}{\varepsilon}
+
+\numberwithin{equation}{section}
+% Theorem Styles
+\theoremstyle{plain}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}[lemma]{Corollary}
+\newtheorem{question}[lemma]{Question}
+\newtheorem{conj}[lemma]{Conjecture}
+\newtheorem{claim}[lemma]{Claim}
+
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{innercustomthm}{Theorem}
+\newenvironment{customthm}[1]
+  {\renewcommand\theinnercustomthm{#1}\innercustomthm}
+  {\endinnercustomthm}
+
+% Definition Styles
+\theoremstyle{definition}
+\newtheorem{definition}[lemma]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[lemma]{Remark}
+\newtheorem*{remark*}{Remark}
+\newtheorem{example}[lemma]{Example}
+
+%---------- the symbols below will give you the blackboard bold of R, T, etc. ----------
+\DeclareSymbolFont{AMSb}{U}{msb}{m}{n}  
+\DeclareMathSymbol{\Sph}{\mathbin}{AMSb}{"53} \DeclareMathSymbol{\R}{\mathbin}{AMSb}{"52}
+\DeclareMathSymbol{\T}{\mathbin}{AMSb}{"54} \DeclareMathSymbol{\Z}{\mathbin}{AMSb}{"5A}
+\DeclareMathSymbol{\K}{\mathbin}{AMSb}{"4B}
+
+
+
+%Picture inclusion
+
+\newcommand\pic[3]{
+\begin{figure}[H] \begin{center} 
+\epsfig{file=#1, height=#2pt} 
+\end{center} 
+\caption{#3} 
+\end{figure}
+}
+
+\def\inj{\text{inj}}
+\def\diam{\text{diam}}
+\def\area{\text{area}}
+\def\length{\text{length}}
+
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norm}{|}{|}
+\DeclarePairedDelimiter{\paren}{(}{)}
+\DeclarePairedDelimiter{\brak}{[}{]}
+\DeclarePairedDelimiter{\set}{\{}{\}}
+%\newdelim{\qv}{[}{]}
+\DeclarePairedDelimiter{\av}{\langle}{\rangle}
+\newcommand{\pa}{\partial}
+\newcommand{\la}{\label}
+\newcommand{\fr}{\frac}
+\newcommand{\ve}{\varepsilon}
+\newcommand{\rmd}{\, \mathrm{d}}
+\newcommand{\na}{\nabla}
+\newcommand{\tet}{\theta}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\ba}{\begin{array}{l}}
+\newcommand{\ea}{\end{array}}
+\newcommand{\Rr}{{\mathbb R}}
+\newcommand{\gl}{\mathfrak g}
+\newcommand{\gls}{\mathfrak g^*}
+\newcommand{\tor}{{\bf T}^2}
+\newcommand{\QED}{\mbox{}\hfill$\Box$}
+\newcommand{\ue}{u_\ve}
+\newcommand{\inttor}{\int_{\tor}}
+\newcommand{\ome}{\om_\ve}
+\newcommand{\zt}{{\ZZ}^2}
+\newcommand{\tjd}{(t_1,t_2)}
+\newcommand{\sconv}{S^{\rm conv}}
+\newcommand{\omk}{\om_K}
+\newcommand{\omzk}{\om_{\zt\setminus K}}
+\newcommand{\uzk}{u_{\zt\setminus K}}
+\newcommand{\bbN}{{\mathbb{N}}}
+\newcommand{\RR}{{\mathbb{R}}}
+\newcommand{\bbD}{{\mathbb{D}}}
+\newcommand{\bbP}{{\mathbb{P}}}
+\newcommand{\bbE}{{\mathbb{E}}}
+\newcommand{\bbZ}{{\mathbb{Z}}}
+\newcommand{\bbC}{{\mathbb{C}}}
+\newcommand{\bbQ}{{\mathbb{Q}}}
+\newcommand{\bbT}{{\mathbb{T}}}
+\newcommand{\bbS}{{\mathbb{S}}}
+\newcommand{\eps}{{\varepsilon}}
+\newcommand{\beg}{\begin}
+\newcommand{\ov}{\overline}
+\newcommand{\G}{\Gamma}
+\newcommand{\Up}{\mathcal{U}^\phi}
+\renewcommand{\div}{{\mbox{div}\,}}
+\newcommand{\D}{\Delta}
+\renewcommand{\P}{\mathbb{P}}
+ 
+\newcommand{\del}{\partial}
+\newcommand{\rd}{\partial}
+\newcommand{\nb}{\nabla}
+
+
+% Shortcuts
+%\def\T{{\bf T}}
+%\newcommand{\T}{\mathbb{T}}
+%\newcommand{\R}{\mathbb{R}}
+\def\ol{\overline}
+%opening
+
+
+\newcommand{\Red}[1]{\begingroup\color{red} #1\endgroup} % Red
+\newcommand{\Blue}[1]{\begingroup\color{blue} #1\endgroup} % blue
+
+\newcommand{\mred}[1]{\marginpar{\tiny \begingroup\color{red} #1\endgroup}} % Red
+
+
+%proof of ergodic theory
+
+\newcommand{\mathnotation}[2]{\newcommand{#1}{\ensuremath{#2}}}
+
+%
+% Math commands
+%
+\newcommand{\Ltnorm}[1]{\norm{#1}_{L^2}}
+
+%
+% Math symbols
+%
+\renewcommand{\l}{\left}            % \left
+\renewcommand{\r}{\right}           % \right
+\renewcommand{\time}{t}             % Time
+\mathnotation{\pd}{\partial}        % Partial derivative
+%\mathnotation{\grad}{\nabla}        % Gradient
+\renewcommand{\div}{\nabla\cdot}    % Divergence
+\mathnotation{\lapl}{\Delta}        % Laplacian
+\mathnotation{\mlapl}{(-\Delta)}    % -Laplacian
+\mathnotation{\imi}{i}%\mathit{i}}     % i
+\mathnotation{\dint}{\,{\mathrm{d}}}% Differential, in an integral
+
+\mathnotation{\xc}{x}               % Position (component)
+%\mathnotation{\xv}{\bm{\xc}}        % Position (vector)
+\mathnotation{\xv}{\vec{\xc}}        % Position (vector)
+\mathnotation{\kc}{k}               % Wavevector (component)
+%\mathnotation{\kv}{{\bm{\kc}}}      % Wavevector (vector)
+\mathnotation{\kv}{{\vec{\kc}}}      % Wavevector (vector)
+\mathnotation{\km}{\kc}             % Wavevector (magnitude)
+\mathnotation{\Lsc}{L}              % Periodic length
+\mathnotation{\Vol}{[0,\Lsc]^d}     % Domain
+\mathnotation{\dV}{\,d\vec{x}}
+
+\mathnotation{\qq}{a}               % # of derivatives in norms
+\mathnotation{\fw}{\theta}          % Function in weak convergence
+\mathnotation{\gt}{g}               % Test function
+%\mathnotation{\T}{T}                % Period
+\mathnotation{\Sobo}{H}             % Sobolev space
+\mathnotation{\Cu}{C}               % Constant for uniform bound
+\mathnotation{\NK}{K}               % Radius of Fourier ball
+%\mathnotation{\eps}{\epsilon}       % Small para for limits
+\begin{document}
+\begin{titlepage}
+   \begin{center}
+       \vspace*{1cm}
+
+       \textbf{Bounds on mixing of passive scalars advected by incompressible energy and enstrophy constrained flows and Anomalous dissipation}
+
+       \vspace{1.2cm}
+       By
+
+       \vspace{0.4cm}
+       \textbf{ADELOWO, Adebanji Oluwatimileyin}
+
+       \vspace{1.2cm}
+       \vfill
+            
+       A thesis presented for the degree of\\
+       Master of science
+            
+       \vspace{0.8cm}
+     
+       \includegraphics[width=0.4\textwidth]{univaq_logo.png}
+
+       Department of Mathematics\\
+       University of L'Aquila\\
+       Italy\\
+       27th March, 2021.
+            
+   \end{center}
+\end{titlepage}
+\tableofcontents
+\newpage
+\chapter{Introduction}
+\pagenumbering{arabic}
+ Mixing is the reduction of in-homogeneity in order to achieve a homogeneous state, generally this means achieving a uniform distribution of the mixtures. The in-homogeneity can be temperature or concentration etc. Mixing is important in many aspects of science and engineering, and understanding of the underlying kinematics of mixing is important because it helps in building and optimization of mixing devices.
+
+   The  following quantities are used to describe the degree of mixing:
+\begin{enumerate}
+\item intensity of segregation = variation in concentration
+ \begin{itemize}
+     \item  Homogenization is mixing by the reduction of intensity of segregation. 
+ \end{itemize}
+   \item scale of segregation = distribution of length scales.
+   \begin{itemize}
+      \item Filamentation is mixing by the reduction of scale of segregation.
+   \end{itemize}
+\end{enumerate}
+\begin{figure}[h]
+   \centering
+   \includegraphics[width=1\linewidth, height=5.5cm]{mixx}
+   \caption{ The top transformation illustrates filamentation as the reduction of the scale of segregation and the second illustrates homogenisation as the reduction of the intensity of segregation.}
+   \label{fig:1}
+ \end{figure}
+
+ \begin{figure}
+   \centering
+   \includegraphics[width=1\linewidth, height=4cm]{nsegvsfil}
+    \caption{Taken from "What does well mixed mean?" by Prof. Suzanne Kresta, University of Alberta, San Francisco, 2013}
+   \label{fig:2}
+ \end{figure}
+ Variance only measures the concentration variance or the intensity of segregation - not the arrangement of the areas. This requires a second measure: the scale of segregation. \\
+ 
+   
+  \section{Mathematical Interpretation}
+ A mixed state is a state where the concentration is equal to the mean concentration. Intensity of segregation can be interpreted as the normalised variance of the concentration. It can be related to the $L_2$ norm of the concentration field. If $\theta(x; t)$  is the concentration of a passive scalar  such as temperature, then the variance is given by
+  \begin{equation}\label{var}
+   \textrm{var} ~\theta = || \theta ||^2  - \langle\theta\rangle^2
+  \end{equation}
+  where $ \norm{ \theta }^2  = \frac{1}{|\Omega|}\int_{\Omega}\theta^2 ~~\textrm{d}\Omega$ , $ \langle\theta\rangle = \frac{1}{|\Omega|}\int_{\Omega}\theta ~~\textrm{d}\Omega$ 
+   are the $L_2 -norm$ and mean value of , respectively, with the spatial domain  $\Omega$ and $|\Omega|$   its volume or area in 2d.
+  
+  \section{Variance as a measure of mixing}
+  This section illustrates how variance is used to measure the rate of mixing in the sense of advection and diffusion. \\
+  \vspace{0.02cm}
+ Now consider the advection-diffusion equation
+  \begin{equation}\label{adve}
+  \frac{\partial\theta}{\partial t} + u.\nabla\theta = k\Delta\theta 
+  \end{equation}
+  \begin{equation}
+   \nabla \cdot u = 0 ~~~on~~~ \Omega
+  \end{equation}
+  with boundary conditions:
+  \begin{equation}
+      \vec{n} \cdot \nabla\theta = 0 ~~~~on~~~\partial\Omega
+  \end{equation}
+     \begin{equation}
+        \vec{n} \cdot \theta = 0 ~~~~on~~~\partial\Omega
+    \end{equation}
+  Multiply \eqref{adve} by $\theta$ 
+  \[\theta \frac{\partial\theta}{\partial t} + \theta u\cdot\nabla\theta = k\theta\Delta\theta\]
+  
+  \[\frac{1}{2} \frac{\partial\theta^2}{\partial t} + \theta u\cdot\nabla\theta = k\theta\nabla\cdot\nabla\theta\]
+  \[\frac{1}{2} \frac{\partial\theta^2}{\partial t} + \theta u\cdot\nabla\theta = k\nabla\cdot\left(\theta\nabla\theta\right)  - k\nabla\theta\cdot\nabla\theta\]
+   \[\frac{1}{2} \frac{\partial\theta^2}{\partial t} + \theta u\cdot\nabla\theta = k\nabla\cdot\left(\theta\nabla\theta\right)  - k|\nabla\theta|^2\]
+   Integrating
+   \[\frac{\rm{d}}{\rm{d}t}\frac{1}{2}\int_{\Omega}\theta^2 ~\rm{d}\Omega + \int_{\Omega}\theta u\cdot\nabla\theta ~\rm{d}\Omega = k\int_{\Omega}\nabla\cdot\left(\theta\nabla\theta\right) ~\rm{d}\Omega - k\int_{\Omega} |\nabla\theta|^2 ~\rm{d}\Omega \]
+   
+   \[ \frac{d}{dt}\frac{1}{2}\int_{\Omega}\theta^2 ~\rm{d}\Omega = -k\int_{\Omega} |\nabla\theta|^2 ~\rm{d}\Omega \]
+   
+Therefore
+\[ \frac{d}{dt}||\theta||^2 = -2k||\nabla\theta||^2 \]
+Integrating \eqref{adve} over $\Omega$
+\[\int_\Omega\frac{\partial \theta}{\partial t} ~\rm{d}\Omega + \int_\Omega u\cdot\nabla\theta ~\rm{d}\Omega= \int_\Omega k\Delta\theta ~\rm{d}\Omega \]
+\[\frac{d}{dt} \int_\Omega\theta~ \rm{d}\Omega + \int_\Omega u\cdot\nabla\theta ~\rm{d}\Omega = \int_\Omega k\Delta\theta ~\rm{d}\Omega \]
+Applying the boundary conditions, implies
+  \[ \frac{d}{dt}\langle\theta\rangle= 0\] ,
+ Using \eqref{var}, then 
+ \begin{equation}\label{varder}
+  \frac{d}{dt} \rm{var}\theta = -2k||\nabla\theta||^2 .
+ \end{equation}
+  We can see that the right-hand side is negative-definite unless $\theta$ is constant. The concentration is driven to the uniform state $\rm{var}\theta = 0$ at the rate $2k||\nabla\theta||_2^2$. \textit{Therefore, studying the decay of the variance is an easy way of studying the effectiveness of a mixing process.}
+  
+  \section{Variance's Limitation}
+  The physical intepretation of the \eqref{varder} is that the stirring
+        sharpens gradients of $\theta$ till they are big enough so that diffusion easily smooths them out. Then an agreement  between advection and diffusion is then reached, and the variance decays at its optimal rate.\\
+        \vspace{0.01cm}
+ If we consider the case where diffusion is absent, that is, the case where $k =0$ ,  the variance is conserved and does not change with time. Since diffusion has small effect compared to advection during the mixing process, it is indicative to study the advection equation.
+   \begin{equation}
+    \frac{\partial\theta}{\partial t} + u\cdot\nabla\theta = 0
+    \end{equation}
+    In this case, we can not use the variance, we will look for another measure of mixing!
+  
+  \section{Negative Sobolev Norm}
+  Mathew, Mezic and Petzold \cite{mathew} introduced the mix-norm, which for mean-zero functions is equivalent to $||\theta(.,t)||_{H^{-\frac{1}{2}}}$.
+  Charles Doering and Lin. Thiffeault\cite{multi} generalized the mix-norm to $||\theta(.,t)||_{H^{-a}}$, $a >0.$ \\
+  \vspace{0.2cm}
+  \textbf{Advantages}
+  \begin{itemize}
+  \item The $H^{-a}$ norm accounts for both scale and intensity of segregation.
+  \item  decays even in the absence of diffusion.
+  \end{itemize} 
+  \begin{definition}
+ The negative Sobolev norm of $\theta$ is given as
+  \[||\theta(.,t)||_{H^{-a}}^2 = \norm{|\nabla|^{-a}\theta(.,t)}_{L^2}^2 = \sum_{\textbf{k}\neq0}k^{-2a}|\hat{\theta}_{\textbf{k}}(t)|^2 \hspace{0.2cm} (a>0)\]
+  where $k = |\textbf{k}|$ and $\hat{\theta}_{\textbf{k}} (t) = \frac{1}{L^{\frac{d}{2}}}\int_{[0,L]^d}e^{-i{\textbf{k}}x}\theta(x,t)dx$
+  \end{definition}
+
+  \begin{definition}  
+The stirring field $u(x,t)$ is called \underline{mixing} if for every periodic square-integrable function $g(x)$ on $[0,L]^d$, 
+  \[ \lim_{t \to \infty} \int_{[0,L]^d} g(x)\theta(x,t) dx = \langle\theta\rangle \]
+  \end{definition}
+  
+  \begin{theorem}[{\cite[Theorem~1]{multi}}]
+Suppose the spatially mean-zero function $\theta(x,t)$ is bounded uniformly in $L^2([0,L]^d)$ for all $t>0$. Then
+    \[ \lim_{t \to \infty} \int_{[0,L]^d} g(x)\theta(x,t) dx = 0 ~~ \forall g \in L^2\]
+    \[ \iff  \lim_{t \to \infty} ||\theta(.,t)||_{H^{-a}} = 0\]
+     for any $a>0$
+  \end{theorem}
+  \begin{proof}
+
+Assume that~$\fw(\cdot,\time)$ is uniformly bounded in~$L^2(\Vol)$,  that is ~$\Ltnorm{\fw(\cdot,\time)} \le \Cu$, and~$\lim_{\time\rightarrow\infty}\norm{\fw(\cdot,\time)}_{\Sobo^{-\qq}} = 0$ for some~$\qq>0$.  Then for any~$\gt\in L^2(\Vol)$, \\
+\vspace{0.0000001cm}
+Using parseval inequality, we have
+\begin{align*}
+  \biggl\lvert\int_{\Vol} \fw\,\gt\dV\biggr\rvert
+  & =  \biggl\lvert \sum_{\km} \hat\fw_\kv\,\hat\gt_\kv^*
+    \biggr\rvert \\
+  &=
+  \biggl\lvert
+  \sum_{\km \le \NK}
+  {\km^{-\qq}}\,\hat\fw_\kv\,
+  {{\km^{\qq}}}{\hat\gt_\kv^*}
+  + \sum_{\km > \NK} \hat\fw_\kv\,\hat\gt_\kv^*
+  \biggr\rvert \\
+  &\textrm{Using triangle inequality and cauchy-schwartz inequality, we have} \\
+  &\le
+  \norm{\fw}_{\Sobo^{-\qq}}\,
+  \biggl(\sum_{\km \le \NK}
+  {\km^{2\qq}}{\lvert\hat\gt_\kv\rvert^2}\biggr)^{1/2}
+  + \Ltnorm{\fw}
+  \biggl(\sum_{\km > \NK} \lvert\hat\gt_\kv\rvert^2\biggr)^{1/2}.
+\end{align*}
+where $ \hat\fw_\kv\, $ and $\hat\gt_\kv^*$  are the fourier coefficients of $\theta$ and $g$ respectively.
+\vspace{0.0001cm}
+Now let ~$\eps>0$, and choose~$\NK(\eps)$ such that $\bigl(\sum_{\km >
+  \NK(\eps)} \lvert\hat\gt_\kv\rvert^2\bigr)^{1/2} \le {\eps}/{2\Cu}$,
+then choose~$\mathbb{N}(\eps)$ such that
+$\norm{\fw(\cdot,\mathbb{N}(\eps))}_{\Sobo^{-\qq}} \le
+\tfrac12\eps\,\bigl(\sum_{\km \le \NK(\eps)}
+{\km^{2\qq}}{\lvert\hat\gt_\kv\rvert^2}\bigr)^{-1/2}$, for $\time >
+\mathbb{N}(\eps)$.
+Then
+\begin{align*}
+  \biggl\lvert\int_{\Vol} \fw\,\gt\dV\biggr\rvert
+  & \le \tfrac12\eps\,\bigl(\sum_{\km \le \NK(\eps)}
+  {\km^{2\qq}}{\lvert\hat\gt_\kv\rvert^2}\bigr)^{-1/2}  \biggl(\sum_{\km \le \NK}
+    {\km^{2\qq}}{\lvert\hat\gt_\kv\rvert^2}\biggr)^{1/2}   + \Ltnorm{\fw}
+     {\eps}/{2\Cu}. \\
+  & \le
+      \tfrac12\l(1 + \Cu^{-1}\Ltnorm{\fw}\r)\eps \le \eps,
+      \qquad \time > \mathbb{N}(\eps).
+\end{align*} \\
+\begin{equation}
+  \biggl\lvert\int_{\Vol} \fw\,\gt\dV\biggr\rvert
+  \le
+    \tfrac12\l(1 + \Cu^{-1}\Ltnorm{\fw}\r)\eps \le \eps,
+    \qquad \time > \mathbb{N}(\eps),
+\end{equation}
+$\implies$ ~$\fw$ converges weakly to zero
+as~$\time\rightarrow\infty$. \\
+\vspace{0.0001cm}
+Conversely, assume ~$\Ltnorm{\fw(\cdot,\time)} \le \Cu$ for
+all~$\time$ and~$\lim_{\time\rightarrow\infty}\int_{\Vol}\fw
+\gt\dV\rightarrow 0$ for all~$\gt\in L^2(\Vol)$. Choose ~$\gt=\exp(-\imi\kv\cdot\xv)$ we can see that  the Fourier
+coefficients~$\hat\fw_\kv(\time)\rightarrow 0$
+as~$\time\rightarrow\infty$. \\
+Since ~$\Ltnorm{\fw(\cdot,\time)}^2 = \sum_\kv\lvert\hat\fw_\kv(\time)\rvert^2\le\Cu^2$, each~$\lvert\hat\fw_\kv(\time)\rvert \le \Cu$ for all~$\time$. \\
+
+Thus
+\begin{equation}
+  \norm{\fw}_{\Sobo^{-\qq}}^2
+  =
+  \sum_{\km \le \NK} \km^{-2\qq}
+  \lvert \hat\fw_\kv\rvert^2
+  + \sum_{\km > \NK} \km^{-2\qq}
+  \lvert \hat\fw_\kv\rvert^2
+  \le
+  \sum_{\km \le \NK} \km^{-2\qq}
+  \lvert \hat\fw_\kv\rvert^2
+  + \NK^{-2\qq} \Ltnorm{\fw}.
+  \label{eq:laststep}
+\end{equation}
+For any~$\eps>0$ choose~$\NK(\eps) \ge (2C/\eps)^{1/2a}$  \\
+ \[\implies ~\km^{-2\qq} \Ltnorm{\fw} \le \km^{-2\qq}\Cu < \eps/2 ~~(\qq>0)\] for~$\km\ge\NK(\eps)$. \\
+Then because for any finite~$\NK$, \[\sum_{\km\le\NK} \km^{-2\qq}\lvert\hat\fw_\kv(\time)\rvert^2\rightarrow 0\] as~$\time\rightarrow\infty$, there exists~$\mathbb{N}(\eps) < \infty$ such that~$\sum_{\km\le\NK(\eps)} \km^{-2\qq}\lvert\hat\fw_\kv(\time)\rvert^2 < \eps/2$ for all~$\time>\mathbb{N}(\eps)$.
+From~\eqref{eq:laststep} we have that~\[\norm{\fw}_{\Sobo^{-\qq}}^2 < \eps\] for all~$\time>\T(\eps)$, which ends the proof.
+  \end{proof}
+ The above theorem clearly shows that $u(x,t)$ is mixing if there is a rapid decay of the $H^{-a}$ norm. Also, these norms have the advantage that unlike variance they decay even in the absence of diffusion, and their decay corresponds to  mixing in the sense of ergodic theory. This rigorous definition of a mixing  in ergodic theory, is better suited for mathematical treatment of mixing.\\
+  The following chapters focus on the $H^{-1}$ norm, which is related to the large-scale mixing measure and was studied by Thiffeault \cite{multi}. The smaller the $H^{-1}$ norm is, the more homogeneous the scalar field is.
+  
+  \subsection{Illustration I}
+  For diffusion free case, Z.Lin, J.L Thiffeault, Doering \cite{opt} test the optimal velocity $u_p = -\frac{\Delta^{-1}\mathbb{P}(\theta\nabla^{-1}\theta)}{||\nabla^{-1}\mathbb{P}(\theta\nabla^{-1}\theta)||_{L^2}}$ where $\mathbb{P}(v) = v -\nabla\Delta^{-1}(\nabla\cdot v)$ using $\theta_0 = \textrm{sin}\hspace{0.1cm}x$
+ \begin{figure}[h!]
+   \centering
+   \includegraphics[width=1\linewidth, height=4cm]{normgraph}
+   \caption{Comparison of the mix-norms for a flow optimized using the separate methods of optimal control and optimal instantaneous decay. Figure from Lin et al.\cite{opt}. The solid line decays faster.}
+ \end{figure}
+
+  \subsection{Illustration II}
+  Also, for diffusion free case, using the optimal velocity $u_p = -\frac{\Delta^{-1}\mathbb{P}(\theta\nabla^{-1}\theta)}{||\nabla^{-1}\mathbb{P}(\theta\nabla^{-1}\theta)||_{L^2}}$ where $\mathbb{P}(v) = v -\nabla\Delta^{-1}(\nabla\cdot v)$ using $\theta_0 = \textrm{sin}\hspace{0.1cm}x$
+ \begin{figure}[h!]
+   \centering
+   \includegraphics[width=1\linewidth, height=5cm]{charles}
+   \caption{Evolution of the concentration field for the flow optimized in the case a = 1 as computed by Lin et al. Figure from Lin et al.\cite{opt}}
+ \end{figure}
+
+
+ \section{ Problem Statement} 
+  Advection-diffusion of a passive scalar field $\theta(x,t)$ by a smooth   incompressible flow field $u(x,t)$ described by 
+   	 \begin{equation}
+   	  \frac{\partial\theta}{\partial t} + u\cdot\nabla\theta = k\Delta\theta, \hspace{0.2cm} \theta(x,0) = \theta_0 (x) 
+   	  \end{equation}
+   	  \begin{equation}
+   	  \nabla \cdot u = 0
+   	  \end{equation}
+   	 The stirring field $u$ is periodic in the $d$-dimensional torus and $L^{\infty}$ initial data $\theta_0$. \\
+   	 The following cases are considered:
+   	 \begin{itemize}
+   	     \item $k = 0$
+   	     \item $k \neq 0$
+   	     \item $k \rightarrow 0$
+   	 \end{itemize}
+ \section{Aim}
+  The aim of this thesis is to examine ``how well'' tracers can be mixed under constraints on the advecting velocity field.
+  	
+\chapter{Mixing without Diffusion}
+The results presented in this chapter follow the paper of Iyer, Kiselev, and Xu \cite{IyerKiselevEA14}, which establishes lower bounds on the mix norm for enstrophy-constrained incompressible flows, as well as the work of Lin, Thiffeault, and Doering \cite{opt} on optimal stirring strategies. The exposition, calculations, and proofs below are drawn from these sources.
+
+The central question is how well tracers can be mixed in the absence of diffusion. Following \cite{IyerKiselevEA14}, this chapter presents lower bounds on the mix norm and describes the optimal flow that maximizes the decay rate of this mix norm (when such flows exist).
+Consider the pure advection equation
+\begin{equation}
+\partial_t\theta + u\cdot\nabla\theta = 0     \label{eq:1}
+\end{equation}
+with initial condition $\theta(x,0) = \theta_0(x)$. The velocity field is assumed to be smooth and incompressible. The advecting velocity $u$ and the initial data $\theta_0$ are periodic in the $d$-dimensional torus $[0,L]^d$, as is $\theta$. \\
+It is also assumed that $\theta$ and $\theta_0$ are spatially mean zero, that is:
+\begin{equation}
+\langle\theta(.,t)\rangle   \equiv \frac{1}{L^d}\int_{[0,L]^d}\theta(x,t)~\rmd x = 0 \label{eq:2} 
+\end{equation}
+ The velocity fields $u$ satisfy either the power constraint or the energy constraint. \\
+\vspace{0.2cm}
+\textit{Energy constraint}
+
+\begin{equation}
+\int_{[0,L]^d}|u(x,t)|^2 ~\rmd x = U^2L^d \label{eq:3}
+\end{equation} 
+\textit{Enstrophy constraint} \\
+\begin{equation}
+\int_{[0,L]^d}|\nabla u(x,t)|^2 ~\rmd x = \frac{L^d}{\tau^2} \label{eq:4}
+\end{equation}
+ 
+Given one of these constraints, the focus is on:
+\begin{enumerate}
+\item a lower bound for the mix norm.
+\item the flow that maximizes the decay rate at every point in time.
+\end{enumerate}
+
+\section{Lower Bounds on the mix norm}
+In the absence of diffusion, incompressible flow conserves not only the variance of $\theta$ but also, by the weak maximum principle, the $L^\infty$ norm: $||\theta(.,t)||_{L^\infty} = ||\theta_0||_{L^\infty}$ for all $t > 0$. 
+\subsection{Energy constraint} 
+
+\begin{eqnarray*}   
+\frac{d}{dt}||\theta||_{H^{-1}}^2  & = & \frac{d}{dt}\int |\nabla^{-1}\theta|^2 ~\rmd x \\
+& = & \int \frac{\partial}{\partial t} |\nabla^{-1}\theta|^2 ~\rmd x \\
+& =  & \int  2 \nabla^{-1}\theta \frac{\partial}{\partial t} \nabla^{-1}\theta ~\rmd x  \\
+& = &  \int  2 \nabla^{-1}\theta  \nabla^{-1}\frac{\partial}{\partial t}\theta ~\rmd x  \\
+\end{eqnarray*}
+
+From \eqref{eq:1}, we have
+\begin{equation}
+\frac{d}{dt}||\theta||_{H^{-1}}^2 =  \int  2 \nabla^{-1}\theta  \nabla^{-1} (-u\cdot\nabla\theta)  ~\rmd x \label{eq:5}
+\end{equation} \\
+Note that 
+\[\nabla\cdot(\theta u) = \theta \nabla\cdot u + u \cdot \nabla\theta \]
+\[\nabla\cdot u = 0 \implies \nabla\cdot(\theta u)  =   u \cdot \nabla\theta \] 
+\eqref{eq:5} $\implies$
+\begin{eqnarray*}   
+ \frac{d}{dt}||\theta||_{H^{-1}}^2 &= & -2 \int  \nabla^{-1}\theta  \nabla^{-1} (u\cdot\nabla\theta)  ~\rmd x \\
+& = & -2 \int  \nabla^{-1}\theta  \nabla^{-1}  \nabla\cdot(\theta u)  ~\rmd x \\
+& =  & -2 \int  \nabla^{-1}\theta \cdot(\theta u)  ~\rmd x\\
+&= & -2 \int (\theta u) \cdot \nabla^{-1}\theta  ~\rmd x \\
+\end{eqnarray*}
+\begin{equation}
+ \frac{d}{dt}||\theta||_{H^{-1}}^2 =  -2 \int \theta u \cdot \nabla(\Delta^{-1}\theta)  ~\rmd x \label{eq:6}
+\end{equation}
+Using cauchy-schwarz inequality we have 
+\begin{eqnarray*}   
+ \frac{d}{dt}||\theta||_{H^{-1}}^2 & \geq &-2 || u\theta||_{L^\infty}||\nabla^{-1}\theta||_{L^2}  \\
+ &  \geq & -2 ||u||_{L^2} || \theta||_{L^\infty}||\nabla^{-1}\theta||_{L^2}  \\
+ & \geq &-2 || u||_{L^2} ||\theta||_{L^\infty}  ||\theta||_{H^{-1}} \\
+ & \geq & -2UL^{\frac{d}{2}} || \theta_0||_{L^\infty} ||\theta||_{H^{-1}}  \\
+\end{eqnarray*}
+
+\[ 2||\theta||_{H^{-1}} \frac{d}{dt}||\theta||_{H^{-1}} \geq -2UL^{\frac{d}{2}} || \theta_0||_{L^\infty} ||\theta||_{H^{-1}} \]
+Divide by $2||\theta||_{H^{-1}}$, we have 
+\[ \frac{d}{dt}||\theta||_{H^{-1}} \geq - UL^{\frac{d}{2}} || \theta_0||_{L^\infty}  \]
+Integrating the equation from $s= 0$ and $s =t$ \\
+\[\int_0^t d ||\theta||_{H^{-1}} \geq \int_0^t  - UL^{\frac{d}{2}} || \theta_0||_{L^\infty} ~\rmd t \]
+\[\int_0^t d ||\theta(.,t)||_{H^{-1}} \geq \int_0^t  - UL^{\frac{d}{2}} || \theta_0||_{L^\infty} ~\rmd t \] 
+\[  ||\theta(.,t)||_{H^{-1}} -  ||\theta(.,0)||_{H^{-1}} \geq  - UL^{\frac{d}{2}} || \theta_0||_{L^\infty} t \]
+\begin{equation}
+||\theta(.,t)||_{H^{-1}}  \geq  ||\theta(.,0)||_{H^{-1}} - UL^{\frac{d}{2}} || \theta_0||_{L^\infty} t \label{eq:7}
+\end{equation}
+This lower bound clearly suggests that perfect mixing is possible in finite time and the time it takes, that is the minimal time for mixing ,$t_{mix}$, is given by the solution of the following equation:
+ \[  ||\theta(.,0)||_{H^{-1}} - UL^{\frac{d}{2}} || \theta_0||_{L^\infty} t_{mix} = 0 \]
+  \[  ||\theta_0||_{H^{-1}} =  UL^{\frac{d}{2}} || \theta_0||_{L^\infty} t_{mix} \]
+  \begin{equation}
+  t_{mix} = \frac{1}{UL^{\frac{d}{2}}} \frac{ || \theta_0||_{H^{-1}}}{ || \theta_0||_{L^\infty}} = \frac{l_0}{2\pi U} \label{eq:8}
+  \end{equation}
+  given that the length scale $l_0$ is 
+  \begin{equation}
+l_0  = \frac{2\pi}{L^\frac{d}{2}} \frac{||\theta_0||_{H^{-1}}}{||\theta_0||_{L^\infty}} \label{eq:9}
+    \end{equation}
+    By Poincare's inequality, we have that $l_0 \leq L$ where $l_0$ is basically the characteristic length of the initial nonhomogenous passive scaler. Of course, It is expected that the mixing time depends on the initial data as seen in \eqref{eq:8}.
+\subsection{Enstrophy constraint}
+From 
+\[  \frac{d}{dt}||\theta||_{H^{-1}}^2 =  -2 \int  \nabla\Delta^{-1}\theta \cdot(\theta u)  ~\rmd x\]
+Define the scaler field
+\begin{equation}
+\phi(x,t) = (\Delta^{-1}\theta)(x,t) = \sum_{k\neq0} e^{ik\theta}k^{-2}\hat{\theta}_k(t) \label{eq:10}
+\end{equation} 
+where $ \hat{\theta}_k(t)$ are the fourier coefficients, that is  \[ \hat{\theta}_k(t) = \int e^{-ikx}\theta(x,t) ~\rmd x \]
+So,
+\begin{eqnarray*}   
+ \frac{d}{dt}||\theta||_{H^{-1}}^2 &=& -2 \int  \nabla\Delta^{-1}\theta \cdot(\theta u)  ~\rmd x \\
+& = & -2 \int  \Delta^{-1}\theta \nabla u \Delta\Delta^{-1}\theta  ~\rmd x \\
+&=  &-2 \int \phi \nabla u \Delta\phi  ~\rmd x \\
+\end{eqnarray*}
+
+Using H\"{o}lder inequality, we have 
+\[ -2 \int \phi \nabla u \Delta\phi  ~\rmd x \geq -2||\phi||_{L^\infty} ||\nabla u \Delta\phi ||_{L_2}\]
+\[||\nabla u \Delta\phi ||_{L_2} \leq ||\nabla u||_{L_2} ||\Delta\phi ||_{L_2}\]
+this implies
+\[  \frac{d}{dt}||\theta||_{H^{-1}}^2 \geq  -2 || \phi ||_{L^\infty} ||\nabla u||_{L^2} ||\Delta\phi||_{L^2}  dx  \] 
+Using $||\nabla u||_{L^2}^2 = \frac{L^d}{\tau^2}$, then 
+\[  \frac{d}{dt}||\theta||_{H^{-1}}^2 \geq -2|| \phi ||_{L^\infty}  \frac{L^\frac{d}{2}}{\tau}||\theta_0||_{L^2}\]
+
+In three dimensions (d =3), the following interpolation estimate holds:
+For mean-zero functions on the 3-torus, there exists an $O(1)$ number $C_3$ such that 
+\begin{equation}
+||\phi||_{L^\infty}  \leq C_3||\nabla\phi||_{L^2}^\frac{1}{2} ||\Delta\phi||_{L^2}^\frac{1}{2} = C_3 ||\theta||_{H^{-1}}^\frac{1}{2} ||\theta_0||_{L^2}^\frac{1}{2}
+\end{equation}
+$\implies$ \\
+\begin{eqnarray*}
+ \frac{d}{dt}||\theta||_{H^{-1}}^2 &\geq&  -2 || \phi ||_{L^\infty} ||\nabla u||_{L^2} ||\Delta\phi||_{L^2}   \\
+& = & -2C_3||\nabla\phi||_{L^2}^\frac{1}{2} ||\Delta\phi||_{L^2}^\frac{3}{2} ||\nabla u||_{L^2} \\
+&=& C_3 ||\theta||_{H^{-1}}^\frac{1}{2} ||\theta_0||_{L^2}^\frac{3}{2} \frac{L^\frac{d}{2}}{\tau} \\
+\end{eqnarray*}
+
+\[  \frac{d}{dt}||\theta||_{H^{-1}}^2 \geq - c_3 ||\theta||_{H^{-1}}^\frac{1}{2} ||\theta_0||_{L^2}^\frac{3}{2} \frac{L^\frac{3}{2}}{\tau}\]
+\[ 2||\theta||_{H^{-1}} \frac{d}{dt}||\theta||_{H^{-1}} \geq- c_3 ||\theta||_{H^{-1}}^\frac{1}{2} ||\theta_0||_{L^2}^\frac{3}{2} \frac{L^\frac{3}{2}}{\tau}\]
+\begin{equation}
+\frac{d}{dt}||\theta||_{H^{-1}} \geq - C_3 ||\theta||_{H^{-1}}^\frac{-1}{2} ||\theta_0||_{L^2}^\frac{3}{2} \frac{L^\frac{3}{2}}{\tau} \label{eq:ens-decay}
+\end{equation}
+\[ \frac{d||\theta||_{H^{-1}}}{||\theta||_{H^{-1}}^\frac{-1}{2}} \geq - C_3  ||\theta_0||_{L^2}^\frac{3}{2} \frac{L^\frac{3}{2}}{\tau} dt \]
+Integrating with respect to $t$, we have
+\[ \frac{2}{3}||\theta||_{H^{-1}}^\frac{3}{2} -  \frac{2}{3}||\theta_0||_{H^{-1}}^\frac{3}{2} \geq - C_3  ||\theta_0||_{L^2}^\frac{3}{2} \frac{L^\frac{3}{2}}{\tau} \times  t \]
+
+\[ \frac{2}{3}||\theta||_{H^{-1}}^\frac{3}{2}  \geq \frac{2}{3}||\theta_0||_{H^{-1}}^\frac{3}{2}  - C_3  ||\theta_0||_{L^2}^\frac{3}{2} \frac{L^\frac{3}{2}}{\tau} \times t \]
+\begin{equation}
+||\theta||_{H^{-1}} \geq ||\theta_0||_{H^{-1}} \left[ 1 - \frac{3C_3}{2\tau}\left(\frac{L||\theta_0||_{L^\infty}}{||\theta_0||_{H^{-1}}} \right)^\frac{3}{2} \times  t  \right]^\frac{2}{3} \label{eq:12}
+\end{equation}
+provided the term in the square bracket is non-negative. \textit{This also suggests that perfect mixing might be possible in finite time}. The mixing time is bounded below by 
+\[ 1 - \frac{3C_3}{2\tau}\left(\frac{L||\theta_0||_{L^\infty}}{||\theta_0||_{H^{-1}}} \right)^\frac{3}{2} \times  t_{mix}  = 0 \]
+$\implies$
+\begin{equation}
+ t_{mix} = \tau \times \frac{2}{3C_3}\left( \frac{l_0}{2\pi L}\right)^\frac{3}{2}  \label{eq:13}
+\end{equation}
+where \[ l_0 = 2\pi \frac{||\theta_0||_{H^{-1}}}{||\theta_0||_{L^2}}\]
+Using Poincare inequality, it is easy to see that $l_0 \leq L$. $l_0$ is another length scale describing  the size of inhomogeneities in the initial data.
+
+
+\subsection{Uniformly bounded rate of strain constraint}
+In contrast to the finite-time mixing possibilities, consider the case where the rate of strain of the stirring velocity is uniformly bounded in space and time. \\
+Given $||\nabla u|| \leq \gamma < \infty$, and by H\"{o}lder's inequality, we have
+\begin{equation}
+\frac{d}{dt} ||\theta||_{H^{-1}}^2 = 2\int \nabla^{-1}\theta \cdot (\nabla u) \cdot \nabla^{-1}\theta dx \geq -2\gamma ||\theta||_{H^{-1}}^2
+\end{equation}
+Using Gronwall's inequality, we have 
+\[ ||\theta||_{H^{-1}} \geq ||\theta_0|| e^{-\gamma t} \]
+\textit{This suggests that perfect mixing is not possible in finite time but an exponential decay of the mix norm.}
+
+\subsection{Optimal striring}
+	Multiplying \eqref{eq:1}  by $-\Delta^{-1}\theta$, and integrating over the spatial domain, and by parts we have
+   	\begin{equation}
+   	\frac{d}{dt}||\nabla^{-1}\theta||_{L^2}^2 = \frac{d}{dt}||\theta||_{H^{-1}}^2 = -2\int\theta u\cdot\nabla(\Delta^{-1}\theta) ~\rmd x
+   	\end{equation}
+   Define $\phi(x,t) = \Delta^{-1}\theta(x,t)$  and  write \\
+   \begin{equation}
+	\frac{d}{dt}||\nabla^{-1}\theta||_{L^2}^2 = -2\int u\cdot(\theta\nabla\phi) ~\rmd x = -2\int u\cdot \mathbb{P}(\theta\nabla\phi) ~\rmd x
+   \end{equation}
+   where $\mathbb{P}$ is the projector onto divergence-free fields defined by 
+  \[ \mathbb{P}(v) = v\cdot\nabla\Delta^{-1}(\nabla\cdot v) .\]
+  Now suppose an enstrophy constraint,
+  \[\int_{[0,L]^d}|\nabla u(x,t)|^2 ~\rmd x = U^2L^d\]
+  \[U = \frac{1}{L^\frac{d}{2}}\left(\int_{[0,L]^d}|\nabla u(x,t)|^2 ~\rmd x\right)^\frac{1}{2}~~ = \frac{1}{L^\frac{d}{2}} ||\nabla u||_{L^2}\]
+  In particular, the Cauchy-Schwarz inequality gives
+\[\int u\cdot \mathbb{P}(\theta\nabla\phi) ~\rmd x \leq ||u||_{L^2}||\mathbb{P}(\theta\nabla\phi)||_{L^2}\]
+\[ \leq UL^\frac{d}{2}||\mathbb{P}(\theta\nabla\phi)||_{L^2}\]
+The optimal $u_e$ saturating this inequality satisfies
+\[ \int u\cdot \mathbb{P}(\theta\nabla\phi) dx = UL^\frac{d}{2}||\mathbb{P}(\theta\nabla\phi)||_{L^2} .\]
+Solving the equation above gives 
+\[u_e = \frac{U\mathbb{P}(\theta\nabla\phi)}{\frac{1}{L^\frac{d}{2}}
+\left( \int_{\Omega} |\mathbb{P}(\theta\nabla\phi)|^2 ~\rmd x \right)^\frac{1}{2} 
+} \]
+\begin{equation}
+u_e = U\frac{\mathbb{P}(\theta\nabla\phi)}{\langle|\mathbb{P}(\theta\nabla\phi)|^2\rangle^\frac{1}{2} }
+\end{equation}
+ With fixed enstrophy constraint $ \int_{[0,L]^d}|\nabla u(x,t)|^2 dx = \frac{L^d}{\tau^2}$, the optimal mixer maximizing the rate of decay of the mix- norm $H^{-1}$ is \\
+  \begin{equation}\label{ensoptvec}
+  u_p = \frac{1}{\tau} \frac{-\Delta^{-1}\mathbb{P}(\theta\nabla\phi)}{\langle|\nabla^{-1}\mathbb{P}(\theta\nabla\phi)|^2\rangle^{\frac{1}{2}}}
+  \end{equation}
+  provided the norm in denominator does not vanish.
+
+ \section{Lower Bound on mix-norm for enstrophy constrained flow}
+The  numerical simulation by Lin and Charles\cite{opt} suggests that finite time perfect mixing by an enstrophy constrained incompressible is impossible but a robust exponential decay of the mix norm. The rigorous analysis suggests that it may be possible. In the next section, this discrepancy  between analysis and simulation is addressed. The following theorem settles this affirmatively.\\
+\begin{theorem}[{\cite[Theorem~1.1]{IyerKiselevEA14}}]\label{ensthm}
+ Let $u$ be a smooth time independent incompressible periodic vector field on the d-dimensional torus, and let $\theta$ solve \eqref{eq:1} with periodic boundary conditions and $L_1$ initial data $\theta_0$.
+ For any $p > 1$ and $\lambda\in (0, 1)$ there exists a length scale $r_0 = r_0(\theta_0, \lambda)$, an explicit constant $\epsilon_0 = \epsilon_0(\lambda, d)$, and a constant $c = c(d, p)$ such that  
+\begin{equation}
+||\theta(t)||_{H^{-1}} \geq \epsilon_0 r_0^{\frac{d}{2}+1}||\theta_0||_{L^\infty}exp\left(\frac{-c}{m(A_\lambda)^\frac{1}{p}} \int_0^t ||\nabla u(s) ||_{L^p} ds\right) \label{eq:19}
+\end{equation}
+ 
+ Here $A_\lambda$ is the super level set $\left\lbrace \theta_0 > \lambda||\theta_0||_{L^\infty}\right\rbrace$ \\
+\end{theorem}
+
+ It is straightforward to see from the theorem that if the instantaneous enstrophy constraint $||\nabla u(s)||_{L^2} \leq F$ is enforced, then $||\theta(t)||_{H^{-1}}$ decays almost exponentially in time. \\
+ From \eqref{eq:19}, it follows that passive scalars cannot be mixed perfectly in finite time. 
+ 
+
+\subsection{ $\delta$ - mixed}
+ Towards the proof of Theorem \ref{ensthm}, the following definition and lemmas are needed. \\
+  The numerical simulations presented later indicate an exponential lower bound with a decay rate in good qualitative agreement with \eqref{eq:19}.
+\begin{definition}[{\cite[Definition~2.1]{IyerKiselevEA14}}]\label{defdelta}
+ Let $k\in(0, \frac{1}{2})$ be fixed. For $\delta >0$, we say a set $A \subset\mathbb{T}^d$ is $\delta$-semi-mixed if 
+ \begin{equation}
+ \frac{m(A\cap B(x.\delta))}{m(B(x, \delta))} \leq 1-k ~~~\forall x\in \mathbb{T}^d
+ \end{equation}
+ Also, $A^c$ is also $\delta$-semi-mixed, then we say A is \underline{$\delta-mixed$}. 
+\end{definition}
+ 
+ \subsubsection{Relation Between $\delta$-semi-mixed and negative Sobolev norms} 
+\begin{lemma}[{\cite[Lemma~2.2]{IyerKiselevEA14}}]\label{lemmadelta}
+ Let $\lambda\in (0,1]$ and $\theta\in L^\infty(\mathbb{T}^d)$. If for any integer $n>0$, $k\in\left(0, \frac{\lambda}{1+\lambda}\right)$ there exists an explicit constant $c_0 = c_0(d,k,\lambda, n)$ such that 
+\begin{equation}
+||\theta||_{H^{-n}} \leq \frac{||\theta||_{L^\infty} \delta^{n+\frac{d}{2}}}{c_0}
+\end{equation}
+$\implies$ $A_\lambda$ is $\delta$-semi-mixed. \\
+Here, $A_\lambda$ is the super level set defined by $A_\lambda = \left\lbrace \theta > \lambda||\theta||_{L^\infty} \right\rbrace $
+\end{lemma}
+ \begin{proof}%{{{
+    Assume by contradiction that $A_\lambda$ is not $\delta$-semi-mixed.
+    Then by definition \ref{defdelta}, there exists $x \in \T^d$ such that
+     \[
+          \frac{m(A_\lambda \cap B(x,\delta))}{m(B(x,\delta))}
+    	\geq (1-\kappa) 
+     \]
+    $ \implies$
+    \begin{equation}\label{eqnDual1}
+      m(A_\lambda \cap B(x,\delta))
+	\geq (1-\kappa) m(B(x,\delta))
+	=(1-\kappa)\pi(d) \delta^d.
+    \end{equation}
+    Where $\pi(d)$ is the volume of $d$-dimensional unit ball.
+Using duality
+    \begin{equation}\label{eqnDual2}
+      \norm{\theta}_{H^{-n}}
+	= \sup_{f\in H^{n}} \frac{1}{\norm{f}_{H^{n}} } \abs[\Big]{\int_{\mathbb{T}^d} \theta(x)f(x) \, dx }.
+    \end{equation}
+    Let $f \in H^{n}$  be a function which is identically equal to $1$ in $B(x,\delta)$, and which vanishes outside $B(x,(1+\eps)\delta)$ for some small $\eps > 0$.
+    A simple calculation shows that 
+    \[
+      \norm{f}_{H^{n}}\leq c_1(d)\cdot \eps^{-n + \frac{1}{2}}\cdot \delta^{-n + \frac{d}{2}},
+    \]
+    for some (explicit) constant $c_1$ depending only on the dimension.
+    %We subsequently assume that $c_1$ can change from line to line, provided it only depends on the dimension $d$.
+
+    On the other hand using~\eqref{eqnDual1} gives
+    \begin{equation}\label{eq:kap}
+      \int_{\mathbb{T}^d}\theta(x) f(x) dx
+	\geq \pi(d) \norm{\theta}_{L^\infty} \delta^d \paren[\big]{ (1-\kappa) \lambda - \kappa - c_2(d)\eps},
+    \end{equation}
+    for some (explicit) dimensional constant $c_2(d)$.
+    Choosing
+    $
+      \eps = \frac{\lambda - (1+\lambda)\kappa}{2c_2(d)}
+    $
+    and using~\eqref{eqnDual2} we obtain
+    %And since our choice of $f$ doesn't depend on the location of the ball, so if we take $\kappa=\frac{1}{5}$, the right hand side of (\ref{eq:kap}) is no less than $C(d)\delta^d$, with $C(d)$ only depend on dimension.
+    %So in all, we have
+    \[
+      \norm{\theta}_{H^{-n}}\geq \frac{\norm{\theta}_{L^\infty} \delta^{n + \frac{d}{2}} }{c_0(d, \kappa, \lambda, n)}
+    \]
+    as desired.
+  \end{proof}%}}}
+
+\subsection{\textbf{Lemma and Proof of Lower Bound Theorem}}
+\begin{lemma}[{\cite[Lemma~2.3]{IyerKiselevEA14}}]\label{lemlower}Let $\psi$ be the flow map of an incompressible vector field $u$.
+       Let $A\subset\mathbb{T}^d$ be any measurable set and $p > 1$. There exist constants $r_0 = r_0(A)$ and $a = a(d, k, p) > 0$, such that if for some $\delta <\frac{r_0}{2}$ and $\tau > 0$  and the set  $\psi_T{ (A)}$ is $\delta$-semi-mixed, then
+       \begin{equation}
+       \int_0^T ||\nabla u(.,t)||_{L^p} dt \geq \frac{m(A)^\frac{1}{p}}{a}\biggl\lvert ln\left(\frac{2\delta}{r_0}\right)\biggr\rvert
+       \end{equation}
+\end{lemma}
+\begin{proof}  of  Theorem\ref{ensthm}.
+       Replacing $\theta$ with $\frac{\theta}{||\theta||_{L^\infty}}$, without the loss of generality,
+       assume $||\theta_0||_{L^\infty} = 1$. Fix $0<\lambda\leq 1$ and $k\in\left(0, \frac{\lambda}{1+\lambda}\right).$ \\
+       Let $a$ be a constant from Lemma \ref{lemlower}, and $c_0$ be a constant from Lemma \ref{lemmadelta} with $n = 1$ (i.e $H^{-1}$) \\
+       Choose \\
+      \[ \delta = (c_0||\theta(t)||_{H^{-1}})^{\frac{2}{d+2}}\]
+   Then 
+  \begin{equation} 
+   ||\theta(t)||_{H^{-1}} = \frac{\delta^{\frac{d}{2}+1}}{c_0} \label{eq:21}
+   \end{equation}
+   
+   Using Lemma~\ref{lemmadelta}, it implies the superlevel set $\left\lbrace \theta(t) > \lambda \right\rbrace$ is $\delta$-semi-mixed.  \\
+  Let $\left\lbrace \theta(t) > \lambda \right\rbrace = \psi(A_\lambda)$ where $\psi$ is the flow of the vector field $u$. \\
+  Using Lemma ~\ref{lemlower} implies
+   \[\int_0^T ||\nabla u(t)||_{L^p} dt \geq \frac{m(A)^\frac{1}{p}}{a}\biggl\lvert ln\left(\frac{2\delta}{r_0}\right)\biggr\rvert\]
+   \begin{equation}
+    \frac{r_0}{2} \rm{exp}\left(\frac{-a}{m(A)^\frac{1}{p}}\int_0^T ||\nabla u(t)||_{L^p} dt \right) \leq \delta 
+   \end{equation}
+
+   From \eqref{eq:21}, we have
+   \[ ||\theta(t)||_{H^{-1}} = \frac{\delta^{\frac{d}{2}+1}}{c_0} \geq \frac{r_0^{\frac{d}{2}+1}}{c_0 2^{\frac{d}{2}+1}} \rm{exp}\left(\frac{-da}{m(A_\lambda)^\frac{1}{p}}\int_0^T ||\nabla u(t)||_{L^p}dt \right) \]
+   
+   Pick $\epsilon_0 = \frac{1}{c_0 2^{\frac{d}{2}+1}}, c = -da$ ends the proof.
+\end{proof}
+ 
+\section{ Universal Decay Rates}
+This section examines what happens when the advecting velocity is zero at the boundary, i.e., no-slip conditions, following \cite{IyerKiselevEA14}.
+  \begin{proposition}[{\cite[Proposition~3.1]{IyerKiselevEA14}}]\label{boundaries}
+    Let $I = (0, \ell)^d$ be a cube in $\mathbb R^d$.
+    Suppose that there exist $k\in \mathbb R$, $q \in [1, \infty]$ and $c_0 > 0$ %and a positive \emph{algebraic} function $\alpha$
+    such that
+    %we have a universal lower bound of the form
+    \begin{equation}\label{eqnULowerBd}
+      \norm{\theta(t)}_{H^{-1}}
+	\geq %\alpha\paren[\big]{ \norm{\theta_0}_{W^{k, q}} }
+	B(\theta_0)  \exp\paren[\Big]{ \frac{-c_0}{\ell^{d/p}} \int_0^t \norm{\grad u}_{L^p} }
+    \end{equation}
+    for some $p \in [1, d]$, all incompressible $u$ which vanish on $\del I$, and all initial data $\theta_0 \in C_c^\infty(I).$
+    Assume that there exists $\gamma \in \mathbb R$ such that the pre-factor $B(\theta_0)$ satisfies
+    \[
+      B(A\theta_0)= AB(\theta_0)
+      \quad\text{and}\quad
+      B(\theta_{0,a})= a^{-\gamma} B(\theta_0),
+    \]
+    where $\theta_{0,a}(x) = \theta_0(x/a)$ for $x \in (0,a)^d$ and $\theta_{0,a}(x) = 0$ otherwise.
+    %Then this bound can not be optimal.
+
+    Then, for any mean zero $\theta_0 \in C_c^\infty(I)$ and any smooth velocity field $u$ such that
+    \[
+      \limsup_{t \to \infty} \frac{1}{t} \int_0^t \norm{\grad u}_{L^p} <  \infty,
+      \quad \grad \cdot u = 0,
+      \quad\text{and}\quad u = 0 \text{ on } \del I,
+    \]
+    the decay of $\norm{\theta(t)}_{H^{-1}}$ as $t \to \infty$ is bounded below by an algebraic function of time.
+  \end{proposition}
+  \begin{proof}
+    Without loss of generality, assume $\ell = 1$.
+    Let $\theta_0 \in C_c^\infty$ be zero mean initial data and let $h(t) = \norm{\theta(t)}_{H^{-1}}$. \\
+    \textit{Aim}: To show that $h$ decays algebraically with respect to $t$ as $t$ goes large. \\
+    Let $a > 0$, and 
+    \[
+      I_a = (0, a)^d,\quad
+      \eta( x, t ) = \chi_{I_a} \times \theta\paren[\big]{ x/a, t/a },
+      \quad
+      v(x, t) = \chi_{I_a} \times u\paren[\big]{ x/a, t/a }.
+    \]
+    Then $(\eta, v)$ is a solution of~\eqref{eq:1} on the \emph{unscaled} domain $I$. \\
+    Because $\theta_0 \in C_c^\infty(I)$  and $u = 0$ on $\del I$, we see $\theta(t)$ remains compactly supported in $I_a$ for all $t >0$.
+    %Thus \\
+    We assumed that,
+    \[
+     % \norm{\eta(t)}_{W^{k, q}} = a^{\frac{d}{q} - k} \norm[\big]{\theta\paren[\big]{ \frac{t}{a} } }_{W^{k, q}}
+     B(\eta_0) = B\big(\chi_{I_a}\times\theta_0(\frac{x}{a})\big)  =  a^{-\gamma}B(\theta_0)
+      \quad\text{and}\quad
+      %\norm{\eta(t)}_{W^{\ell, q}} = a^{\frac{d}{q} - k} \norm[\big]{\theta\paren[\big]{ \frac{t}{a} } }.
+      \norm{\grad v(t)}_{L^p} = a^{\frac{d}{p} - 1} \norm{\grad u\paren[\big]{t/a } }_{L^p}.
+    \]
+    and using equation~\eqref{eqnULowerBd}, the first equality by duality and scaling gives
+    \begin{multline*}
+      a^{d/2+1} h\paren[\big]{t/a}
+      = \norm{\eta(t)}_{H^{-1}}
+	\geq %\alpha\paren[\big]{ \norm{\eta_0}_{W^{k, q}} }
+       B(\eta_0)
+	  \exp\paren[\Big]{ -c_0 \int_0^t \norm{\grad v}_{L^p} }\\
+	= %\alpha\paren[\big]{ a^{\frac{d}{q} - k} \norm{\theta_0}_{W^{k, q}} }
+       a^{-\gamma}B(\theta_0)
+	  \exp\paren[\Big]{ -c_0 a^{\frac{d}{p} - 1} \int_0^t \norm{\grad u\paren[\big]{ s/a }}_{L^p} \, ds }.
+    \end{multline*}
+    
+
+    Hence, taking $t'=t/a$ gives
+    \[ h(t') \geq  a^{-N}B(\theta_0) \exp \left(-c_0 a^{d/p}  \int_0^{t'} \norm{\grad u(s)}_{L^p} \, ds \right), \]
+    where $N= d/2+1+\gamma.$
+%    \[
+%      f(t')
+%	\geq
+%	  a^{-d/2-1-\gamma}
+%	  %\alpha\paren[\big]{ a^{\frac{d}{q} - k} \norm{\theta_0}_{W^{k, q}} }
+%B(\theta_0)
+%	  \exp\paren[\Big]{ -c_0 a^{d/p} \int_0^{t'} \norm{\grad u(s)}_{L^p} \, ds }.
+%    \]
+This  lower bound is true $\forall a>0.$ %Since we assume that $\alpha$ is an algebraic function,
+%The bound can be
+%written more compactly as
+ %may depend on $q,k,$ and $d,$ and $C_1$ also on $\theta_0.$
+Let 
+\[ f(a) =  a^{-N}B(\theta_0) \exp \left(-c_0 a^{d/p} U \right),  \]
+where $U = \int_0^{t'} \norm{\grad u(s)}_{L^p} \, ds$ \\
+Maximizing $f(a)$ in $a$ (and changing $t'$ to $t$), we have
+\[ f'(a) = -Na^{-N-1}B(\theta_0) \exp \left(-c_0 a^{d/p} U \right) + a^{-N}B(\theta_0) \exp \left(-c_0 a^{d/p} U \right) -c_0 \frac{d}{p}a^{d/p -1} U\]
+\[f'(a) = 0\]
+\[\implies _Na^{-1} - c_0\frac{d}{p}a^{\frac{d}{p}-1}U = 0\]
+\[\implies a = \left( \frac{-N}{c_0 U^{\frac{d}{p}}}\right)^{\frac{p}{d}}\]
+Substiuting $a$ in $f(a)$, we arrive at an algebraic lower bound
+\[
+  h(t) \geq C \left( \frac{N}{\int_0^t \|\nabla u\|_{L^p}\,ds} \right)^{-pN/d}.
+\]
+\begin{gather*}
+  \norm{\theta(t)}_{H^{-1}} \geq C \left( \frac{N}{\int_0^t \|\nabla u\|_{L^p}\,ds} \right)^{-pN/d}.
+  \qedhere
+\end{gather*}
+%    Now fix $t = 1$ and define a new time variable $t' = 1/a$.
+%    Our assumption on $u$ guarantees that if $\frac{d}{p} - 1 \geq 0$ then as $a \to 0$ the exponential factor above is bounded away from $0$.
+%    The remainder of the right hand side is algebraic in $a$, and hence in our new time variable $t'$.
+%    This shows $f(t')$ is bounded below by an algebraic function of $t'$, finishing the proof.
+  \end{proof}
+  
+\section{Numerical Discussion}
+
+This section presents the author's own Python pseudo-spectral simulation of the optimal mixing problem, written as a port of Gautam Iyer's MATLAB code that accompanies \cite{IyerKiselevEA14,opt}. The implementation uses $N = 64$ spectral modes per spatial direction on the unit torus $\mathbb{T}^2 = [0,1]^2$, with Dormand--Prince RK45 time integration (tolerances $\texttt{rtol} = 10^{-6}$, $\texttt{atol} = 10^{-8}$). Under incompressible advection all $L^p$ norms of $\theta$ are conserved; the simulation is terminated automatically once the $L^2$, $L^4$ and $L^8$ norms drift by more than $10^{-3}$ from their initial values, indicating that the grid can no longer resolve the fine-scale structures generated by stirring.
+
+\subsection*{Optimal velocity and initial data}
+
+The Lin--Thiffeault--Doering optimal velocity \cite{opt}, which minimises $\frac{d}{dt}\|\theta\|_{H^{-1}}^2$ instantaneously subject to the enstrophy constraint $\|\nabla u\|_{L^2} \le F$, is
+\[
+  u = F\,\frac{v}{\|\nabla v\|_{L^2}}, \qquad
+  v = -\Delta^{-1}\mathbb{P}(\theta\,\nabla\Delta^{-1}\theta),
+\]
+where $\mathbb{P}(g) = g - \nabla\Delta^{-1}(\nabla\cdot g)$ is the Leray projection onto divergence-free fields. The constraint force $F = 1$ is used throughout.
+
+The initial data is parametrised by a support-size parameter $b \in (0,1)$:
+\[
+    \theta_0(x, y) = \begin{dcases}
+      \sin\paren[\big]{ \frac{2 \pi x}{b} } \sin\paren[\big]{ \frac{2 \pi (y + \frac{b}{8}) }{b} }
+      & \text{for } 0 < x < \frac{b}{2},\; \frac{-b}{8} < y < \frac{b}{2} - \frac{b}{8},
+      \\
+      \sin\paren[\big]{ \frac{2 \pi x}{b} } \sin\paren[\big]{ \frac{2 \pi (y - \frac{b}{8}) }{b} }
+      & \text{for } \frac{b}{2} < x < b,\; \frac{b}{8} < y < \frac{b}{2} + \frac{b}{8},\\
+      0 & \text{otherwise,}
+    \end{dcases}
+ \]
+normalised so that $\|\theta_0\|_{L^2} = 1$. Since $m(\mathrm{supp}(\theta_0)) = O(b^2)$, Theorem~\ref{ensthm} predicts that the exponential decay rate $\lambda(b)$ should scale linearly in $b$.
+
+\subsection*{Snapshots and mix-norm decay}
+
+The figures below show six snapshots of the scalar field $\theta(x,y,t)$ for $b = 1$, sampled from $t = 0$ to the stopping time. The LTD velocity progressively stretches and folds the scalar into finer filaments, consistent with an exponential decrease in the $H^{-1}$ norm.
+
+ \begin{figure}[h!]
+ \captionsetup[subfigure]{labelformat=empty}
+   \centering
+   \begin{subfigure}[b]{0.45\linewidth}
+     \includegraphics[width=\linewidth]{fig1}
+     \caption{$t=0$}
+   \end{subfigure}
+   \begin{subfigure}[b]{0.45\linewidth}
+     \includegraphics[width=\linewidth]{fig2}
+     \caption{$t = 0.4$}
+   \end{subfigure}
+ \end{figure}
+
+ \begin{figure}[h!]
+ \captionsetup[subfigure]{labelformat=empty}
+   \centering
+   \begin{subfigure}[b]{0.45\linewidth}
+     \includegraphics[width=\linewidth]{fig3}
+     \caption{$t=0.900$}
+   \end{subfigure}
+   \begin{subfigure}[b]{0.45\linewidth}
+     \includegraphics[width=\linewidth]{fig4}
+     \caption{$t = 1.350$}
+   \end{subfigure}
+ \end{figure}
+
+  \begin{figure}[h!]
+  \captionsetup[subfigure]{labelformat=empty}
+    \centering
+    \begin{subfigure}[b]{0.45\linewidth}
+      \includegraphics[width=\linewidth]{fig5}
+      \caption{$t=1.850$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\linewidth}
+      \includegraphics[width=\linewidth]{fig6}
+      \caption{$t = 2.319$}
+    \end{subfigure}
+  \caption{Snapshots of the passive scalar $\theta(x,y,t)$ at six times for $b=1$, $N=64$, $F=1$. The LTD velocity continuously sharpens scalar gradients into progressively finer structures.}
+ \end{figure}
+
+ \begin{figure}[h!]
+ \captionsetup[subfigure]{labelformat=empty}
+   \centering
+   \begin{subfigure}[b]{0.4\linewidth}
+     \includegraphics[width=\linewidth]{fig7}
+     \caption{$\ln\|\theta\|_{H^{-1}}$ vs $t$}
+     \label{logplot}
+   \end{subfigure}
+   \begin{subfigure}[b]{0.4\linewidth}
+     \includegraphics[width=\linewidth]{decay}
+     \caption{Exponential decay rate vs $b$.}
+     \label{expplot}
+   \end{subfigure}
+   \caption{Left: log of the $H^{-1}$ mix norm vs.\ time for $b=1$; the near-linear decay confirms approximate exponential mixing. Right: fitted exponential decay rate $\lambda(b)$ for eight values of $b$.}
+ \end{figure}
+
+\subsection*{Dependence on support size $b$}
+
+Eight values of $b$ are simulated and the exponential decay rate $\lambda(b)$ is extracted by fitting a line to $\log\|\theta\|_{H^{-1}}$ over the final two-thirds of each trajectory (discarding the initial transient). The results are summarised in Table~\ref{tab:decayrates}.
+
+\begin{table}[H]
+  \centering
+  \caption{Fitted exponential decay rates $\lambda$ and mixing timescales $\tau = -1/\lambda$ for eight support-size values $b$. ($N = 64$, $F = 1$.)}
+  \label{tab:decayrates}
+  \begin{tabular}{cccc}
+    \toprule
+    $b$ & $t_{\text{stop}}$ & $\lambda$ & $\tau = -1/\lambda$ \\
+    \midrule
+    0.500 & 1.30 & $-0.440$ & 2.27 \\
+    0.563 & 1.60 & $-0.386$ & 2.59 \\
+    0.625 & 1.95 & $-0.334$ & 2.99 \\
+    0.688 & 2.30 & $-0.286$ & 3.49 \\
+    0.750 & 2.70 & $-0.244$ & 4.11 \\
+    0.813 & 3.00 & $-0.207$ & 4.82 \\
+    0.875 & 3.25 & $-0.174$ & 5.74 \\
+    0.938 & 3.20 & $-0.142$ & 7.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The decay rate $\lambda$ grows as $b$ decreases: scalars with narrower initial support mix faster. A power-law fit to $\log|\lambda|$ vs $\log b$ gives $\lambda \sim b^{-1.78}$, compared with the theoretically predicted $b^{-1}$ scaling of \cite{opt}. This deviation is consistent with the known gap between the greedy LTD strategy and the global optimum \cite{IyerKiselevEA14}; higher resolution (larger $N$) would be needed to access the true asymptotic regime. Qualitatively, Figure~\ref{expplot} confirms the linear relationship between the decay rate and $b$ predicted by Theorem~\ref{ensthm}, since $m(\mathrm{supp}(\theta_0)) = O(b^2)$.
+ 
+ \section{ Conclusion}
+  \begin{enumerate}
+\item In the absence of diffusion, finite-time perfect mixing  might 
+\begin{itemize}
+    \item be possible by an energy constrained flows.
+    \item be impossible by an enstrophy constrained flows.
+\end{itemize}
+ \vspace{0.2cm} 
+ \item Finally, Proposition \ref{boundaries} proves that the exponential
+  decay rate in mixing with an enstrophy constrained flow would lead to an
+  algebraic in time lower bound if the stirring velocity field vanishes at the
+  boundary and the initial data is zero on the boundary.
+ \end{enumerate} 
+
+\chapter{Mixing with Diffusion}
+The results in this chapter follow the analysis of Lunasin, Lin, Novikov, Mazzucato, and Doering \cite{LunasinLinEA12} on optimal mixing and stirring under energy and enstrophy constraints in the presence of diffusion. The lower bounds and calculations presented below are drawn from that work.
+
+Consider the advection of a passive scalar field $\theta(x,t)$ by a smooth incompressible flow field $u(x,t)$ described by 
+   	 \begin{equation} \label{peq:1}
+   	  \frac{\partial\theta}{\partial t} + u\cdot\nabla\theta = \frac{1}{Pe}\Delta\theta, ~~ \theta(x,0) = \theta_0 (x) 
+   	  \end{equation}
+   	  \begin{equation}
+   	  \nabla \cdot u = 0
+   	  \end{equation}
+   	 The stirring field $u$ is periodic in the d-dimensional torus and $L^{\infty}$ initial data $\theta_0$ \\ 
+Given two constraints
+   	\begin{itemize}
+   	\item \textit{Energy constraint.}  $|| u(t) ||_{L^2} = UL^\frac{d}{2}$
+   	\item \textit{Enstrophy constraint.} $|| \nabla u(t) ||_{L^2} = \Gamma L^\frac{d}{2}$
+   	\end{itemize}
+ 
+
+\section{Aim}
+The central questions addressed in this chapter, following \cite{LunasinLinEA12}, are:
+  \begin{itemize}
+  \item Does the presence of diffusion aid mixing under constraints on the velocity field?
+  \item What is the optimal mixing rate in the presence of diffusion under energy and enstrophy constraints?
+  \end{itemize}
+ 
+ \section{Lower bounds}
+ \textit{Rate of mixing}: \\
+Following \cite{LunasinLinEA12}, the rate of mixing is defined using the $H^{-1}$ norm as follows:
+ 
+ \begin{equation} r(t) = - \frac{\frac{d}{dt}||\nabla^{-1}\theta||_{L^2}}{||\nabla^{-1}\theta||_{L^2}}
+ \end{equation}
+ and  \\
+ \textit{ Filamentation length measure} as:
+\begin{equation}
+\lambda(t) = 2\pi \frac{||\nabla^{-1}\theta(.,t)||_{L^2}}{||\theta(.,t)||_{L^2}} \label{peq:12}
+\end{equation}
+ 
+ \subsection{ Enstrophy constrained $||\nabla u||_{L^\infty} = 1$}
+  \[\lambda(t) = 2\pi\frac{||\nabla^{-1}\theta||_{L^2}}{||\theta||_{L^2}}\]
+  \[ \partial_t\theta + u\cdot\nabla\theta = \frac{1}{Pe}\nabla\theta\]
+  \[\lambda^2 = 4\pi^2 \frac{||\nabla^{-1}\theta||_{L^2}^{2}}{||\theta||_{L^2}^{2}} \]
+  \begin{equation}
+  \frac{d\lambda^2}{dt} = 4\pi^2\frac{||\theta||_{L^2}^{2}\frac{d}{dt}||\nabla^{-1}\theta||_{L^2}^2 - ||\nabla^{-1}\theta||_{L^2}^2\frac{d}{dt}||\theta||_{L^2}^2}{||\theta||_{L^2}^{4}} \label{peq:4}
+  \end{equation}
+  Multiply \eqref{peq:1} by $\theta$,
+\[ \theta\partial_t\theta +  \theta u\cdot\nabla\theta = \frac{1}{Pe}\theta\Delta\theta \]
+\[\frac{1}{2}\partial_t\theta^2 + \theta u\cdot\nabla\theta = \frac{1}{Pe}\theta\nabla\cdot\nabla\theta \]
+\[\frac{1}{2}\partial_t\theta^2 + \theta u\cdot\nabla\theta = \frac{1}{Pe}\left(
+\nabla\cdot(\theta\nabla\theta) - \nabla\theta\cdot\nabla\theta \right) \]
+\[\frac{1}{2}\partial_t\theta^2  - \frac{1}{Pe}|\nabla\theta|^2 = \frac{1}{Pe}\nabla\cdot(\theta\nabla\theta) - \theta u\cdot\nabla\theta\]
+and integrate over the domain D 
+\[\frac{1}{2}\int_D\partial_t\theta^2 ~\rm{d}^dx - \int_D\frac{1}{Pe}|\nabla\theta|^2 ~\rm{d}^dx = \int_D\frac{1}{Pe}\nabla\cdot(\theta\nabla\theta) ~\rm{d}^dx- \int_D\theta u\cdot\nabla\theta ~\rm{d}^dx\]
+Applying the boundary conditions, we have
+\begin{equation}
+\frac{d}{dt}||\theta||_{L^2}^2 = \frac{-2}{Pe}||\nabla\theta||_{L^2}^2 .\label{peq:2}
+\end{equation}
+Also,
+\begin{equation}
+\frac{d\lambda^2}{dt} =  2\int \nabla^{-1}\theta \cdot (\nabla u) \cdot \nabla^{-1}\theta ~\rm{d}x \label{peq:3}
+\end{equation}
+Using \eqref{peq:2} and \eqref{peq:3} in  \eqref{peq:4}, this implies
+\[\frac{1}{4\pi^2}\frac{d\lambda^2}{dt} = \frac{2}{Pe}\left[ \frac{||\nabla\theta||_{L^2}^2||\nabla^{-1}\theta||_{L^2}^2}{||\theta||_{L^2}^4} \right] + \frac{2\int_D\nabla^{-1}\theta\cdot\nabla u\cdot \nabla^{-1}\theta ~\rm{d}^dx}{||\theta||_{L^2}^2} \]
+It is easy to see that using holder's inequality, we deduce
+\[\int_D \nabla^{-1}\theta\cdot\nabla u\cdot\nabla^{-1}\theta ~\rm{d}^dx \leq ||\nabla u||_{L^\infty}\int_D |\nabla^{-1}\theta|^2 ~\rm{d}^dx =  ||\nabla^{-1}\theta||_{L^2}^2\]
+where we used that  $||\nabla u||_{L^\infty} = 1$ . \\
+We obtained
+\begin{equation}
+\frac{d\lambda^2}{dt} \geq \frac{2}{Pe}\left[ \frac{||\nabla\theta||_{L^2}^2||\nabla^{-1}\theta||_{L^2}^2}{||\theta||_{L^2}^4}  \right] - 2\lambda^2 \label{peq:5}
+\end{equation}
+Using one interpolation inequality, it is clear that 
+\[\frac{||\nabla\theta||_{L^2}^2 ||\nabla^{-1}\theta||_{L^2}^2}{||\theta||_{L^2}^4} \geq 0,\]
+Then \eqref{peq:5} implies
+\[ \frac{d\lambda^2}{dt} \geq  -2\lambda^2 \]
+By Gronwall's inequality, we have:
+\begin{equation}
+\lambda(t) > \lambda(0)e^{-t} , \label{peq:8}
+\end{equation}
+
+\[\frac{||\nabla^{-1}\theta||_{L^2}}{||\theta||_{L^2}} \geq \frac{||\nabla^{-1}\theta_0||}{||\theta_{0}||_{L^2}} e^{-t}\]
+
+\textit{This shows that perfect mixing is not possible in finite time for $L^\infty$ bounded rate of strain flows.}\\
+
+Consider now
+\[\frac{d}{dt}\left( \frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2} \right)
+ = \frac{||\theta||_{L^2}^2\frac{d}{dt}||\nabla\theta||_{L^2}^2   - ||\nabla\theta||_{L^2}^2 \frac{d}{dt}||\theta||_{L^2}^2 }{||\theta||_{L^2}^4} \]
+ 
+ Note that 
+ \begin{eqnarray*}
+ \frac{d}{dt}||\nabla\theta||_{L^2}^2 &=& -2\int_D \partial_t\theta\Delta\theta ~\rm{d}^dx \\
+ & = & -2\int_D \left( \frac{1}{Pe}\Delta\theta - u\cdot\nabla\theta  \right) \Delta\theta ~\rm{d}^dx \\
+ & = & \frac{-2}{Pe}\int_D |\Delta\theta|^2 d^dx + 2\int_D u\cdot\nabla\theta\cdot\Delta\theta ~\rm{d}^dx \\
+ & = & \frac{-2}{Pe}\int_D |\Delta\theta|^2 d^dx + 2\int_D \nabla\theta\cdot \nabla u\cdot\nabla\theta ~\rm{d}^dx \\
+ \end{eqnarray*}
+ \begin{eqnarray*}
+ \frac{d}{dt}\left( \frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2} \right)   & = & \frac{||\theta||_{L^2}^2 \left(\frac{-2}{Pe}||\Delta\theta||_{L^2}^2 -2\int_D\nabla\theta\cdot\nabla u\cdot\nabla\theta ~\rm{d}^dx \right) }{||\theta||_{L^2}^4} - \frac{||\nabla\theta||_{L^2}^2\left(\frac{-2}{Pe}||\nabla\theta||_{L^2}^2\right)    }{||\theta||_{L^2}^4}  \\
+  & = & \frac{-2}{Pe}\left(\frac{||\Delta\theta||_{L^2}^2}{||\theta||_{L^2}^2} - \frac{||\nabla\theta||_{L^2}^4}{||\theta||_{L^2}^4} \right) -2\frac{\int_D\nabla\theta\cdot\nabla u\cdot\nabla\theta ~\rm{d}^dx}{||\theta||_{L^2}^2}  \\
+  \end{eqnarray*}
+ This yields
+ \[\frac{d}{dt}\left( \frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2} \right) \leq \frac{2||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2}\]
+ By Gronwall estimate, we have
+ \[  \frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2} \leq \frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2} e^{2t}\]
+$\implies$
+ \begin{equation} ||\nabla\theta||_{L^2}^2  \leq \frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2} e^{2t} ||\theta||_{L^2}^2 \label{peq:6}
+ \end{equation}
+ From \eqref{peq:2}, and using \eqref{peq:6}
+ \[ \frac{d}{dt}||\theta||_{L^2}^2 = \frac{-2}{Pe}||\nabla\theta||_{L^2}^2 \geq \frac{-2}{Pe}||\theta||_{L^2}^2\frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2}e^{2t}\]
+ \[\frac{\frac{d}{dt}||\theta||_{L^2}^2}{||\theta||_{L^2}^2} \geq \frac{-2}{Pe}\frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2}e^{2t} \]
+  \[\frac{d||\theta||_{L^2}^2}{||\theta||_{L^2}^2} \geq \frac{-2}{Pe}\frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2}e^{2t}dt \]
+  Integrating from $s=0$ to $s=t$ \\
+  \[\int_0^t \frac{d||\theta||_{L^2}^2}{||\theta||_{L^2}^2}  \geq \int_0^t \frac{-2}{Pe}\frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2}e^{2t}~\rm{d}t \]
+  $\implies$
+ \begin{equation}
+||\theta||_{L^2} \geq ||\theta_0||_{L^2}\rm{exp}{\left[ \frac{-1}{2Pe}\frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2} (e^{2t} -1) \right]} \label{peq:10}
+ \end{equation}
+  From \eqref{peq:8}, we have 
+ \[ \lambda(t) > \lambda(0)e^{-t}\]
+ \[\frac{||\nabla^{-1}\theta||_{L^2}}{||\theta||_{L^2}} \geq \frac{||\nabla^{-1}\theta_0||_{L^2}}{||\theta_0||_{L^2}} e^{-t}\]
+ \begin{equation}
+  ||\nabla^{-1}\theta||_{L^2}  \geq \frac{||\nabla^{-1}\theta_0||_{L^2}}{||\theta_0||_{L^2}} e^{-t} ||\theta||_{L^2} \label{eq:11}
+ \end{equation}
+ Using \eqref{peq:10} in \eqref{eq:11}
+ \[||\nabla^{-1}\theta||_{L^2} \geq ||\nabla^{-1}\theta_0||_{L^2} \rm{exp}{\left[-t-\frac{1}{2Pe}\frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}}(e^{2t}-1)\right]}\]
+
+ \subsection{Energy constrained $||u||_{L^\infty} = 1$}
+ \begin{eqnarray*}
+ ||\nabla\theta||_{L^2}^2 &=& -2\int_D\theta\Delta\theta ~\rm{d}^dx \\
+& = & Pe\int_D \theta(\partial_t\theta - \frac{1}{Pe}\Delta\theta) ~\rm{d}^dx - Pe\int_D
+  \theta(\partial_t\theta + \frac{1}{Pe}\nabla\theta) ~\rm{d}^dx
+ \end{eqnarray*}
+ 
+  \begin{eqnarray*}
+  \frac{d}{dt}||\theta||_{L^2}^2 &=& 2\int_D \theta\partial_t\theta ~\rm{d}^dx \\
+ & = & \int_D \theta(\partial_t\theta -\frac{1}{Pe}\Delta\theta) ~\rm{d}^dx + \int_D \theta (\partial_t\theta+\frac{1}{Pe}\Delta\theta) ~\rm{d}^dx  
+  \end{eqnarray*}
+  and 
+    \begin{eqnarray*}
+ \frac{d}{dt}||\nabla\theta||_{L^2}^2 &=& -2\int_D\partial_t\theta\Delta\theta ~\rm{d}^dx \\
+  &=& Pe\int_D (\partial_t\theta - \frac{1}{Pe}\Delta\theta)^2 ~\rm{d}x - Pe\int_D(\partial_t\theta+\frac{1}{Pe}\Delta\theta)^2 ~\rm{d}^dx 
+   \end{eqnarray*}
+   where we have used $-2ab = \frac{(a-b)^2 - (a+b)^2}{2}.$ \\
+ Now consider 
+\[ \frac{d}{dt}\left(\frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2}\right) = \frac{1}{||\theta||_{L^2}^4}\left( ||\theta||_{L^2}^2\frac{d}{dt}||\nabla\theta||_{L^2}^2 - \frac{d}{dt}||\theta||_{L^2}^2 ||\nabla\theta||_{L^2}^2   \right) \]
+
+ \begin{eqnarray*}
+ & =& \frac{1}{||\theta||_{L^2}^2}\left[ Pe\int_D(\partial_t\theta-\frac{1}{Pe}\Delta\theta)^2 ~\rm{d}^dx - Pe\int_D(\partial_t\theta +\frac{1}{Pe}\Delta\theta)^2 ~\rm{d}^dx \right] \\
+  &-&\frac{1}{||\theta||_{L^2}^4}\left[ Pe\left(  \int_D\theta(\partial_t\theta - \frac{1}{Pe}\Delta\theta) ~\rm{d}^dx \right)^2 - Pe\left( \int_D\theta(\partial_t\theta  +  \frac{1}{Pe}\Delta\theta) ~\rm{d}^dx \right)^2 \right]
+ \end{eqnarray*}
+ Using H\"{o}lder's inequality and $\partial_t +u\cdot\nabla\theta = k\Delta\theta$, we have 
+ \[\frac{d}{dt}\left(\frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2}\right) \leq \frac{Pe}{||\theta||_{L^2}^2}\left[ \int_D(u\cdot\nabla\theta)^2 ~\rm{d}^dx \right]
+\]
+Using Holder's inequality:
+\[\int_D (u\cdot\nabla\theta)^2 ~\rm{d}^dx \leq ||u||_{L^\infty}^2\int_D(\nabla\theta)^2 ~\rm{d}^dx = ||\nabla\theta||_{L^2}^2 \]
+we have 
+\begin{equation}
+\frac{d}{dt}\left( \frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2}\right) \leq Pe\frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2}
+\end{equation}
+Using Gronwall's inequality, we have:
+\[\left( \frac{||\nabla\theta||_{L^2}^2}{||\theta||_{L^2}^2}   \right)  \leq \frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2}\rm{exp}(Pe\times t) \]
+
+\begin{equation}
+\left( \frac{||\nabla\theta||_{L^2}}{||\theta||_{L^2}}   \right)  \leq \frac{||\nabla\theta_0||_{L^2}}{||\theta_0||_{L^2}} \rm{exp}{(\frac{Pe}{2} t)}
+\end{equation}
+Using .\eqref{peq:2}, we have: 
+\[ \frac{d}{dt}||\theta||_{L^2}^2 \geq \frac{-2}{Pe}||\theta||_{L^2}^2 \frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2} \rm{exp}{(Pe\times t)} \]
+Using Gronwall's inequality, we have:
+\begin{equation} ||\theta||_{L^2} \geq ||\theta_0||_{L^2} \rm{exp}{\left[ -\frac{1}{Pe^2} \frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2}\left(e^{(Pe\times t) }- 1\right) \right]} \label{peq:16}
+\end{equation}
+
+From \eqref{peq:12}, then
+\begin{equation}
+\lambda(t) \geq \frac{||\nabla^{-1}\theta||_{L^2}}{||\theta||_{L^2}} \label{peq:13}
+\end{equation}
+
+From $||\nabla\theta||_{L^2} ||\nabla^{-1}\theta||_{L^2} \geq ||\theta||_{L^2}^2$ , we have
+\[\frac{||\nabla^{-1}\theta||_{L^2}}{||\theta||_{L^2}} \geq \frac{||\theta||_{L^2}}{||\nabla\theta||_{L^2}}\]
+
+Using \eqref{peq:13}, implying on the other hand
+\begin{equation}
+\lambda(t) \geq \frac{||\nabla^{-1}\theta||_{L^2}}{||\theta||_{L^2}} \geq \frac{||\theta||_{L^2}}{||\nabla\theta||_{L^2}} \geq \frac{||\theta_0||_{L^2}}{||\nabla\theta_0||_{L^2}} e^{(\frac{-Pe t}{2})} \label{peq:18}
+\end{equation}
+and, on the other hand, using \eqref{peq:16} in \eqref{peq:18}, we have:
+\begin{eqnarray*}
+||\nabla^{-1}\theta||_{L^2} &\geq& \frac{||\theta_0||_{L^2}}{||\nabla\theta_0||_{L^2}} e^{(\frac{-Pe t}{2})} ||\theta||_{L^2} \\
+&\geq& \frac{||\theta_0||_{L^2}^2}{||\nabla\theta_0||_{L^2}} \rm{exp}{ \left[
+\frac{-Pe t}{2} - \frac{1}{Pe^2}\frac{||\nabla\theta_0||_{L^2}^2}{||\theta_0||_{L^2}^2}(e^{Pe t}-1) \right]}
+\end{eqnarray*}
+
+\subsection{Results}
+The analytical results of \cite{LunasinLinEA12} show that, in the presence of diffusion, finite-time perfect mixing is impossible for $L^\infty$ energy- and enstrophy-constrained flows.
+
+
+\chapter{Anomalous Dissipation}
+The material in this chapter is drawn from the paper of Drivas, Elgindi, Iyer, and Jeong \cite{DrivasElgindiEA22}, which establishes anomalous dissipation for passive scalar transport and non-uniqueness of weak solutions of the transport equation. The theorems, proofs, constructions, and discussion below reproduce results from that work. We refer the reader to \cite{DrivasElgindiEA22} for the original presentation.
+
+This chapter examines anomalous dissipation in passive scalar transport, presenting the results of \cite{DrivasElgindiEA22}. The central equation is the advection-diffusion equation
+\begin{equation}
+\partial_t{\theta^\kappa} + u\cdot \nabla\theta^\kappa= k\Delta\theta^\kappa \label{peq:15}
+\end{equation}
+posed on the $d$-dimensional torus $\mathbb{T}^d$, where $\theta^\kappa$ is a passive scalar, $k>0$ is the molecular diffusivity, and $u$ is a divergence-free advecting velocity field. \\
+Testing \eqref{peq:15} against $\theta^\kappa$ and integrating by parts yields
+\[\theta^\kappa\partial_t\theta^\kappa + \theta^\kappa u\cdot\nabla\theta^\kappa = k\theta^\kappa\Delta\theta^\kappa\]
+\[\frac{1}{2}\int\frac{\partial|\theta^\kappa(t)|^2}{\partial t} = -k\int_0^t|\nabla\theta^\kappa(s)|_{L^2}^2 ~\rm{d}s\]
+\begin{equation}
+\frac{1}{2}|\theta^\kappa(t)|_{L^2}^2 = \frac{1}{2}|\theta^\kappa(0)|_{L^2}^2 -k\int_0^t|\nabla\theta^\kappa(s)|_{L^2}^2 ~\rm{d}s \label{peq:17}
+\end{equation}
+The identity \eqref{peq:17} shows that the integrated quantity $k\int_0^t|\nabla\theta^\kappa(s)|_{L^2}^2 ~\rm{d}s$ precisely measures the $L^2$ energy lost to diffusion up to time $t$. The stirring action of the velocity field sharpens scalar gradients, which are then dissipated by diffusion. A particularly striking phenomenon arises when this dissipation remains strictly positive as $\kappa \to 0$: there exists a constant $\chi > 0$, independent of $\kappa$, such that
+\[k\int_0^t|\nabla\theta^\kappa(s)|_{L^2}^2 ~\rm{d}s \geq \chi >0. \]
+This persistence of energy loss in the inviscid limit is known as \textit{anomalous dissipation}.
+
+\section{Notation}
+The proofs of the theorems in this chapter are presented in two spatial dimensions. Without loss of generality, let $T = 1$ and let the initial value $\theta_0$ be mean zero:
+ \[ \int_{\mathbb{T}^d} \theta_0(x)~ \textrm{d}x =0.\]
+ \begin{equation*}
+   |\theta |_{L^2} = \left( \int_{\mathbb{T}^2} |\theta |^2 \rm{d} x \right)^{{1}/{2}} \,,
+   \qquad
+   |\theta |_{\dot{H}^1}^2 =
+     \sum_{i=1}^2 \abs{\partial_i \theta}_{L^2}^2\,,
+     %|\rd_1 \theta|_{L^2}^2 + |\rd_2\theta|_{L^2}^2 \,,
+   \qquad\text{and}\qquad
+   |\theta |_{\dot{H}^2}^2
+     =
+     %|\rd_{11} \theta|_{L^2}^2 + 2|\rd_{12}\theta|_{L^2}^2 + |\rd_{22}\theta|_{L^2}^2 \,,
+     \sum_{i,j=1}^2 \abs{\partial_i \partial_j \theta}_{L^2}^2\,,
+ \end{equation*}
+ 
+ for any function $\theta \colon \T^2 \to \R$.
+ Also, define 
+   $|\theta|_{\dot{W}^{1,\infty}}
+       =
+       \max\{ |\rd_1\theta|_{L^\infty} , |\rd_2\theta|_{L^\infty} \}
+       %\max_{i \in \{1, 2\}} \abs{\partial_i \theta}_{L^\infty}
+   $.
+ With these conventions, 
+ \begin{equation*}
+   |\theta |_{\dot{H}^1}^2 \le |\theta |_{L^2}|\theta |_{\dot{H}^2} \,,
+ \end{equation*}
+ and
+ \begin{equation*}
+   |\theta|_{H^2}^2 = |\theta|_{\dot{H}^2}^2+|\theta|_{\dot{H}^1}^2+|\theta|_{L^2}^2 \,,
+   \quad |\theta|_{H^1}^2 =  |\theta|_{\dot{H}^1}^2+|\theta|_{L^2}^2\,,
+   \quad |\theta|_{W^{1,\infty}}
+     = \max\{ |\theta|_{L^\infty} , |\theta|_{\dot{W}^{1,\infty}} \}
+   \,. 
+ \end{equation*}
+ 
+ Throughout, the notation $A(t) \approx B(t)$ means that $A(t)/B(t)$ is bounded above and below by positive absolute constants, while $A \ll B$ means $\lim_{t\to 1} A/B = 0$.
+ \medskip
+ 
+ 
+\section{Criterion for Anomalous Dissipation}
+This section presents three criteria from \cite{DrivasElgindiEA22} that guarantee anomalous dissipation. The proof of Theorem~\ref{mainthm} involves comparing $\theta$, the solution of the transport equation, to $\theta^\kappa$, the solution of the advection-diffusion equation. \\
+
+ \begin{proposition}[{\cite[Proposition~1.1]{DrivasElgindiEA22}}]\label{thm:criterion1}
+ Let  $T > 0$, assume 
+ $u \in L^\infty_\mathrm{loc} ([0, T); W^{1, \infty}(\mathbb{T}^d))$ is divergence free, and let $\theta^\kappa$ and $\theta$ be solutions to ~\eqref{peq:15} and~\eqref{inveqn} respectively with the same, $\kappa$ independent, mean zero initial data~$\theta_0 \in H^2(\mathbb{T}^d)$. \\
+   If
+   \begin{equation}\label{assumProp12}
+     \lim_{t\rightarrow T}\int_0^t|\nabla\theta |_{L^2}^2ds=+\infty \,,
+     \qquad\text{and}\qquad
+     |\theta(t)|_{\dot{H}^1}^2
+       \ge c \paren[\big]{
+ 	|\theta(t)|_{\dot{H}^2}+ |\theta^\kappa(t)|_{\dot{H}^2}
+ 	}|\theta_0|_{L^2}
+   \end{equation}
+   for all $t\in [0,T)$, for a fixed constant $c\in(0,1)$ independent of $\kappa$ and $t$,  then
+   \begin{equation*}
+   	\begin{split}
+   	\kappa \int_0^T |\nb \theta^{\kappa}|_{L^2}^2 dt \ge  \left(\frac{c}{2}\right)^4 |\theta_0|_{L^2}^2.
+   	\end{split}
+   \end{equation*}
+ \end{proposition}
+ 
+The next two results involve conditions on the inviscid equation alone.
+
+\begin{proposition}[{\cite[Proposition~1.2]{DrivasElgindiEA22}}]\label{thm:criterion2}
+  %Let $u:\mathbb{T}^2\times [0,1]\rightarrow\mathbb{R}^2$ be divergence-free and $u\in L^\infty_{loc}([0,1); W^{1,\infty}(\mathbb{T}^2))$.
+  If
+  \begin{equation}\label{e:crit2}
+    \int_0^T \abs{\grad \theta(s)}_{L^2}^2 \rmd s = +\infty
+    \qquad\text{and}\qquad
+    |\theta(t)|_{H^{-1}}
+      \leq C\frac{\abs{\theta_0}_{L^2}^2}{\abs{\theta(t)}_{\dot H^1}},
+  \end{equation}
+ for all $t \in [0, T)$ and some constant $C \geq 1$ independent of $\kappa$ and $t$, then
+  \begin{equation*}
+ \kappa \int_0^T |\nabla\theta^\kappa|^2_{L^2}\rmd t
+      \geq
+	  \frac{1}{64 C^2}{\abs{\theta_0}_{L^2}^2}.
+  \end{equation*}
+\end{proposition}
+
+
+Recall that $\abs{\theta(t)}_{H^{-1}}$ measures the degree to which~$\theta(t)$ is mixed. Proposition~\ref{thm:criterion2} thus creates a direct link between mixing and anomalous dissipation. \\
+
+Proposition~\ref{thm:criterion3} below provides a condition for anomalous dissipation that requires only growth of positive norms of~$\theta$, a criterion weaker than mixing.
+
+\begin{proposition}[{\cite[Proposition~1.3]{DrivasElgindiEA22}}]\label{thm:criterion3}
+  If
+  \begin{equation}\label{e:crit3}
+    |\theta(t)|_{\dot{H}^{2}}
+      \le \frac{C |\theta(t)|_{\dot{H}^1}^2}{\abs{\theta_0}_{L^2}} \,,
+    \qquad 
+    \frac{1}{C(T-t)}
+      \leq \frac{\abs{\theta(t)}_{\dot H^1}}{|\theta_0|_{L^2}} \,,
+    \qquad \text{and} \qquad
+   |\nabla u(t) |_{L^\infty} \leq  \frac{C}{(T-t)} \,,
+  \end{equation}
+  for all $t \in [0, T)$, and some constant $C\geq 1$, independent of $\kappa$ and $t$,  then there exists a $\chi>0$ depending only on $C$ 
+  \begin{equation*}
+   \kappa \int_0^T |\nabla \theta^\kappa|^2_{L^2}\rmd t>\chi|\theta_0|_{L^2}^2.
+  \end{equation*}
+\end{proposition}
+
+\section{Results}
+The central theorems of Drivas, Elgindi, Iyer, and Jeong \cite{DrivasElgindiEA22} are as follows.
+\begin{theorem}[Universal rate near Harmonics {\cite[Theorem~1.1]{DrivasElgindiEA22}}]\label{mainthm}
+  Fix $T>0$, $d \geq 2$, and $\alpha \in [0,1)$, and let
+  \begin{equation*}
+    \Psi \defeq \set{ \sin( Mx ) \sin( Ly ), \sin( Mx) \cos( Ly ), \sin( Ly) \cos( Mx ), \cos( Mx ) \cos(Ly) }_{M\geq 0, L \geq 0} - \set{0, 1}\,.
+  \end{equation*}
+  There exists absolute constants $\epsilon_\alpha, \chi_\alpha >0$, and a divergence-free velocity field
+  \begin{equation}\label{e:ureg}
+    u\in C^\infty([0,T)\times \mathbb{T}^d) \cap L^1([0,T]; C^\alpha(\mathbb{T}^d)) \cap L^\infty([0,T]\times \mathbb{T}^d) \,,
+  \end{equation}
+  such that the following holds:
+  If $\theta_0 \in H^2(\T^d)$ is mean zero, and there exists $\lambda > 0$ and $\psi \in \Psi$ such that
+  \begin{equation*}
+    |\theta_0 - \lambda \psi|_{L^2} \le \varepsilon_\alpha |\theta_0|_{L^2}\,,
+  \end{equation*}
+  then
+  \begin{equation}\label{anomaly}
+    \kappa \int_0^T |\nabla \theta^\kappa|_{L^2}^2 \rmd t
+    \geq \chi_\alpha \abs{\theta_0}^2_{L^2} \,.
+  \end{equation}
+  \end{theorem}
+  
+For $H^2$ initial data, a slight modification of the velocity field above also produces anomalous dissipation, but the velocity field and dissipation rate then depend on the data. \\
+\begin{theorem}[Data dependent rate and velocity field {\cite[Theorem~1.2]{DrivasElgindiEA22}}]\label{mainthm2}
+  Fix $T>0$, $d \geq 2$, $\alpha \in [0,1)$, and a mean-zero $\theta_0\in H^2(\mathbb{T}^d)$. There exists a divergence-free velocity field  \begin{equation*}
+    u\in C^\infty([0,T)\times \mathbb{T}^d) \cap L^1([0,T]; C^\alpha(\mathbb{T}^d)) \cap L^\infty([0,T]\times \mathbb{T}^d) \,,
+  \end{equation*} and $\chi_\alpha(\theta_0)>0$ 
+  so that we have
+  \begin{equation}\label{anomaly2}
+    \kappa \int_0^T |\nabla \theta^\kappa|_{L^2}^2 \rmd t
+    \geq \chi_\alpha(\theta_0) \abs{\theta_0}^2_{L^2}. 
+  \end{equation}
+\end{theorem}
+
+\begin{theorem}[Non-uniqueness of the transport equation {\cite[Theorem~1.3]{DrivasElgindiEA22}}]\label{nonuniq}
+ Fix $T>0$, $d\geq 2$, $\alpha \in [0,1)$ and a mean-zero $\theta_0\in H^2$. Let $u_p$  %with
+%  \begin{equation*}
+%    u_*\in  L^\infty_{\mathrm{loc}}([0,T); W^{1,\infty}(\mathbb{T}^d))\cap L^1([0,T]; C^\alpha(\mathbb{T}^d)) \cap L^\infty([0,1]\times \mathbb{T}^d) \,,
+%  \end{equation*}
+  be the divergence-free velocity field from Theorem \ref{mainthm2}.  Let $u$, defined on $[0,2T]$, be
+  \begin{equation*}%\label{e:unonuniq}
+  u(t) = 
+  \begin{cases} \phantom{-}u_p(t) & t\in [0,T),\\
+  -u_p(2T-t) & t\in [T,2T].
+  \end{cases}
+  \end{equation*}
+  Then there are at least two weak solutions $\theta, \bar{\theta}\in C_w([0,2T];L^2(\mathbb{T}^d))$ of the transport equation
+  \begin{equation}\label{inveqn}
+    \partial_t \theta + u \cdot \grad \theta = 0
+  \end{equation}
+  %in the sense of \eqref{weaktrans} holding on $[0,2T]\times \mathbb{T}^d$.
+  with initial data $\theta_0$.
+\end{theorem}
+Theorem~\ref{nonuniq} is proved by constructing one solution using time reversibility and another as a vanishing viscosity limit; this construction is presented in Section~\ref{s:nonuniq}.
+
+\section{Criteria for Anomalous Dissipation}\label{sec:inv}
+
+This section reproduces the proofs of Propositions~\ref{thm:criterion1}--\ref{thm:criterion3} from \cite{DrivasElgindiEA22}.
+The first result will also be used in the proof of Theorem~\ref{mainthm}.
+
+
+\subsection{Non-viscous Growth Criterion with an Assumption on \texorpdfstring{$|\theta^\kappa|_{H^2}$}{the H2 Norm}}
+
+
+\begin{proof}[Proof of Proposition \ref{thm:criterion1}]
+  Normalise so that $|\theta_0|_{L^2} = 1$. The key starting point is the energy identity for the difference $\theta - \theta^\kappa$:
+\[\frac{1}{2} \partial_t |\theta -\theta^\kappa|_{L^2}^2=\kappa\int\Delta \theta^\kappa (\theta^\kappa-\theta)\rmd x= -\kappa | \theta^\kappa|_{\dot{H}^1}^2 + \kappa\int\nabla \theta^\kappa\cdot \nabla \theta\rmd x.\]
+Integrating in time and applying Cauchy-Schwarz gives
+\begin{equation}\label{cseq}
+  \frac{1}{2} |\theta -\theta^\kappa|_{L^2}^2(t)
+    \le \paren[\Big]{\kappa\int_0^1|\theta^\kappa|_{\dot{H}^1}^2\rmd s}^{1/2}
+      \paren[\Big]{\kappa\int_0^t|\theta |_{\dot{H}^1}^2\rmd s}^{1/2} \,,
+\end{equation}
+for all $t<1$. \\
+Suppose for contradiction that there is a sequence $\kappa_k\rightarrow 0$ with
+\begin{equation}\label{contdelt}
+\delta_k \defeq \kappa_k\int_0^1|\theta ^{\kappa_k}|_{\dot{H}^1}^2\rmd t  < \chi   \qquad \text{as}\qquad k\to \infty,
+\end{equation}
+where $\chi \defeq (c/2)^4$. Define $T_k<1$ by
+\begin{equation}\label{Tkdef}
+\kappa_k\int_0^{T_k}|\theta |_{\dot{H}^1}^2\rmd t=1.
+\end{equation}
+Since $|\theta|_{\dot{H}^1}^2 \to +\infty$ by hypothesis, $T_k\to 1$ as $k\to\infty$. Substituting \eqref{contdelt} and \eqref{Tkdef} into \eqref{cseq} yields
+ \[\sup_{t\le T_k}|\theta -\theta^{\kappa_k}|_{L^2}\le \sqrt{2}{\delta_k}^{1/4}\le \sqrt{2}{\chi}^{1/4}.\]
+Using the interpolation inequality together with assumption \eqref{assumProp12} for $t\le T_k$,
+\[|\theta -\theta^\kappa|_{\dot{H}^1}^2\le |\theta -\theta^\kappa|_{L^2}|\theta -\theta^\kappa|_{\dot{H}^2}\le   \frac{\sqrt{2}{\chi}^{1/4}}{c}|\theta |_{\dot{H}^1}^2,\]
+so that $|\theta -\theta^\kappa|_{\dot{H}^1}\leq\frac{2^{1/4}{\chi}^{1/8}}{\sqrt{c}}|\theta |_{\dot{H}^1}$. The reverse triangle inequality then gives
+\begin{equation}
+|\theta^\kappa|_{\dot{H}^1} \geq \Big||\theta|_{\dot{H}^1}- |\theta^\kappa- \theta|_{\dot{H}^1}\Big| \geq \left(1-\frac{2^{1/4}{\chi}^{1/8}}{\sqrt{c}}\right)|\theta |_{\dot{H}^1}.
+\end{equation}
+Integrating and applying \eqref{Tkdef}:
+\begin{equation}\label{conteqn}
+\kappa_k\int_0^{T_k}|\theta^\kappa|_{\dot{H}^1}^2\rmd t\ge  \kappa_k\left(1-\frac{2^{1/4}{\chi}^{1/8}}{\sqrt{c}}\right)^2 \int_0^{T_k}|\theta|_{\dot{H}^1}^2\rmd t =\left(1-\frac{2^{1/4}{\chi}^{1/8}}{\sqrt{c}}\right)^2.
+\end{equation}
+This contradicts \eqref{contdelt} provided $\chi$ satisfies
+\begin{equation}\label{chiinq}
+\chi \leq \left(1-\frac{2^{1/4}{\chi}^{1/8}}{\sqrt{c}}\right)^2.
+\end{equation}
+With $\chi=(c/2)^4$, inequality \eqref{chiinq} reduces to
+\[
+\left(\frac{c}{4}\right)^2 \leq 1-\left(\frac{1}{4}\right)^{1/4},
+\]
+which holds since $c<1$ and $1/16< 1-\left({1}/{2}\right)^{1/4}$.
+\end{proof}
+
+\subsection{Inviscid Mixing Criterion}
+
+\begin{proof}[Proof of Proposition \ref{thm:criterion2}]
+  Normalise so that $|\theta_0|_{L^2} = 1$. The argument is a refinement of the proof of Proposition~\ref{thm:criterion1}: assume for contradiction that \eqref{contdelt} holds with $\chi \defeq \frac{1}{2^6 C^2}$, and define $T_k$ as in \eqref{Tkdef}. The bound \eqref{cseq} then gives
+   \[\sup_{t\le T_k}|\theta -\theta^{\kappa_k}|_{L^2}\le \sqrt{2}{\chi}^{1/4}=  \frac{1}{2}{C}^{-1/2}\leq \frac{1}{2},\]
+  where the last inequality uses $C\geq 1$ as required by \eqref{e:crit2}. \\
+  For any $N\in\mathbb{N}$, let $\mathbf{P}_{>N}$ denote the projection onto Fourier modes with frequency greater than $N$. The triangle inequality together with $|\theta|_{L^2}=1$ yields
+  \begin{align*}
+    |\mathbf{P}_{>N}\theta^\kappa|_{L^2}
+      &\ge |\mathbf{P}_{>N}\theta|_{L^2}-|\mathbf{P}_{>N}(\theta-\theta^\kappa)|_{L^2}
+      \ge
+	|\mathbf{P}_{>N}\theta|_{L^2}
+	- \frac{1}{2}
+    \\
+      &\ge 1-N^2|\theta|_{H^{-1}}^2-\frac{1}{2}
+      \geq \frac{1}{2}
+	-\frac{C^2N^2}{\abs{\theta(t)}_{\dot H^1}^2} \,,
+  \end{align*}
+where $C$ is the constant from \eqref{e:crit2}.
+Setting $\lambda(t) \defeq \abs{\theta(t)}_{\dot H^1}^2$ and choosing $N^2 = \lambda(t)/(2C)^2$ makes the right side equal to $1/4$, so
+\begin{equation*}
+  |\mathbf{P}_{>N}\theta^\kappa|_{L^2} \ge\frac{1}{4}  \qquad \implies \qquad |\nabla\theta^\kappa|^2_{L^2}\ge \frac{\lambda(t)}{16C^2}.
+\end{equation*}
+Integrating, \[
+\kappa\int_0^{T_\kappa}|\nabla\theta^\kappa|_{L^2}^2\rmd t\ge \frac{1}{16C^2}=4\chi\,,\]
+which contradicts \eqref{contdelt} and completes the proof.
+  \end{proof}
+  
+\section{Construction of the Example}\label{sec:ex}
+
+In this section, following \cite{DrivasElgindiEA22}, Theorems~\ref{mainthm} and \ref{mainthm2} are established by exhibiting an explicit velocity field satisfying the conditions of Proposition~\ref{thm:criterion1}.
+For simplicity, $T = 1$ and $d = 2$ are assumed throughout this section.
+While the theorems state regularity \eqref{e:ureg}, the constructed velocity belongs to the slightly stronger class
+\begin{equation*}
+  u\in  L^\infty_{\mathrm{loc}}([0,1); W^{2,\infty}(\mathbb{T}^2))\cap L^1([0,1]; C^\alpha(\mathbb{T}^2)) \cap L^\infty([0,1]\times \mathbb{T}^2);
+\end{equation*}
+the improvement to $C^\infty$ is described in the subsequent remark.
+
+The key building block of the construction is a smoothed-out sawtooth function. Given $\frac{\pi}{2} > \epsilon>0$, we define $S_\epsilon:\mathbb{T} = (\mathbb{R}/2\pi\mathbb{Z})\rightarrow \mathbb{R}$ to be odd with respect to $0$, even with respect to {$\frac{\pi}{2}$}, and \[ S_\epsilon(x)=\begin{cases} 
+      x & 0\le x\le {\frac{\pi}{2}} -\epsilon \\
+      x -\frac{1}{2\epsilon}(x-\frac{\pi}{2}+\epsilon)^2  & \frac{\pi}{2}-\epsilon< x\le \frac{\pi}{2} 
+   \end{cases}
+\]
+One verifies directly that $S_\epsilon\in W^{2,\infty}(\mathbb{T})$ with \[|S_\epsilon'|_{L^\infty}\le 1\qquad \text{and} \qquad |S_\epsilon''|_{L^\infty}\le \frac{1}{\epsilon}.\]
+The velocity field is built from three sequences: time steps $\{t_j\}_{j\in\mathbb{N}}$ that are decreasing and summable, regularization parameters $\eps_j$ that are also decreasing and summable, and frequencies $\{N_j\}_{j\in\mathbb{N}}$ that grow rapidly. From these, one defines measure-preserving shear maps \[\mathcal{T}_j(x,y)=\begin{cases} (x+t_jS_{\eps_j}(N_j y),y) & j\,\, \text{odd}\\  (x,y+t_jS_{\eps_j}(N_j x)) & j\,\, \text{even,}\end{cases}\]
+and their compositions $\mathcal{U}_j\defeq\mathcal{T}_1\circ \mathcal{T}_2\circ \mathcal{T}_3\circ \cdots \circ \mathcal{T}_j$. Setting $T_j = \sum_{i=0}^j t_i$ with $t_0 = 0$, one can verify that $\theta_0 \circ \mathcal{U}_j = \theta(T_j)$, where $\theta(t)$ solves the inviscid equation
+\begin{equation*}
+\begin{split}
+\partial_t \theta + u\cdot\nabla \theta = 0, \qquad \theta(t=0) = \theta_0,
+\end{split}
+\end{equation*} with the alternating-shear velocity field, for $t \in [T_i,T_{i+1})$,
+\begin{equation}\label{eq:velocity}
+\begin{split}
+u(t, x,y) = \begin{cases}
+\begin{pmatrix}
+S_{\eps_i}(N_iy) \\
+0
+\end{pmatrix}  & i \mbox{ even},  \\
+\begin{pmatrix}
+0 \\
+S_{\eps_i}(N_ix)
+\end{pmatrix} & i \mbox{ odd. }
+\end{cases}
+\end{split}
+\end{equation}
+The remaining sections verify the conditions of Proposition~\ref{thm:criterion1} for this velocity field. For small $\alpha > 0$, a minor technical modification sets $u(t)$ to zero for $t \le T_j$ with $j < 1/\alpha$; see Lemma~\ref{thm:inviscid-bounds} for details. 
+
+\begin{figure}[htb]\centering
+  \begin{subfigure}[b]{0.47\linewidth}
+    \includegraphics[width=.9\columnwidth,  height=.8\columnwidth]{shearj2alp1} 
+      %  \vspace{-8mm}
+  \end{subfigure}%%
+  \begin{subfigure}[b]{0.47\linewidth}
+    \includegraphics[width=.9\columnwidth,  height=.8\columnwidth]{contj2alp1} 
+     %   \vspace{-8mm}
+  \end{subfigure}
+  \\%% 
+  \begin{subfigure}[b]{0.47\linewidth}
+    \includegraphics[width=.9\columnwidth,  height=.8\columnwidth]{shearj3alp1} 
+       % \vspace{-8mm}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.47\linewidth}
+    \includegraphics[width=.9\columnwidth,  height=.8\columnwidth]{contj3alp1} 
+%   \vspace{-8mm}
+  \end{subfigure}\\  
+  \caption{Fix $\alpha=1$ and $\epsilon_i$ and $N_i$ as above.
+    The two left panels depict shear profiles, and two right panels represent contour plots of the corresponding stream function with velocity vectors superimposed.
+    The two top panels correspond to $t_2= 2^{-2}$, and the two Bottom panels correspond to $t_3= 2^{-3}$.
+  }
+\label{fig1}
+\end{figure}
+
+\begin{remark}
+The velocity constructed above belongs to $L^\infty_\mathrm{loc}( [0, T); W^{1, \infty}(\T^2))$ rather than $C^\infty( [0, 1) \times \T^2)$ as stated in Theorem~\ref{mainthm}. To achieve full smoothness, one replaces the $C^2$ profile $S_\ve$ by a $C^\infty$ one and multiplies each shear by an amplitude function that ramps smoothly on and off within each time interval. These ramp windows can be made arbitrarily short, shrinking as $j$ increases, so the key quantitative estimates remain intact.
+\end{remark}
+
+
+
+
+\subsection{Inviscid Bounds}
+
+The following lemma is established in \cite{DrivasElgindiEA22}.
+\begin{lemma}\label{thm:inviscid-bounds} 
+For any $\alpha >0$, let \[t_j=2^{-j},\qquad N_j=2^{{(1+\alpha)}j},\qquad \eps_j={\exp\left(-30(1 + \frac{1}{2^\alpha-1})\right)}\cdot 2^{-2j}.\] {Assume that $\theta_0$ is given by one of the following trigonometric functions: \begin{equation*}
+	\begin{split}
+	\sin(Mx)\sin(Ly),\quad \sin(Mx)\cos(Ly),\quad\cos(Lx)\sin(My),\quad \cos(Lx)\cos(My)
+	\end{split}
+	\end{equation*} for some integers $M\ge1$ and $L\ge 0$. Define $\theta_j(x,y)=\theta_0\circ \mathcal{U}_j$ where}\begin{equation*}
+\begin{split}
+\mathcal{U}_j \defeq \mathrm{Id}, \quad j \le \frac{1}{\alpha} 
+\end{split}
+\end{equation*} and \begin{equation*}
+\begin{split}
+\mathcal{U}_j \defeq \mathcal{T}_{J(\alpha)} \circ \cdots \circ \mathcal{T}_j, \quad j \ge J(\alpha)\defeq \left\lfloor \frac{1}{\alpha} \right\rfloor + 1 . 
+\end{split}
+\end{equation*} Here $\left\lfloor \frac{1}{\alpha} \right \rfloor$ denotes the largest integer not exceeding $\frac{1}{\alpha}$.  Then, $\theta_j$ satisfy:
+\[|\theta _j|_{H^1}\ge {c_\alpha} 2^{\frac{{\alpha}j(j+1)}{2}}{|\theta_0|_{H^1}} ,\qquad |\theta _j|_{W^{1,\infty}}\le {C_\alpha} |\theta _j|_{H^1}, \qquad |\theta _j|_{H^2}\le {C_\alpha}|\theta _j|_{H^1}^2,\] for some constants $C_\alpha,c_\alpha>0$ independent of $j$. \end{lemma}
+
+
+\begin{remark}
+It is easy to see that the choice of $t_j, N_j, \eps_j$ in the above gives us $|\nabla u (t)|_{L^\infty} \approx \frac{1}{(1-t)^2}$ while $|\theta (t)|_{H^1}^2\approx |\theta (t)|_{H^{{2}}}\gg \frac{1}{(1-t)^2}$ where $u$ is defined as in \eqref{eq:velocity}. 
+\end{remark}
+
+\begin{proof} Take $\theta_0 = \sin(Mx)\sin(Ly)$ with $M \ge L$ for concreteness; the argument for the other listed trigonometric functions is virtually identical, and the case $L > M$ is addressed at the end.
+A direct computation shows that
+\begin{equation*}
+	\begin{split}
+	|\theta_0|_{\dot{W}^{1,\infty}} \le 4|\theta_0|_{\dot{H}^1}, \quad |\theta_0|_{\dot{H}^2} \le 4 |\theta_0|_{\dot{H}^1}^2.
+	\end{split}
+	\end{equation*}
+Fix $j\in \mathbb{N}\cup\{0\}$ and set $i_{j}=j-1 \bmod 2$ and $i_{j+1}=j \bmod 2$. For $j$ odd, differentiating $\theta_{j+1}(x,y) = \theta_j(x + t_j S_{\eps_j}(N_jy), y)$ gives:
+\begin{align*}
+\rd_{2} \theta_{j+1}(x,y) &= \rd_{2}\theta_j(x + t_j S_{\eps_j}(N_jy),y ) + t_jN_j S'_{\eps_j}(N_jy) \rd_{1}\theta_j(x + t_j S_{\eps_j}(N_jy),y ) , \\
+\rd_{1} \theta_{j+1}(x,y) &= \rd_{1}\theta_j(x + t_j S_{\eps_j}(N_jy),y ). 
+\end{align*}
+Moreover, 
+\begin{align*}
+\rd_{11}\theta_{j+1}(x,y) &= \rd_{11} \theta_j(x + t_j S_{\eps_j}(N_jy),y ), \\
+\rd_{12} \theta_{j+1}(x,y) &= \rd_{12}\theta_j(x + t_j S_{\eps_j}(N_jy),y ) + t_jN_j S'_{\eps_j}(N_jy) \rd_{11}\theta_j(x + t_j S_{\eps_j}(N_jy),y ),\\
+\rd_{22} \theta_{j+1}(x,y) &= \rd_{22}\theta_j(x + t_j S_{\eps_j}(N_jy),y ) + t_jN_j^2 S_{\eps_j}''(N_j y) \rd_1\theta_j(x + t_j S_{\eps_j}(N_jy),y ) \\
+& \quad + (t_jN_j)^2 (S'_{\eps_j}(N_jy))^2 \rd_{11} \theta_j(x + t_j S_{\eps_j}(N_jy),y ). 
+\end{align*} 
+When $j$ is even, analogous formulas hold with the roles of $x$ and $y$ interchanged. These derivative identities are the foundation for both the upper and lower bounds on $|\theta_{j+1}|$.
+
+\medskip
+
+\emph{Upper Bounds:}
+Since $|S_\epsilon'|_{L^\infty} \le 1$, the Lipschitz bound on $S_\epsilon$ immediately gives
+\begin{align*}
+|\theta _{j+1}|_{\dot{W}^{1,\infty}} &\le t_j N_j |\theta _j|_{\dot{W}^{1,\infty}}+|\theta _j|_{\dot{W}^{1,\infty}}\\
+&\le t_j N_j |\theta _j|_{\dot{W}^{1,\infty}}\Big(1+\frac{1}{t_j N_j}\Big).
+\end{align*}
+The same reasoning gives the analogous bound for the $\dot{H}^1$ norm:
+ \begin{equation*}
+\begin{split}
+|\theta _{j+1}|_{\dot{H}^{1}}\le t_j N_j |\theta _j|_{\dot{H}^{1}}\Big(1+\frac{1}{t_j N_j}\Big).
+\end{split}
+\end{equation*}
+With $t_j=2^{-j}$ and $N_j=2^{(1+\alpha)j}$, the accumulated product over all steps satisfies
+\[\prod_{j=1}^{\infty} \Big(1+\frac{1}{t_j N_j}\Big)=\prod_{j=1}^\infty \Big(1+2^{-{\alpha}j}\Big)\le {\exp\left(\frac{1}{2^\alpha-1}\right)}, \]
+by the bound $\log(1+x)\le x$. Telescoping the one-step estimates therefore yields
+\[|\theta _{j+1}|_{\dot{W}^{1,\infty}}\le  {\exp\left(\frac{1}{2^\alpha-1}\right)} \cdot 2^{\frac{{\alpha}j(j+1)}{2}} {|\theta_0|_{\dot{W}^{1,\infty}}}, \qquad
+|\theta _{j+1}|_{\dot{H}^{1}}\le  {\exp\left(\frac{1}{2^\alpha-1}\right)} \cdot 2^{\frac{{\alpha}j(j+1)}{2}} |\theta_0|_{\dot{H}^{1}}. \]
+\medskip
+
+\emph{Lower Bounds:}
+The derivative $|S_{\eps_j}'(z)|$ equals $1$ everywhere except in the smoothing region $|z-\frac{\pi}{2}|<\eps_j$. The error from this region is controlled by the $\dot{W}^{1,\infty}$ norm:
+\begin{align*}
+|\partial_{i_{j+1}} \theta_{j+1}|_{L^2}&\ge t_j N_j |\partial_{i_j}\theta_j|_{L^2}-\sqrt{\eps_j} t_j N_j|\theta _j|_{\dot{W}^{1,\infty}} - |\partial_{i_{j+1}} \theta_j|_{L^2}\\
+&=t_j N_j|\partial_{i_j}\theta_j|_{L^2}\Big(1-\sqrt{\eps_j} \frac{|\theta _j|_{\dot{W}^{1,\infty}}}{|\partial_{i_j}\theta_j|_{L^2}}- {\frac{1}{t_jN_j}} \frac{|\partial_{i_{j-1}}\theta_{j}|_{L^2}}{|\partial_{i_j}\theta_j|_{L^2}}\Big).
+\end{align*}
+Since the shear only acts in the $x$-direction when $j$ is odd, the $i_j$-derivative is unchanged: $|\partial_{i_j}\theta_{j+1}|_{L^2}= |\partial_{i_j}\theta_j|_{L^2}$. Combining both estimates,
+ \[|\partial_{i_{j+1}} \theta_{j+1}|_{L^2}\ge t_j N_j|\partial_{i_j}\theta_j|_{L^2}\Big(1-\sqrt{\eps_j} \frac{|\theta _j|_{\dot{W}^{1,\infty}}}{|\partial_{i_j}\theta_j|_{L^2}}- {\frac{1}{t_jN_j}}\frac{|\partial_{i_{j-1}}\theta_{j-1}|_{L^2}}{|\partial_{i_j}\theta_j|_{L^2}}\Big),\]
+where $\theta_{-1}\equiv 0$. The ratios
+\[A_j\defeq \frac{|\partial_{i_{j}} \theta_{j}|_{L^2}}{|\partial_{i_{j+1}}\theta_{j+1}|_{L^2}}, \qquad R_{{j+1}}\defeq\frac{|\theta _{j+1}|_{\dot W^{1,\infty}}}{|\partial_{i_{j+1}}\theta_{j+1}|_{L^2}}\]
+then satisfy the recursive inequalities
+\begin{align*}
+A_{j}&\le 2^{-{\alpha}j} \Big(1-\sqrt{\eps_j} R_j-2^{-{\alpha}j}A_{j-1}\Big)^{-1}, \\
+R_{j+1}&\le R_j\Big(1+2^{-{\alpha}j}\Big)\Big(1- {\sqrt{\eps_j}}  R_j-2^{-{\alpha}j}A_{j-1})^{-1}.
+\end{align*}
+With $\eps_j={\exp(-30(1 + \frac{1}{2^\alpha-1}))}2^{-2j}$, a bootstrap argument shows:
+\[A_{j}\le 2\cdot 2^{-{\alpha}j}, \qquad R_j\le {\exp(10(1 + \frac{1}{2^\alpha-1}))}.\]
+Under these bounds, the recursion for $A_j$ simplifies to
+\begin{equation}\label{eq:ineq}
+\begin{split}
+ A_j\le 2^{-{\alpha}j}\Big(\frac{9}{10}-2^{-{\alpha}j}A_{j-1}\Big)^{-1}.
+\end{split}
+\end{equation}
+To initialise the bootstrap, take $\alpha = 1$ and compute explicitly with $\theta_0 = \sin(Mx)\sin(Ly)$:
+\begin{equation*}
+	\begin{split}
+	\theta_1(x,y) = \sin( M(x+t_1S_{\eps_1 }(N_1y) ) )\cos(Ly),
+	\end{split}
+	\end{equation*}
+so that
+\begin{equation*}
+	\begin{split}
+	\rd_y \theta_1 = t_1N_1S'_{\eps_1}(N_1y)M\cos( M(x+t_1S_{\eps_1 }(N_1y) ) )\cos(Ly) - L\sin( M(x+t_1S_{\eps_1 }(N_1y) ) )\sin(Ly).
+	\end{split}
+	\end{equation*}
+The two terms are $L^2$-orthogonal, which gives
+\begin{equation*}
+	\begin{split}
+	A_0 \le 2^{-1}(1- \sqrt{\eps_0}R_0)^{-1} < \frac{3}{5},
+	\end{split}
+	\end{equation*}
+since $R_0 = |\rd_x\theta_0|_{L^\infty}/|\rd_x\theta_0|_{L^2}$ is uniformly bounded for trigonometric initial data. For general $\alpha > 0$, one obtains the same bound $A_0 = A_{ J(\alpha)-1} < \frac{3}{5}$ by an analogous calculation; the remaining trigonometric cases require only minor modifications.
+Substituting $A_{J(\alpha)-1} < \frac{3}{5}$ into \eqref{eq:ineq} gives $A_{ {J(\alpha)} }< 1$, and from this point the bootstrap closes: $A_j<2\cdot 2^{-{\alpha}j}$ for all $j\ge {J(\alpha)+1}$.
+
+The bound $R_j<{\exp(10(1 + \frac{1}{2^\alpha-1}))}$ is maintained by the recursion
+\[R_{j+1}\le R_j(1+2^{-{\alpha}j})(1-\tfrac{1}{100}2^{-j}-2^{-{\alpha}j} A_{j-1})^{-1},\]
+together with $\frac{1}{1-x}<1+3x$ for small $x$. Using the summability of the correction factors:
+\[\prod_{j=J(\alpha)}^\infty (1+2^{-{\alpha}j})<  {\exp\!\Big(\tfrac{1}{2^\alpha-1}\Big)}, \]
+\[\prod_{j=J(\alpha)}^\infty (1-\tfrac{1}{100}2^{-j}-2^{-{\alpha} j} A_{j-1})^{-1}\le \prod_{j=J(\alpha)}^\infty\Big(1+\tfrac{3}{100}2^{-j}+3\cdot 2^{-{\alpha}j} A_{j-1}\Big),\]
+where the last product is bounded by $\exp(10(1 + \frac{1}{2^\alpha-1}))$ after substituting the bootstrap bound on $A_j$.
+This closes the bootstrap and gives \[|\partial_{i_j}\theta_{j}|_{L^2}\ge {c_\alpha} 2^{\frac{{\alpha}j(j+1)}{2}}{|\rd_x\theta_0|_{L^2}}.\]
+\medskip
+
+\emph{$\dot{H}^2$ Bound:}
+The second-order derivative estimates yield
+\begin{align*}
+|\theta _{j+1}|_{\dot{H}^2} &\le t_j^2 N_j^2|\theta _j|_{\dot H^2}
+({ 1 + 2(t_jN_j)^{-1} + (t_jN_j)^{-2} }) +|\theta _j|_{\dot{H}^1}\frac{t_j}{\eps_j} N_j^2, \\
+&\le  2^{2{\alpha}j}|\theta _j|_{{\dot{H}^2}}\Big(1+ 2 \cdot 2^{-\alpha j} + 2^{-2\alpha j} + C_\alpha \frac{|\theta _j|_{{\dot{H}^1}}}{|\theta _j|_{{\dot{H}^2}}}2^{3j}\Big).
+\end{align*}
+Invoking the Sobolev interpolation $|\theta _j|_{{\dot{H}^2}}\ge |\theta _j|_{{\dot{H}^1}}^2$ and the $\dot{H}^1$ lower bound,
+\[|\theta _{j+1}|_{{\dot{H}^2}}\le 2^{2{\alpha}j}|\theta _j|_{{\dot{H}^2}}\Big(1+ {2 \cdot 2^{-{\alpha}j} + 2^{-2{\alpha}j} + } {C_\alpha} 2^{-\frac{{\alpha} j(j+1)}{2}} 2^{3j}\Big).\]
+The correction series satisfies \[\sum_{j=0}^\infty ({2\cdot 2^{-{\alpha}j} + 2^{-2{\alpha}j} + }{C_\alpha}2^{-\frac{{\alpha}j(j+1)}{2}} 2^{3j})=c_\alpha<\infty,\]
+so that after telescoping
+\[|\theta _{j+1}|_{{\dot{H}^2}}\le 2^{{\alpha}j(j+1)} e^{{c_\alpha}}{|\theta_0|_{\dot{H}^2}}.\]
+This closes the argument for $M \ge L$. When $L > M$, the analogous computation at $j=1$ (with $\alpha = 1$) shows $|\theta_1|_{\dot{H}^1} \approx |\rd_y \theta_1|_{L^2}$ and
+\begin{equation*}
+	\begin{split}
+	|\theta_1|_{\dot{W}^{1,\infty}} \le 10|\theta_1|_{\dot{H}^1},\quad |\theta_0|_{\dot{H}^2} \le 10|\theta_0|_{\dot{H}^1}^2,
+	\end{split}
+	\end{equation*}
+so the same bootstrap applies starting from $j = 1$ rather than $j = 0$.
+\end{proof}
+
+\subsection{Viscous Bounds}
+
+To complete the proof of anomalous dissipation, the following lemma from \cite{DrivasElgindiEA22} is also needed.
+\begin{lemma}\label{thm:viscous-bounds}
+	Assume that $t_j, N_j, \eps_j,$ and $\theta_0$ are given as in Lemma \ref{thm:inviscid-bounds}. With $u(t)$ defined as in \eqref{eq:velocity}, the solution $\theta^{\kappa}$ to the system \eqref{peq:15} with initial data $\theta_0$ satisfies \begin{equation*}
+	\begin{split}
+	|\theta^{\kappa}(t)|_{H^2} \le C|\theta(t)|_{H^1}^2
+	\end{split}
+	\end{equation*} for some universal constant $C$ independent of $\kappa$ of $t$, where $\theta(t)$ is the inviscid solution. 
+\end{lemma}
+\begin{proof} Take $\theta_0 = \sin(Mx)\sin(Ly)$ with $M\ge L$; the other trigonometric cases are analogous. Recall that $T_j=\sum_{i=0}^j t_i$. Since the velocity alternates between horizontal and vertical shears, it suffices to prove the $H^2$ bound on each sub-interval $[T_j, T_{j+1}]$ separately. For $j$ even, the relevant equation is
+\[\partial_t \theta^\kappa+S_{\eps_j}(N_j y)\partial_x \theta^\kappa=\kappa\Delta \theta^\kappa, \qquad t\in [T_j, T_{j+1}]\]
+(the case $j$ odd is virtually identical with $x$ and $y$ exchanged). Differentiating in all multi-indices of order at most $2$ gives:
+
+\[\partial_t  \theta^\kappa+S_{\eps_j}(N_j y)\partial_x \theta^\kappa=\kappa\Delta \theta^\kappa,\]
+\[\partial_t \partial_x \theta^\kappa+S_{\eps_j}(N_j y)\partial_{xx} \theta^\kappa=\kappa\Delta\partial_x \theta^\kappa,\]
+\[\partial_t \partial_{xx} \theta^\kappa+S_{\eps_j}(N_j y)\partial_{xxx} \theta^\kappa=\kappa\Delta   \partial_{xx}\theta^\kappa,\]
+\[\partial_t \partial_y \theta^\kappa+S_{\eps_j}(N_j y)\partial_x \partial_y \theta^\kappa+N_j S_{\eps_j}'(N_j y)\partial_x \theta^\kappa=\kappa\Delta \partial_y \theta^\kappa,\]
+\[\partial_t \partial_{xy} \theta^\kappa+S_{\eps_j}(N_j y)\partial_{x}\partial_{xy} \theta^\kappa+N_j S_{\eps_j}'(N_j y)\partial_{xx} \theta^\kappa=\kappa\Delta \partial_{xy}\theta^\kappa,\]
+\[\partial_t \partial_{yy} \theta^\kappa+S_{\eps_j}(N_j y)\partial_x \partial_{yy} \theta^\kappa+2N_j S_{\eps_j}'(N_j y)\partial_{xy} \theta^\kappa+N_j^2 S_{\eps_j}''(N_j y)\partial_x \theta^\kappa=\kappa\Delta \partial_{yy} \theta^\kappa.\]
+The first three equations (for $\theta^\kappa$, $\partial_x\theta^\kappa$, $\partial_{xx}\theta^\kappa$) have no commutator terms, so the $L^2$ dissipation is monotone and
+\[|\theta^\kappa(t)|_{L^2}\le |\theta^\kappa(T_{j})|_{L^2},\qquad |\partial_x \theta^\kappa(t)|_{L^2}\le |\partial_x \theta^\kappa(T_{j})|_{L^2}, \qquad |\partial_{xx}\theta^\kappa(t)|_{L^2}\le |\partial_{xx}\theta^\kappa(T_{j})|_{L^2}\]
+for $t\in [T_j, T_{j+1}]$. Substituting these into the equations for $\partial_y\theta^\kappa$ and $\partial_{xy}\theta^\kappa$ and integrating gives
+\begin{gather}
+  |\partial_y \theta^\kappa(t)|_{L^2}\le N_j (t-T_j)|\partial_x \theta^\kappa(T_j)|_{L^2}+|\partial_y \theta^\kappa(T_j)|_{L^2}\,,
+  \\
+  |\partial_{xy} \theta^\kappa(t)|_{L^2}\le N_j (t-T_j)|\partial_{xx} \theta^\kappa(T_j)|_{L^2}+|\partial_{xy} \theta^\kappa(T_j)|_{L^2}\,,
+\end{gather}
+for all $t\in [T_j, T_{j+1}]$. Using all preceding estimates in the $\partial_{yy}$-equation yields
+\[|\partial_{yy} \theta^\kappa(t)|_{L^2}\le (t-T_j)^2 N_j^2 |\partial_{xy}\theta^\kappa(T_j)|_{L^2}+(t-T_j)N_j^2\frac{1}{\eps_j}|\partial_x \theta^\kappa(T_j)|_{L^2}+|\partial_{yy} \theta^\kappa(T_j)|_{L^2}.\]
+Taking the supremum over $[T_j, T_{j+1}]$ and using $N_j t_j\ge 1$,
+\[\sup_{t\in [T_j, T_{j+1}]}|\theta^\kappa|_{\dot H^2}\le (t_j^2 N_j^2+1) |\theta^\kappa(T_j)|_{H^2}+\frac{t_j}{\eps_j}N_j^2|\theta^\kappa(T_j)|_{H^1}.\]
+This bound holds for every $j$. Setting $A_j=\sup_{t\in [T_j, T_{j+1})}|\theta^\kappa|_{H^2}$ and substituting the explicit parameters, together with the bound $|\theta^\kappa|_{H^1}^2\le |\theta^\kappa|_{H^2}$, gives
+\[A_j\le (2^{2{\alpha}j}+2)A_{j-1}+{C_\alpha} 2^{10j}.\]
+Normalise so that $A_0=1$. The auxiliary sequence $B_j=A_j+C_\alpha 2^{10j}$ satisfies
+\[B_{j}\le 2 C_\alpha 2^{10j}+(2^{2{\alpha}j}+1)(B_{j-1}-C_\alpha 2^{10(j-1)}),\]
+from which, for $j\ge {J(\alpha)}$,
+\[B_j\le (2^{2{\alpha}j}+1)B_{j-1}, \qquad \text{and hence} \qquad B_j \le \tilde C_\alpha 2^{\alpha j(j+1)}.\]
+Returning to $A_j$,
+\[\sup_{t\in [T_j, T_{j+1}]} |\theta^\kappa|_{H^2}\le \tilde C_\alpha \cdot 2^{{\alpha}j(j+1)} \quad \text{for all } j.\]
+Comparing with the $H^1$ lower bound of Lemma~\ref{thm:inviscid-bounds} gives the claimed estimate $|\theta^\kappa|_{H^2}\le C_\alpha|\theta |_{H^1}^2$, where $\theta$ is the inviscid solution. \end{proof} 
+
+
+\subsection{Proof of Theorem \ref{mainthm}}
+
+
+The previous lemmas establish anomalous dissipation for initial data given by a pure harmonic. To conclude the proof of Theorem~\ref{mainthm}, it remains to treat the case of a small $L^2$ perturbation and to verify that the velocity field $u(t)$ defined in \eqref{eq:velocity} belongs to $L^1([0,1];C^{\alpha'})$ for any $\alpha'<1$. For the latter, we simply compute that \begin{equation*}
+\begin{split}
+|u|_{L^1([0,1];C^{\alpha'})} \lesssim \sum_{j \ge J(\alpha)} t_j N_j^{\alpha'} \lesssim \sum_{j \ge J(\alpha)} 2^{ (1+\alpha)\alpha'j -j } <+\infty 
+\end{split}
+\end{equation*} once we take $0<\alpha < \frac{1}{\alpha'} - 1$.
+
+Suppose $\theta_0$ satisfies the proximity condition of Theorem~\ref{mainthm}, with $\varepsilon_\alpha > 0$ to be chosen. Without loss of generality, take $\psi = \sin(Mx)$ and $\lambda = 1$, with $\psi$ orthogonal to $\theta_0 - \psi$ in $L^2$. Decompose the initial datum as
+\begin{equation*}
+\begin{split}
+\theta_0(x,y) = \sin(Mx) + ( {\theta}_0 - \sin(Mx)) \defeq \theta_0^L + \theta_0^H,
+\end{split}
+\end{equation*}
+so $|\theta_0|_{L^2}^2 = |\theta_0^L|_{L^2}^2 + |\theta_0^H|_{L^2}^2$. The smallness assumption gives
+\begin{equation*}
+\begin{split}
+\sqrt{1-\varepsilon_\alpha^2} |\theta_0^H|_{L^2} \le \varepsilon_\alpha|\theta_0^L|_{L^2},
+\end{split}
+\end{equation*}
+hence $|\theta_0|_{L^2} \ge (1 - \frac{\varepsilon_\alpha}{\sqrt{1-\varepsilon_\alpha^2}}) |\theta_0^L|_{L^2}$.
+The preceding lemmas applied to the ``low-frequency'' part $\theta_0^L = \sin(Mx)$ give, for any $0 < \kappa \le 1$,
+\begin{equation*}
+\begin{split}
+\frac{1}{2}( |\theta_0^L|_{L^2}^2 - |\theta^{L,\kappa}(1)|_{L^2}^2 ) = \kappa \int_0^1 |\nabla \theta^{L,\kappa}|_{L^2}^2 \,dt \ge \chi_\alpha |\theta_0^L|_{L^2}^2,
+\end{split}
+\end{equation*}
+where $\theta^{L,\kappa}$ solves the advection-diffusion equation with initial data $\theta^L_0$. Letting $\theta^{H,\kappa}$ denote the solution with initial data $\theta^H_0$, linearity gives $\theta^\kappa = \theta^{L,\kappa} + \theta^{H,\kappa}$. Combining the energy estimates for both parts,
+\begin{equation*}
+\begin{split}
+|\theta^\kappa(1)|_{L^2} &\le |\theta^{L,\kappa}(1)|_{L^2} + |\theta^{H,\kappa}(1)|_{L^2}
+\le (1-2\chi_\alpha)|\theta^{L}_0|_{L^2} + |\theta^{H}_0|_{L^2} \\
+& \le \left( (1-2\chi_\alpha)\Big(1 - \frac{\varepsilon_\alpha}{\sqrt{1-\varepsilon_\alpha^2}}\Big)^{-1} +  \frac{\varepsilon_\alpha}{\sqrt{1-\varepsilon_\alpha^2}} \right)  |\theta_0|_{L^2} <\Big( 1 - \frac{1}{10}\chi_\alpha\Big)|\theta_0|_{L^2},
+\end{split}
+\end{equation*}
+provided $\varepsilon_\alpha = \chi_\alpha/100$. The energy identity~\eqref{peq:17} then yields the required lower bound on $\kappa\int_0^1|\nabla\theta^\kappa|_{L^2}^2$.
+\hfill\qedsymbol
+ 
+ 
+
+\subsection{Proof of Theorem \ref{mainthm2}}
+
+Theorem~\ref{mainthm2} establishes anomalous dissipation for arbitrary mean-zero initial data $\theta_0 \in H^2(\mathbb{T}^2)$. As in the proof of Theorem~\ref{mainthm}, the argument proceeds via Proposition~\ref{thm:criterion1}, but with a velocity field that now depends on $\theta_0$. This time, given $\alpha>0$, we take \[t_j=2^{-j},\qquad N_j=2^{{(1+\alpha)}j},\qquad \eps_j= a_0 \, {\exp\left(-30(1 + \frac{1}{2^\alpha-1})\right)}\cdot 2^{-2j},\] and define the velocity field $u(t)$ for $t \in [T_j,T_{j+1})$ by \begin{equation}\label{eq:velocity2}
+\begin{split}
+u(t, x,y) = \begin{cases}
+\begin{pmatrix}
+(-1)^{s_j}S_{\eps_j}(N_jy) \\
+0
+\end{pmatrix}  & j \mbox{ even},  \\
+\begin{pmatrix}
+0 \\
+(-1)^{s_j}S_{\eps_j}(N_jx) 
+\end{pmatrix} & j \mbox{ odd, }
+\end{cases} 
+\end{split}
+\end{equation} where $T_j = \sum_{i=0}^j t_i$ with $t_0 = 0$. The amplitude $a_0 \in (0,1]$ and the signs $s_j \in \{0,1\}$ are chosen adaptively based on the initial data in a manner described below. Structurally, the velocity field is the same alternating-shear construction as in \eqref{eq:velocity}.
+
+The verification of Proposition~\ref{thm:criterion1} follows the same strategy as in the proof of Theorem~\ref{mainthm}. The only modification is in establishing the $H^1$ lower bound, since the initial data is now general. The sign $s_j$ is selected at each step to ensure sufficient growth. Specifically, for $j$ odd, introduce the two candidate iterates $\theta_{j+1}^{\pm} = \theta_j (x \pm t_j S_{\eps_j}(N_jy),y)$ and differentiate:
+\begin{equation*}
+\begin{split}
+\rd_{i_{j+1}} \theta_{j+1}^{\pm}(x,y) &= \rd_{i_{j+1}}\theta_j(x \pm t_j S_{\eps_j}(N_jy),y ) \pm t_jN_j S'_{\eps_j}(N_jy) \rd_{i_j}\theta_j(x + t_j S_{\eps_j}(N_jy),y ).
+\end{split}
+\end{equation*}
+Since the cross terms vanish when summing over the two signs,
+\begin{equation*}
+\begin{split}
+\sum_{\pm}|\rd_{i_{j+1}} \theta_{j+1}^{\pm} |_{L^2}^2 = 2|\rd_{i_{j+1}}\theta_j|_{L^2}^2 + 2(t_jN_j)^2 |S'_{\eps_j}(N_jy) \rd_{i_j}\theta_j|_{L^2}^2.
+\end{split}
+\end{equation*}
+At least one of the two choices of sign must therefore satisfy
+\begin{equation*}
+\begin{split}
+|\rd_{i_{j+1}} \theta_{j+1}^{(-1)^{s_j}} |_{L^2} \ge t_jN_j|S'_{\eps_j}(N_jy) \rd_{i_j}\theta_j|_{L^2} \ge t_jN_j |\rd_{i_j} \theta_j|_{L^2} \Big(1 - \sqrt{\eps_j} \frac{|\theta_j|_{\dot{W}^{1,\infty}}}{|\rd_{i_j}\theta_j|_{L^2}} \Big);
+\end{split}
+\end{equation*}
+this selects $s_j$. In the notation of the bootstrap scheme (with $\alpha = 1$ for simplicity), the ratio $A_j$ now satisfies
+\begin{equation*}
+\begin{split}
+A_j \le 2^{-j} (1 - \sqrt{\eps_j}R_j)^{-1},
+\end{split}
+\end{equation*}
+while the inequality for $R_{j+1}$ is unchanged. Choosing $a_0 > 0$ sufficiently small depending only on $\theta_0$ ensures $A_1 < 1$, at which point the bootstrap closes exactly as before and yields the desired $H^1$ lower bound.
+\strut\hfill\qedsymbol
+
+
+
+
+
+\section{Non-Uniqueness of Weak Solutions }\label{s:nonuniq}
+
+The goal of this section is to prove Theorem~\ref{nonuniq}, following \cite{DrivasElgindiEA22}.
+Recall that $\theta\in C_w(0,T; L^2(\mathbb{T}^d))$ is called a weak solution of the transport equation~\eqref{inveqn} on $\mathbb{T}^d\times [0,T]$ if
+\begin{equation}\label{weaktrans}
+  \int_0^T \int_{\mathbb{T}^d}
+    \theta \paren[\big]{
+      \partial_t \varphi  + u  \cdot \nabla \varphi
+    }
+    \rmd x \rmd t
+    =  -\int_{\mathbb{T}^d} \theta_0(x) \varphi(x,0)  \rmd x
+\end{equation}
+holds, for all test functions $\varphi \in C_0^\infty ([0,T) \times \mathbb{T}^d)$.
+
+  \begin{proof}[Proof of Theorem~\ref{nonuniq}]
+  Two distinct weak solutions are constructed: one is time-irreversible and arises as a vanishing viscosity limit, while the other is obtained by time-reversal.
+  \medskip
+
+  \emph{Time irreversible weak solution:}
+Define $\theta$ as the weak limit, as $\kappa_k \to 0$, of the solutions $\theta^{\kappa_k}$ of the advection-diffusion equation with velocity $u_*$. The uniform $L^\infty$ bound on $\theta^{\kappa_k}$ guarantees — via the Aubin-Lions lemma — convergence in $C([0,2T); w\text{-}L^2(\mathbb{T}^d))$, where $w\text{-}L^2$ denotes $L^2$ with the weak topology.
+Since the transport equation is linear and $u\in L^\infty(0,2T; L^\infty(\mathbb{T}^d))$, passing to the limit shows that $\theta$ satisfies the weak formulation \eqref{weaktrans} on $[0,2T]\times \mathbb{T}^d$.
+Weak lower semicontinuity of the $L^2$ norm then gives, for all $t\in [T,2T]$, 
+  \begin{equation}
+  | \theta(t)|_{L^2}^2 \leq \liminf_{\kappa \to 0}  | \theta^\kappa(t)|_{L^2}^2
+    \leq   | \theta_0|_{L^2}^2 - \limsup_{\kappa \to 0} \kappa \int_0^T |\nabla \theta^\kappa|_{L^2}^2 \rmd t\leq  (1- \chi_\alpha )| \theta_0|_{L^2}^2 <| \theta_0|_{L^2}^2 
+  \end{equation}
+upon applying Theorem \ref{mainthm2}.
+Thus,
+\begin{equation}
+\label{dissipating}
+  \sup_{t\in [T, 2T]} | \theta(t)|_{L^2}^2 \leq (1 - \chi_\alpha) \abs{\theta_0}_{L^2}^2 <    | \theta_0 |_{L^2}^2 \,,
+\end{equation}
+and hence the inviscid limit has strictly lost $L^2$ mass over $[0,T]$.
+\medskip
+
+ \emph{Time reversible weak solution:}
+  A second weak solution $\bar{\theta}$ is produced by time-reversal: define
+    \begin{equation}
+ \bar \theta(t) =
+  \begin{cases} \theta(t) & t\in [0,T),\\
+  \theta(2T-t) & t\in [T,2T].
+  \end{cases}
+  \end{equation}
+  Since $\theta\in C_w([0,T]; \mathbb{T}^d)$, this formula gives $\bar\theta\in C_w([0,2T]; \mathbb{T}^d)$.
+   To verify that $\bar\theta$ satisfies \eqref{weaktrans} on $[0,2T]$, take any $\varphi \in C^\infty_0([0, 2T)\times \mathbb{T}^d)$ and check:
+   \begin{equation}
+\int_0^{2T} \int_{\mathbb{T}^d}  \bar\theta (x,t) \partial_t \varphi(x,t)  \rmd x \rmd t+ \int_0^{2T} \int_{\mathbb{T}^d} \bar\theta (x,t)u(x,t)  \cdot \nabla \varphi(x,t)  \rmd x \rmd t =  -\int_{\mathbb{T}^d} \theta_0 (x)  \varphi(x,0)  \rmd x .
+\end{equation}
+Decompose the test function into its even and odd parts about $t=T$:
+\begin{equation}
+\varphi = \varphi_{e} + \varphi_{o}, \qquad \varphi_{e/o}\defeq \frac{ \varphi(T + (t-T)) \pm  \varphi(T - (t-T))}{2}.
+\end{equation}
+Because $\bar\theta(x,t)$ is even and $u(x,t)$ is odd about $t=T$, the contribution from $\varphi_e$ vanishes, and the equation reduces to 
+   \begin{equation}
+\int_0^{2T} \int_{\mathbb{T}^d}  \bar\theta (x,t) \partial_t \varphi_o(x,t)  \rmd x \rmd t+ \int_0^{2T} \int_{\mathbb{T}^d} \bar\theta (x,t)u(x,t)  \cdot \nabla \varphi_o(x,t)  \rmd x \rmd t =  -\int_{\mathbb{T}^d} \theta_0 (x)  \varphi(x,0)  \rmd x .
+\end{equation}
+Splitting the time integral at $t = T$ gives
+   \begin{align}\nonumber
+   \int_0^{T} \int_{\mathbb{T}^d}& \theta (x,t) \partial_t \varphi_o(x,t)  \rmd x \rmd t+ \int_0^{T} \int_{\mathbb{T}^d} \theta (x,t)u_*(x,t)  \cdot \nabla \varphi_o(x,t)  \rmd x \rmd t =  -\int_{\mathbb{T}^d} \theta_0 (x)  \varphi(x,0)  \rmd x\\ \nonumber
+      &-\int_{T}^{2T}  \int_{\mathbb{T}^d} \theta (x,2T-t) \partial_t \varphi_o(x,t)  \rmd x \rmd t+ \int_{T}^{2T} \int_{\mathbb{T}^d} \theta (x,2T-t)u_*(x,2T-t) \cdot \nabla \varphi_o(x,t)  \rmd x \rmd t.
+   \end{align}
+The change of variables $\tau = 2T - t$ converts the integral over $[T,2T]$ into one over $[0,T]$. Setting $\psi(x,\tau) = \varphi_o(x, 2T-\tau)$ — which satisfies $\psi(x,T)=0$ since $\varphi_o$ is odd about $T$ — yields
+   \begin{align}\nonumber
+   \int_0^{T} \int_{\mathbb{T}^d}& \theta (x,t) \partial_t \varphi_o(x,t)  \rmd x \rmd t+ \int_0^{T} \int_{\mathbb{T}^d} \theta (x,t)u_*(x,t)  \cdot \nabla \varphi_o(x,t)  \rmd x \rmd t =  -\int_{\mathbb{T}^d} \theta_0 (x)  \varphi(x,0)  \rmd x\\ \nonumber
+      &+  \int_0^{T} \int_{\mathbb{T}^d} \theta (x,\tau) \partial_\tau \psi(x,\tau )  \rmd x \rmd \tau+    \int_0^{T} \int_{\mathbb{T}^d} \theta (x,\tau)u_*(x,\tau) \cdot \nabla \psi(x,\tau )  \rmd x \rmd \tau .
+   \end{align}
+Applying the weak formulation for $\theta$ on $[0,T]$ with test function $\psi$ (using $\psi(x,T)=0$ and $\psi(x,0)=\varphi_o(x,2T)$) gives
+      \begin{align}\nonumber
+  \int_0^{T} \int_{\mathbb{T}^d}\left[ \theta (x,\tau) \partial_\tau \psi(x,\tau ) + \theta (x,\tau)u_*(x,\tau) \cdot \nabla \psi(x,\tau ) \right] \rmd x \rmd t  =-\int_{\mathbb{T}^d} \theta_0 (x)  \varphi_o(x,2T)  \rmd x.
+   \end{align}
+The weak formulation of $\theta$ on $[0,T]$ with test function $\varphi_o$ also gives
+         \begin{align}\nonumber
+ \int_0^{T} \int_{\mathbb{T}^d}\left[ \theta (x,t) \partial_t \varphi_o(x,t) + \theta (x,t)u_*(x,t)  \cdot \nabla \varphi_o(x,t) \right] \rmd x \rmd t =  -\int_{\mathbb{T}^d} \theta_0 (x)  \varphi_o(x,0)  \rmd x.
+   \end{align}
+   Adding the two equations and using
+   \begin{equation}
+    \varphi_o(x,0)=  -\varphi_o(x,2T) = \frac{1}{2}\varphi(x,0)
+   \end{equation}
+confirms that $\bar{\theta}$ satisfies \eqref{weaktrans} on $[0,2T]$, so $\bar{\theta}\in C_w([0,2T]; \mathbb{T}^d)$ is a weak solution. To see that $\bar\theta \ne \theta$, note that
+     \begin{equation}
+ | \bar{\theta}(2T)|_{L^2}^2 =  | \theta_0|_{L^2}^2.
+     \end{equation}
+In light of \eqref{dissipating}, the solutions $\theta$ and $\bar{\theta}$ are distinct. 
+  \end{proof}
+
+
+
+\section{Discussion:  Obukhov-Corrsin Theory}\label{disc}
+
+In the context of passive scalar turbulence, Obukhov \cite{Obukhov49} and Corrsin \cite{Corrsin51} studied the `inertial-range' scaling behavior of scalar structure functions $S_p^\theta (\ell)\defeq \langle |\delta_\ell \theta|^p\rangle\sim \ell^{\zeta_p(\theta)}$ 
+in a fully developed homogenous isotropic velocity field exhibiting Kolmogorov 1941 (K41) `monofractal' scaling \cite{Kolmogorov41}
+\begin{equation}
+S_p^u(\ell)\defeq \langle |\delta_\ell u|^p\rangle \sim (\ve \ell)^{p/3}, \qquad \ell_\nu \ll \ell \ll L^u
+\end{equation}
+for all $p\ge 1$  where $L^u$ is the integral scale of the velocity field and $\ell_\nu$ is the dissipation scale (the K41 prediction being $\ell_\nu =(\nu^3/\varepsilon)^{1/4}$ where $\varepsilon\defeq \lim_{\nu \to 0} \nu\langle |\nabla u^\nu|^2\rangle >0$ is the anomalous energy dissipation rate).  Said another way, in the idealized limit $\nu \to 0$, the velocity field  is assumed to be $1/3$--H\"{o}lder and not better.
+Based on dimensional grounds,  Obukhov and Corrsin  independently predicted that the scalar field would also exhibit the same scaling 
+\begin{equation}
+S_p^\theta (\ell)\defeq \langle |\delta_\ell \theta|^p\rangle \sim  (\chi/\varepsilon^{1/3})^{p/2} \ell^{p/3}, \qquad \ell_\nu \lesssim \ell_\kappa \ll \ell \ll L^\theta\lesssim L^u
+\end{equation}
+where $\chi\defeq \lim_{\kappa,\nu \to 0} \kappa\langle |\nabla \theta^\kappa|^2\rangle>0$ is the (presumed) anomalous dissipation of the passive scalar, $ L^\theta$ is the typical length-scale of the scalar input initially or by a force, and $\ell_\kappa$ is the dissipative length for the scalar field ($\ell_\kappa = (\kappa^3/\ve)^{1/4}$ in the Corrsin-Obukhov theory).  Their scaling theory can be generalized  as
+\begin{equation}
+S_p^u(\ell)\sim \ell^{\alpha p}, \quad \alpha \in (0,1) \qquad \text{implies} \qquad S_p^\theta(\ell)\sim \ell^{\left(\frac{1-\alpha}{2}\right) p}.
+\end{equation}
+In the idealized limit of $\nu, \kappa\to 0$, this says that if the velocity $u\in C^\alpha$ is H\"{o}lder with exponent $\alpha\in (0,1)$ and not better, then the scalar should be H\"{o}lder $\theta\in C^\beta$ with exponent $\beta= (1-\alpha)/2$ and not better. These constraints can be understood as a consequence of the fractal geometry of scalar level sets in rough velocities \cite{ConstantinProcaccia93,ConstantinProcaccia94}.  Moreover,  the entire picture has been generalized to accommodate (the more realistic setting) of multifractal velocity fields with the property that $S_p^u(\ell)\sim  \ell^{\zeta_p(u)}$ where $\zeta_p(u)$ may depend non-linearly on $p$ resulting in constraints on the multifractal spectrum of the scalar $\zeta_p(\theta)$ \cite{Eyink96}.
+
+
+In analogy to the Onsager conjecture for the dissipation anomaly of kinetic energy in incompressible fluids \cite{Onsager49}, one can regard the above theory as setting a threshold condition for the anomalous dissipation of scalar energy \cite{Eyink96}.  Namely, if  $u\in C^\alpha$  and  $\theta^\kappa \in C^\beta$ uniformly  then
+\begin{equation}
+\chi\defeq  \kappa \int_0^T \int_{\mathbb{T}^d} |\nabla \theta^\kappa|^2 \rmd x \rmd t \to 0 \qquad \text{unless} \qquad \beta>\frac{1-\alpha}{2}. 
+\end{equation}
+Along these lines, we first establish an upper bound on the dissipation for vanishing diffusion limits in rough velocity fields.  A similar estimate was provided for viscous energy dissipation in the context of Onsager's conjecture for hydrodynamic turbulence \cite{DrivasEyink19}.  We also study what happens when the velocity field is smooth up until a single point in time where it may lose regularity.  The latter is relevant to the problem in which an inertial range for the velocity field evolves dynamically by some cascade process to the point where the field becomes non-smooth in a way consistent with the observed long-time inertial range scaling in real turbulence.  In fact, one has the following result.
+\begin{theorem}[{\cite[Theorem~1.4]{DrivasElgindiEA22}}]\label{thm1}
+Let $u\in L^1([0,T]; C^\alpha(\mathbb{T}^d))$ for $\alpha\in (0,1]$ be a given divergence free vector field.  Suppose that the family $\{\theta^\kappa\}_{\kappa>0}$ is bounded in $L^\infty([0,T] ; C^\beta(\mathbb{T}^d))$ for $\beta\in (0,1]$ uniformly in $\kappa$, then 
+\begin{equation}\label{noanombnd}
+ \kappa \int_0^T \int_{\mathbb{T}^d} |\nabla \theta^\kappa|^2 \rmd x \rmd t\le C  \kappa^{\frac{\alpha +2\beta-1}{\alpha+1}}
+\end{equation}
+for an absolute constant $ C$ depending only on $T$ and the H\"{o}lder norms of the solutions.
+In particular, if $\beta>(1-\alpha)/2$ then there can be no anomalous scalar dissipation.  
+If furthermore
+\begin{equation*}
+u\in  L^1_{loc}([0,T); W^{1,\infty}(\mathbb{T}^d))\cap L^1([0,T]; C^\alpha(\mathbb{T}^d))
+\qquad
+\text{for } \alpha<1\,,
+\end{equation*}
+ and if $\beta=(1-\alpha)/2$, then 
+\begin{equation}
+\lim_{\kappa\to 0} \kappa \int_0^T \int_{\mathbb{T}^d} |\nabla \theta^\kappa|^2 \rmd x \rmd t=0.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $\ol{f}_\ell = \varphi_\ell *f$ for any $\ell>0$.  Mollifying the equations, one finds
+\begin{equation}
+\partial_t \ol{(\theta^\kappa)}_\ell + \ol{u}_\ell \cdot \nabla \ol{(\theta^\kappa)}_\ell = \kappa \Delta \ol{(\theta^\kappa)}_\ell - \nabla \cdot \tau_\ell(u,\theta^\kappa)
+\end{equation}
+where $\tau_\ell(f,g)= \ol{(fg)}_\ell - \ol{f}_\ell \ol{g}_\ell$.  A straightforward calculation  for any $0\le t\le T$ shows that
+\begin{align}\nonumber
+ \kappa \int_{t}^T \int_{\mathbb{T}^d} |\nabla \theta^\kappa|^2 \rmd x \rmd t' &= \int_t^T \int_{\mathbb{T}^d} \nabla\ol{(\theta^\kappa)}_\ell\cdot \tau_\ell(u,\theta^\kappa) \rmd x \rmd t' +  \kappa \int_t^T\int_{\mathbb{T}^d} |\nabla \ol{(\theta^\kappa)}_\ell|^2 \rmd x \rmd t' \\
+ &\quad + \frac{1}{2} \int_{\mathbb{T}^d}  \tau_\ell(\theta^\kappa(t),\theta^\kappa (t)) \rmd x-  \frac{1}{2} \int_{\mathbb{T}^d}  \tau_\ell(\theta^\kappa(T),\theta^\kappa (T )) \rmd x.
+\end{align}
+Using standard estimates for mollified gradients and the Constantin-E-Titi \cite{ConstantinEEA94} commutator estimate 
+\begin{equation}
+|\nabla \ol{f}_\ell|_{L^\infty}\le  |\theta |_{C^\alpha} \ell^{\alpha-1}, \qquad |\tau_\ell (f,g)|_{L^\infty} \le |\theta |_{C^\alpha} |g|_{C^\beta} \ell^{\alpha+\beta}, \qquad f\in C^\alpha, \ g\in C^\beta
+\end{equation}
+together with the fact that $\tau_\ell(f,f)\ge 0$ we arrive at an upper bound for the scalar dissipation
+\begin{equation}
+ \kappa \int_{t}^T \int_{\mathbb{T}^d} |\nabla \theta^\kappa|^2 \rmd x \rmd t' \le    \ell^{\alpha+2\beta-1} |\theta^\kappa|_{L^\infty_tC^\beta_x}^2  |u|_{L^1(t,T; C^\alpha_x)}  +  \left(\kappa (T-t) \ell^{2(\beta-1)} + \ell^{2\beta}\right) |\theta^\kappa|_{L^\infty_tC^\beta_x}^2.
+\end{equation}
+Setting $t=0$ and optimizing $\ell$ as a function of $\kappa$ we find $\ell= \kappa^{1/(\alpha+1)}$ and \eqref{noanombnd} follows.  The second statement of the theorem follows by dividing the time interval  into $[0, T-\epsilon] \times [T-\epsilon, T]$ and using the assumed $C^1$ regularity of $u$ on the interval $[0, T-\epsilon] $ together with the uniform H\"{o}lder on the entire interval $[0,T]$ and the fact that $\epsilon$ is allowed arbitrarily small (and can vanish as $\kappa\to 0$).
+\end{proof}
+
+In light of Theorems~\ref{mainthm} and \ref{thm1}, Drivas et al.\ \cite{DrivasElgindiEA22} raise the following open question.
+\begin{question}
+  Fix $\alpha\in (0,1)$.
+  Does there exist divergence-free vector field
+  \begin{equation*}
+    u\in   L^1([0,1]; C^\alpha(\mathbb{T}^d))
+  \end{equation*} such that $\{\theta^\kappa\}_{\kappa>0}$ is bounded in $L^\infty([0,T] ; C^\beta(\mathbb{T}^d))$ for every $\beta<(1-\alpha)/2$,and
+\begin{equation*}
+\liminf_{\kappa\to 0} \kappa \int_0^T \int_{\mathbb{T}^d} |\nabla \theta^\kappa|^2 \rmd x \rmd t>0 \ ?
+\end{equation*}
+\end{question}
+
+Drivas et al.\ \cite{DrivasElgindiEA22} also comment briefly on the nonlinear problem of establishing anomalous dissipation for solutions of the Navier-Stokes equations
+\begin{align*}
+\partial_t u^\nu + u^\nu \cdot \nabla u^\nu &= -\nabla p^\nu + \nu \Delta u^\nu,\\
+\nabla \cdot u^\nu &= 0.
+\end{align*}
+As for passive scalars, experimental and numerical observations of hydrodynamic turbulence suggest that kinetic energy dissipation is non-vanishing in the limit of zero viscosity \cite{Sreenivasan84,Sreenivasan98,PearsonKrogstadEA02,KanedaIshiharaEA03}, i.e.\ there exists $\ve>0$ independent of $\nu$ such that, in turbulent regimes, a family of Leray-Hopf solutions $\{u^\nu \}_{\nu>0}$ satisfies
+\begin{equation}\label{anomalousdissNS}
+\nu\int_0^T  \int  \!  |\nabla u^\nu(x,t)|^2 \rmd x \rmd t \geq \varepsilon >0.
+\end{equation}
+This phenomenon of anomalous dissipation is so fundamental to our modern understanding of turbulence that it is often termed the "zeroth law".  In 1949 \cite{Onsager49}, Lars Onsager offered significant insight 
+into this phenomena in asserting that  it requires that, at high Reynolds number, flow develop  structures approximating singular ones with
+H\"{o}lder exponents not exceeding $1/3$.  This assertion has since been proved \cite{Eyink94,ConstantinEEA94} and dissipative weak solutions of the Euler equations with lower regularity have been constructed in a series of works using  convex integration  \cite{DeLellisSzekelyhidi09,DeLellisSzekelyhidi10,DeLellisSzekelyhidi12,Isett18,BuckmasterDeLellisEA19} and culminating in a construction of non-conservative solutions in the class $C_t C^{1/3-}_x$ by P. Isett.
+However, to this day, none of these constructions are achieved as zero viscosity limits of  Navier-Stokes solutions obeying a physical energy balance (e.g. Leray-Hopf weak solutions).  In \cite{DrivasElgindiEA22}, Drivas, Elgindi, Iyer, and Jeong solved an analogous problem for passive scalars in a setting which models the effect of a finite-time singularity in an inviscid problem
+on anomalous dissipation in the corresponding viscous problem.  Their result follows from a sufficient condition for anomalous dissipation assuming that the inviscid solution becomes singular in
+a controlled way. It is possible that one could deduce anomalous dissipation in the vanishing viscosity limit of Navier-Stokes solutions under some conditions on a (hypothetical) blowup in the Euler equation.
+
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{CGSW15}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname doi\endcsname\relax
+  \def\doi#1{\burlalt{doi:#1}{http://dx.doi.org/#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2}\fi
+\expandafter\ifx\csname burlalt\endcsname\relax
+  \def\burlalt#1#2{\href{#2}{#1}}\fi
+
+\bibitem[ABC14]{AlbertiBianchiniEA14}
+G.~Alberti, S.~Bianchini, and G.~Crippa.
+\newblock A uniqueness result for the continuity equation in two dimensions.
+\newblock {\em J. Eur. Math. Soc. (JEMS)}, 16(2):201--234, 2014.
+\newblock \doi{10.4171/JEMS/431}.
+
+\bibitem[ACM19a]{AlbertiCrippaEA19}
+G.~Alberti, G.~Crippa, and A.~L. Mazzucato.
+\newblock Exponential self-similar mixing by incompressible flows.
+\newblock {\em J. Amer. Math. Soc.}, 32(2):445--490, 2019.
+\newblock \doi{10.1090/jams/913}.
+
+\bibitem[ACM19b]{AlbertiCrippaEA19a}
+G.~Alberti, G.~Crippa, and A.~L. Mazzucato.
+\newblock Loss of regularity for the continuity equation with non-{L}ipschitz
+  velocity field.
+\newblock {\em Ann. PDE}, 5(1):Art. 9, 19, 2019.
+\newblock \doi{10.1007/s40818-019-0066-3}.
+
+\bibitem[Aiz78]{Aizenman78}
+M.~Aizenman.
+\newblock On vector fields as generators of flows: a counterexample to
+  {N}elson's conjecture.
+\newblock {\em Ann. Math. (2)}, 107(2):287--296, 1978.
+\newblock \doi{10.2307/1971145}.
+
+\bibitem[AK98]{ArnoldKhesin98}
+V.~I. Arnold and B.~A. Khesin.
+\newblock {\em Topological methods in hydrodynamics}, volume 125 of {\em
+  Applied Mathematical Sciences}.
+\newblock Springer-Verlag, New York, 1998.
+
+\bibitem[Amb04]{Ambrosio04}
+L.~Ambrosio.
+\newblock Transport equation and {C}auchy problem for {$BV$} vector fields.
+\newblock {\em Invent. Math.}, 158(2):227--260, 2004.
+\newblock \doi{10.1007/s00222-004-0367-2}.
+
+\bibitem[BBPS19a]{BedrossianBlumenthalEA19a}
+J.~Bedrossian, A.~Blumenthal, and S.~Punshon-Smith.
+\newblock Almost-sure exponential mixing of passive scalars by the stochastic
+  {N}avier-{S}tokes equations, 2019,
+  \burlalt{1905.03869}{http://arxiv.org/abs/1905.03869}.
+
+
+\bibitem[BBPS19b]{BedrossianBlumenthalEA19b}
+J.~Bedrossian, A.~Blumenthal, and S.~Punshon-Smith.
+\newblock The Batchelor spectrum of passive scalar turbulence in stochastic fluid mechanics, 2019,
+  \burlalt{1911.11014}{https://arxiv.org/abs/1911.11014}.
+  
+  
+\bibitem[BDSV19]{BuckmasterDeLellisEA19}
+T.~Buckmaster, C.~De~Lellis, L.~Sz\'{e}kelyhidi, Jr., and V.~Vicol.
+\newblock Onsager's conjecture for admissible weak solutions.
+\newblock {\em Comm. Pure Appl. Math.}, 72(2):229--274, 2019.
+\newblock \doi{10.1002/cpa.21781}.
+
+\bibitem[BGK98]{BernardGawedzkiEA98}
+D.~Bernard, K.~Gaw\c{e}dzki, and A.~Kupiainen.
+\newblock Slow modes in passive advection.
+\newblock {\em J. Statist. Phys.}, 90(3-4):519--569, 1998.
+\newblock \doi{10.1023/A:1023212600779}.
+
+\bibitem[Bre03]{Bressan03}
+A.~Bressan.
+\newblock A lemma and a conjecture on the cost of rearrangements.
+\newblock {\em Rend. Sem. Mat. Univ. Padova}, 110:97--102, 2003.
+
+\bibitem[BruNg20]{BN}
+Bru\'{e}, Elia, and Quoc-Hung Nguyen.
+\newblock  Advection diffusion equation with Sobolev vector field, in prep (2020).
+
+
+\bibitem[CDL08a]{CrippaDeLellis08a}
+G.~Crippa and C.~De~Lellis.
+\newblock Regularity and compactness for the {D}i{P}erna-{L}ions flow.
+\newblock In {\em Hyperbolic problems: theory, numerics, applications}, pages
+  423--430. Springer, Berlin, 2008.
+\newblock \doi{10.1007/978-3-540-75712-2\_39}.
+
+\bibitem[CDL08b]{CrippaDeLellis08}
+G.~Crippa and C.~De~Lellis.
+\newblock Estimates and regularity results for the {D}i{P}erna-{L}ions flow.
+\newblock {\em J. Reine Angew. Math}, 616:15--46, 2008.
+
+\bibitem[CET94]{ConstantinEEA94}
+P.~Constantin, W.~E, and E.~S. Titi.
+\newblock Onsager's conjecture on the energy conservation for solutions of
+  {E}uler's equation.
+\newblock {\em Comm. Math. Phys.}, 165(1):207--209, 1994.
+\newblock \urlprefix\url{http://projecteuclid.org/euclid.cmp/1104271041}.
+
+\bibitem[CGSW15]{CrippaGusevEA15}
+G.~Crippa, N.~Gusev, S.~Spirito, and E.~Wiedemann.
+\newblock Non-uniqueness and prescribed energy for the continuity equation.
+\newblock {\em Commun. Math. Sci.}, 13(7):1937--1947, 2015.
+\newblock \doi{10.4310/CMS.2015.v13.n7.a12}.
+
+\bibitem[CKRZ08]{ConstantinKiselevEA08}
+P.~Constantin, A.~Kiselev, L.~Ryzhik, and A.~Zlato{\v{s}}.
+\newblock Diffusion and mixing in fluid flow.
+\newblock {\em Ann. of Math. (2)}, 168(2):643--674, 2008.
+\newblock \doi{10.4007/annals.2008.168.643}.
+
+\bibitem[CLR03]{ColombiniLuoEA03}
+F.~Colombini, T.~Luo, and J.~Rauch.
+\newblock Uniqueness and nonuniqueness for nonsmooth divergence free transport.
+\newblock In {\em Seminaire: \'{E}quations aux {D}\'{e}riv\'{e}es {P}artielles,
+  2002--2003}, S\'{e}min. \'{E}qu. D\'{e}riv. Partielles, pages Exp. No. XXII,
+  21. \'{E}cole Polytech., Palaiseau, 2003.
+
+\bibitem[Cor51]{Corrsin51}
+S.~Corrsin.
+\newblock On the spectrum of isotropic temperature fluctuations in an isotropic
+  turbulence.
+\newblock {\em J. Appl. Phys.}, 22:469--473, 1951.
+
+\bibitem[CP93]{ConstantinProcaccia93}
+P.~Constantin and I.~Procaccia.
+\newblock Scaling in fluid turbulence: a geometric theory.
+\newblock {\em Phys. Rev. E (3)}, 47(5):3307--3315, 1993.
+\newblock \doi{10.1103/PhysRevE.47.3307}.
+
+\bibitem[CP94]{ConstantinProcaccia94}
+P.~Constantin and I.~Procaccia.
+\newblock The geometry of turbulent advection: sharp estimates for the
+  dimensions of level sets.
+\newblock {\em Nonlinearity}, 7(3):1045--1054, 1994.
+\newblock \urlprefix\url{http://stacks.iop.org/0951-7715/7/1045}.
+
+\bibitem[CZDE18]{CotiZelatiDelgadinoEA18}
+M.~Coti~Zelati, M.~G. Delgadino, and T.~M. Elgindi.
+\newblock On the relation between enhanced dissipation time-scales and mixing
+  rates.
+\newblock {\em ArXiv e-prints}, June 2018,
+  \burlalt{1806.03258}{http://arxiv.org/abs/1806.03258}.
+
+\bibitem[DEIJ22]{DrivasElgindiEA22}
+T.~D. Drivas, T.~M. Elgindi, G.~Iyer, and I.-J. Jeong.
+\newblock Anomalous dissipation in passive scalar transport.
+\newblock {\em Arch. Ration. Mech. Anal.}, 243(3):1151--1180, 2022.
+\newblock \doi{10.1007/s00205-021-01736-2}.
+
+\bibitem[DE17]{DrivasEyink17}
+T.~D. Drivas and G.~L. Eyink.
+\newblock A {L}agrangian fluctuation-dissipation relation for scalar
+  turbulence. {P}art {I}. {F}lows with no bounding walls.
+\newblock {\em J. Fluid Mech.}, 829:153--189, 2017.
+\newblock \doi{10.1017/jfm.2017.567}.
+
+\bibitem[DE19]{DrivasEyink19}
+T.~D. Drivas and G.~L. Eyink.
+\newblock An {O}nsager singularity theorem for {L}eray solutions of
+  incompressible {N}avier-{S}tokes.
+\newblock {\em Nonlinearity}, 32(11):4465--4482, oct 2019.
+\newblock \doi{10.1088/1361-6544/ab2f42}.
+
+\bibitem[Dep03]{Depauw03}
+N.~Depauw.
+\newblock Non unicit\'{e} des solutions born\'{e}es pour un champ de vecteurs
+  {BV} en dehors d'un hyperplan.
+\newblock {\em C. R. Math. Acad. Sci. Paris}, 337(4):249--252, 2003.
+\newblock \doi{10.1016/S1631-073X(03)00330-3}.
+
+\bibitem[DL89]{DiPernaLions89}
+R.~J. DiPerna and P.-L. Lions.
+\newblock Ordinary differential equations, transport theory and {S}obolev
+  spaces.
+\newblock {\em Invent. Math.}, 98(3):511--547, 1989.
+\newblock \doi{10.1007/BF01393835}.
+
+\bibitem[DLS09]{DeLellisSzekelyhidi09}
+C.~De~Lellis and L.~Sz\'{e}kelyhidi, Jr.
+\newblock The {E}uler equations as a differential inclusion.
+\newblock {\em Ann. of Math. (2)}, 170(3):1417--1436, 2009.
+\newblock \doi{10.4007/annals.2009.170.1417}.
+
+\bibitem[DLS10]{DeLellisSzekelyhidi10}
+C.~De~Lellis and L.~Sz{\'e}kelyhidi, Jr.
+\newblock On admissibility criteria for weak solutions of the {E}uler
+  equations.
+\newblock {\em Arch. Ration. Mech. Anal.}, 195(1):225--260, 2010.
+\newblock \doi{10.1007/s00205-008-0201-x}.
+
+\bibitem[DLS12]{DeLellisSzekelyhidi12}
+C.~De~Lellis and L.~Sz\'{e}kelyhidi, Jr.
+\newblock The {$h$}-principle and the equations of fluid dynamics.
+\newblock {\em Bull. Amer. Math. Soc. (N.S.)}, 49(3):347--375, 2012.
+\newblock \doi{10.1090/S0273-0979-2012-01376-9}.
+
+\bibitem[DSY05]{DonzisSreenivasanEA05}
+D.~A. Donzis, K.~R. Sreenivasan, and P.~K. Yeung.
+\newblock Scalar dissipation rate and dissipative anomaly in isotropic
+  turbulence.
+\newblock {\em Journal of Fluid Mechanics}, 532:199–216, 2005.
+\newblock \doi{10.1017/S0022112005004039}.
+
+\bibitem[ED15]{EyinkDrivas15}
+G.~L. Eyink and T.~D. Drivas.
+\newblock Spontaneous stochasticity and anomalous dissipation for {B}urgers
+  equation.
+\newblock {\em J. Stat. Phys.}, 158(2):386--432, 2015.
+\newblock \doi{10.1007/s10955-014-1135-3}.
+
+\bibitem[Eyi94]{Eyink94}
+G.~L. Eyink.
+\newblock Energy dissipation without viscosity in ideal hydrodynamics. {I}.
+  {F}ourier analysis and local energy transfer.
+\newblock {\em Phys. D}, 78(3-4):222--240, 1994.
+\newblock \doi{10.1016/0167-2789(94)90117-1}.
+
+\bibitem[Eyi96]{Eyink96}
+G.~L. Eyink.
+\newblock Intermittency and anomalous scaling of passive scalars in any space
+  dimension.
+\newblock {\em Phys. Rev. E}, 54:1497--1503, Aug 1996.
+\newblock \doi{10.1103/PhysRevE.54.1497}.
+
+\bibitem[EZ18]{ElgindiZlatos18}
+T.~M. {Elgindi} and A.~{Zlato{\v{s}}}.
+\newblock Universal mixers in all dimensions.
+\newblock {\em arXiv e-prints}, Sep 2018,
+  \burlalt{1809.09614}{http://arxiv.org/abs/1809.09614}.
+
+\bibitem[FGV01]{FalkovichGawedzkiEA01}
+G.~Falkovich, K.~Gaw\c{e}dzki, and M.~Vergassola.
+\newblock Particles and fields in fluid turbulence.
+\newblock {\em Reviews of Modern Physics}, 73(4):913–975, Nov 2001.
+\newblock \doi{10.1103/revmodphys.73.913}.
+
+\bibitem[FI19]{FengIyer19}
+Y.~Feng and G.~Iyer.
+\newblock Dissipation enhancement by mixing.
+\newblock {\em Nonlinearity}, 32(5):1810--1851, 2019.
+\newblock \doi{10.1088/1361-6544/ab0e56}.
+
+\bibitem[Gaw08]{Gawedzki08}
+K.~Gaw\c{e}dzki.
+\newblock Soluble models of turbulent transport.
+\newblock In {\em Non-equilibrium statistical mechanics and turbulence}, volume
+  355 of {\em London Math. Soc. Lecture Note Ser.}, pages 44--107. Cambridge
+  Univ. Press, Cambridge, 2008.
+
+\bibitem[IKX14]{IyerKiselevEA14}
+G.~Iyer, A.~Kiselev, and X.~Xu.
+\newblock Lower bounds on the mix norm of passive scalars advected by
+  incompressible enstrophy-constrained flows.
+\newblock {\em Nonlinearity}, 27(5):973--985, 2014.
+\newblock \doi{10.1088/0951-7715/27/5/973}.
+
+\bibitem[Ise18]{Isett18}
+P.~Isett.
+\newblock A proof of {O}nsager's conjecture.
+\newblock {\em Ann. of Math. (2)}, 188(3):871--963, 2018.
+\newblock \doi{10.4007/annals.2018.188.3.4}.
+
+\bibitem[IXZ19]{IyerXuEA19}
+G.~Iyer, X.~Xu, and A.~Zlato\v{s}.
+\newblock Convection-induced singularity suppression in the {K}eller-{S}egel
+  and other non-linear {PDEs}.
+\newblock {\em arXiv e-prints}, Aug 2019,
+  \burlalt{1908.01941}{http://arxiv.org/abs/1908.01941}.
+
+\bibitem[KIY{\etalchar{+}}03]{KanedaIshiharaEA03}
+Y.~Kaneda, T.~Ishihara, M.~Yokokawa, K.~Itakura, and A.~Uno.
+\newblock Energy dissipation rate and energy spectrum in high resolution direct
+  numerical simulations of turbulence in a periodic box.
+\newblock {\em Physics of Fluids}, 15(2):L21--L24, 2003.
+\newblock \doi{10.1063/1.1539855}.
+
+\bibitem[Kol41]{Kolmogorov41}
+A.~N. Kolmogorov.
+\newblock Energy dissipation in locally isotropic turbulence.
+\newblock {\em Dokl. Akad. Nauk. SSSR}, 32:19--21, 1941.
+
+\bibitem[LJR02]{LeJanRaimond02}
+Y.~Le~Jan and O.~Raimond.
+\newblock Integration of {B}rownian vector fields.
+\newblock {\em Ann. Probab.}, 30(2):826--873, 2002.
+\newblock \doi{10.1214/aop/1023481009}.
+
+\bibitem[LJR04]{LeJanRaimond04}
+Y.~Le~Jan and O.~Raimond.
+\newblock Flows, coalescence and noise.
+\newblock {\em Ann. Probab.}, 32(2):1247--1315, 2004.
+\newblock \doi{10.1214/009117904000000207}.
+
+\bibitem[LLN{\etalchar{+}}12]{LunasinLinEA12}
+E.~Lunasin, Z.~Lin, A.~Novikov, A.~Mazzucato, and C.~R. Doering.
+\newblock Optimal mixing and optimal stirring for fixed energy, fixed power, or
+  fixed palenstrophy flows.
+\newblock {\em J. Math. Phys.}, 53(11), Nov. 2012.
+\newblock \doi{10.1063/1.4752098}.
+
+\bibitem[MD18]{MilesDoering18}
+C.~J. Miles and C.~R. Doering.
+\newblock Diffusion-limited mixing by incompressible flows.
+\newblock {\em Nonlinearity}, 31(5):2346, 2018.
+\newblock \doi{10.1088/1361-6544/aab1c8}.
+
+\bibitem[MS18]{ModenaSzekelyhidi18}
+S.~Modena and L.~Sz\'{e}kelyhidi, Jr.
+\newblock Non-uniqueness for the transport equation with {S}obolev vector
+  fields.
+\newblock {\em Ann. PDE}, 4(2):Art. 18, 38, 2018.
+\newblock \doi{10.1007/s40818-018-0056-x}.
+
+\bibitem[Obu49]{Obukhov49}
+A.~M. Obukhov.
+\newblock Structure of temperature field in turbulent flow.
+\newblock {\em Izv. Akad. Nauk. SSSR, Geogr. Geofiz}, 13, 1949.
+
+\bibitem[Ons49]{Onsager49}
+L.~Onsager.
+\newblock Statistical hydrodynamics.
+\newblock {\em Nuovo Cimento (9)}, 6(Supplemento, 2(Convegno Internazionale di
+  Meccanica Statistica)):279--287, 1949.
+
+\bibitem[Pie94]{Pierrehumbert94}
+R.~Pierrehumbert.
+\newblock Tracer microstructure in the large-eddy dominated regime.
+\newblock {\em Chaos, Solitons \& Fractals}, 4(6):1091 -- 1110, 1994.
+\newblock \doi{10.1016/0960-0779(94)90139-2}.
+\newblock Special Issue: Chaos Applied to Fluid Mixing.
+
+\bibitem[PKW02]{PearsonKrogstadEA02}
+B.~R. Pearson, P.~A. Krogstad, and W.~van~de Water.
+\newblock Measurements of the turbulent energy dissipation rate.
+\newblock {\em Physics of Fluids}, 14(3):1288--1290, 2002.
+\newblock \doi{10.1063/1.1445422}.
+
+\bibitem[Poo96]{Poon96}
+C.-C. Poon.
+\newblock Unique continuation for parabolic equations.
+\newblock {\em Comm. Partial Differential Equations}, 21(3-4):521--539, 1996.
+\newblock \doi{10.1080/03605309608821195}.
+
+\bibitem[Sre84]{Sreenivasan84}
+K.~R. Sreenivasan.
+\newblock On the scaling of the turbulence energy dissipation rate.
+\newblock {\em The Physics of Fluids}, 27(5):1048--1051, 1984.
+\newblock \doi{10.1063/1.864731}.
+
+\bibitem[Sre98]{Sreenivasan98}
+K.~R. Sreenivasan.
+\newblock An update on the energy dissipation rate in isotropic turbulence.
+\newblock {\em Phys. Fluids}, 10(2):528--529, 1998.
+\newblock \doi{10.1063/1.869575}.
+
+\bibitem[Sre19]{Sreenivasan19}
+K.~R. Sreenivasan.
+\newblock Turbulent mixing: A perspective.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  116(37):18175--18183, 2019.
+\newblock \doi{10.1073/pnas.1800463115}.
+
+\bibitem[SS00]{ShraimanSiggia00}
+B.~I. Shraiman and E.~D. Siggia.
+\newblock Scalar turbulence.
+\newblock {\em Nature}, 405(6787):639, 2000.
+\newblock \doi{10.1038/35015000}.
+
+\bibitem[Thi12]{Thiffeault12}
+J.-L. Thiffeault.
+\newblock Using multiscale norms to quantify mixing and transport.
+\newblock {\em Nonlinearity}, 25(2):R1--R44, 2012.
+\newblock \doi{10.1088/0951-7715/25/2/R1}.
+
+\bibitem[Wei18]{Wei18}
+D.~Wei.
+\newblock Diffusion and mixing in fluid flow via the resolvent estimate.
+\newblock {\em arXiv e-prints}, Nov 2018,
+  \burlalt{1811.11904}{http://arxiv.org/abs/1811.11904}.
+
+\bibitem[YZ17]{YaoZlatos17}
+Y.~Yao and A.~Zlato\v{s}.
+\newblock Mixing and un-mixing by incompressible flows.
+\newblock {\em J. Eur. Math. Soc. (JEMS)}, 19(7):1911--1948, 2017.
+\newblock \doi{10.4171/JEMS/709}.
+
+\bibitem[LTD11]{opt}
+Z.~Lin, J.-L. Thiffeault, and C.~R. Doering.
+\newblock Optimal stirring strategies for passive scalar mixing.
+\newblock {\em J. Fluid Mech.}, 675:465--476, 2011.
+\newblock \doi{10.1017/S0022112011000017}.
+
+\bibitem[Thi12]{multi}
+J.-L. Thiffeault.
+\newblock Using multiscale norms to quantify mixing and transport.
+\newblock {\em Nonlinearity}, 25(2):R1--R44, 2012.
+\newblock \doi{10.1088/0951-7715/25/2/R1}.
+
+\bibitem[MMP05]{mathew}
+G.~Mathew, I.~Mezic, and L.~Petzold.
+\newblock A multiscale measure for mixing.
+\newblock {\em Physica D}, 211:23--46, 2005.
+\newblock \doi{10.1016/j.physd.2005.07.017}.
+
+\end{thebibliography}
+\end{document}

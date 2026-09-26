@@ -72,6 +72,35 @@ reflects a finite-resolution artefact, a genuine feature of the greedy strategy,
 See the abstract and full report for the complete derivation, all six figures, and the
 resolution-dependence discussion.
 
+### Figures
+
+The figures below are outputs of the demo notebook
+[`Optimal_Mixing_Simulation.ipynb`](Optimal_Mixing_Simulation.ipynb) ($N = 64$, $F = 1$). The
+numbers quoted above come from the full report's runs; the reduced four-value sweep here is
+illustrative.
+
+**Initial conditions.** The four families of initial data at $a = 0.5$, each $L^2$-normalised
+and supported in $[0,a]^2$.
+
+![Initial conditions](images/initial_conditions.png)
+
+**Scalar field evolution.** Snapshots of $\theta$ under LTD stirring for the sinusoidal
+initial data at $a = 0.5$. The flow stretches the four cells into progressively thinner
+filaments until the $L^p$ resolution check stops the run.
+
+![Scalar field snapshots](images/scalar_snapshots.png)
+
+**Norm evolution.** Left: $\log \|\theta\|_{H^{-1}}$ for $a = 0.5$. Right: $L^2$, $L^4$ and
+$L^8$ norms, which should remain constant; the drift in $L^8$ near the end signals loss of
+resolution and triggers the stopping criterion.
+
+![H^-1 mix norm and Lp norm conservation](images/norm_evolution.png)
+
+**Multi-scale sweep.** Normalised mix-norm decay, $L^p$ conservation, and the fitted mixing
+timescale ($-1/\text{slope}$) for $a \in \{0.5, 0.625, 0.75, 0.875\}$.
+
+![Multi-scale sweep](images/multiscale_sweep.png)
+
 ---
 
 ## Repository Layout
@@ -85,6 +114,7 @@ Master-Thesis/
 │   └── 02_rhs_simulation_analysis.ipynb # notebook: RHS, simulation, analysis
 ├── matlab_code/                         # original MATLAB implementation
 ├── references/                          # key papers (PDF)
+├── images/                              # README figures exported from the demo notebook
 ├── figures/                             # generated figures (PDF, created locally, not committed)
 ├── Optimal_Mixing_Simulation.ipynb      # high-level demo notebook
 ├── optimal_mixing_report.tex            # SUPERSEDED draft source, kept for record only
