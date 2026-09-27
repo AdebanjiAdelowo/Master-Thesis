@@ -60,10 +60,17 @@ def build_operators(N):
     x = np.arange(N) * dx
     xx, yy = np.meshgrid(x, x)   # xx[i,j] = x[j], yy[i,j] = x[i]
 
+    # 2/3-rule mask: keep |k_x|, |k_y| < N/3 so that the product of two fields
+    # in this band is alias-free on the retained modes.  Used only when
+    # dealiasing is requested; the original scheme never applies it.
+    keep = np.abs(k_eff) < N / 3.0
+    DEALIAS = (keep[:, np.newaxis] & keep[np.newaxis, :]).astype(float)
+
     return {
         'N': N, 'dx': dx,
         'DEL_X': DEL_X, 'DEL_Y': DEL_Y,
         'LAP_INV': LAP_INV, 'LAMBDA_INV': LAMBDA_INV,
+        'LAP': lap.real, 'DEALIAS': DEALIAS,
         'xx': xx, 'yy': yy,
     }
 
@@ -124,7 +131,61 @@ def idata_trigpoly(a, ops):
 # ODE right-hand side (real-split representation)
 # ---------------------------------------------------------------------------
 
-def make_convection_hat(ops, F=1.0, tol=1e-3):
+def advection_hat(ux, uy, theta_hat, DEL_X, DEL_Y):
+    """Fourier transform of −(u·∇θ) with the product formed in physical space."""
+    return -np.fft.fft2(
+        ux * np.real(np.fft.ifft2(DEL_X * theta_hat)) +
+        uy * np.real(np.fft.ifft2(DEL_Y * theta_hat))
+    )
+
+
+def leray_project(gx_hat, gy_hat, ops):
+    """Leray projection  P(g) = g − ∇Δ⁻¹(∇·g)  in Fourier space."""
+    DEL_X, DEL_Y, LAP_INV = ops['DEL_X'], ops['DEL_Y'], ops['LAP_INV']
+    div_g = DEL_X * gx_hat + DEL_Y * gy_hat
+    pgx   = gx_hat - DEL_X * LAP_INV * div_g
+    pgy   = gy_hat - DEL_Y * LAP_INV * div_g
+    return pgx, pgy
+
+
+def ltd_velocity_hat(theta_hat, ops, dealias=False):
+    """
+    Un-normalised LTD velocity  v = −Δ⁻¹ P(θ ∇Δ⁻¹θ)  in Fourier space.
+
+    Returns (vx_hat, vy_hat, gx_hat, gy_hat).
+    """
+    DEL_X, DEL_Y, LAP_INV = ops['DEL_X'], ops['DEL_Y'], ops['LAP_INV']
+
+    # g = θ ∇(Δ⁻¹θ)
+    linv_th = LAP_INV * theta_hat
+    theta   = np.real(np.fft.ifft2(theta_hat))
+    gx_hat  = np.fft.fft2(theta * np.real(np.fft.ifft2(DEL_X * linv_th)))
+    gy_hat  = np.fft.fft2(theta * np.real(np.fft.ifft2(DEL_Y * linv_th)))
+    if dealias:
+        gx_hat = gx_hat * ops['DEALIAS']
+        gy_hat = gy_hat * ops['DEALIAS']
+
+    pgx, pgy = leray_project(gx_hat, gy_hat, ops)
+
+    # v = −Δ⁻¹ P(g)
+    vx_hat = -LAP_INV * pgx
+    vy_hat = -LAP_INV * pgy
+    return vx_hat, vy_hat, gx_hat, gy_hat
+
+
+def gradient_l2_norm(vx_hat, vy_hat, ops):
+    """‖∇v‖_{L²} via Parseval:  ‖f‖_{L²} = ‖f̂‖₂ / N²."""
+    DEL_X, DEL_Y, N = ops['DEL_X'], ops['DEL_Y'], ops['N']
+    norm_v_hat = np.sqrt(
+        np.linalg.norm((DEL_X * vx_hat).ravel())**2 +
+        np.linalg.norm((DEL_X * vy_hat).ravel())**2 +
+        np.linalg.norm((DEL_Y * vx_hat).ravel())**2 +
+        np.linalg.norm((DEL_Y * vy_hat).ravel())**2
+    )
+    return norm_v_hat / N**2
+
+
+def make_convection_hat(ops, F=1.0, tol=1e-3, dealias=False):
     """
     Build the ODE RHS for the optimal-mixing transport equation.
 
@@ -132,9 +193,12 @@ def make_convection_hat(ops, F=1.0, tol=1e-3):
 
     Parameters
     ----------
-    ops : dict from build_operators
-    F   : enstrophy constraint  (‖∇u‖_{L²} = F at each instant)
-    tol : threshold for saddle-point warning
+    ops     : dict from build_operators
+    F       : enstrophy constraint  (‖∇u‖_{L²} = F at each instant)
+    tol     : threshold for saddle-point warning
+    dealias : if True, apply the 2/3-rule mask ops['DEALIAS'] to both
+              quadratic products (g = θ∇Δ⁻¹θ and u·∇θ).  The default False
+              is the original, un-dealiased scheme used for the thesis.
 
     Returns
     -------
@@ -143,33 +207,13 @@ def make_convection_hat(ops, F=1.0, tol=1e-3):
     N = ops['N']
     n = N * N
     DEL_X, DEL_Y, LAP_INV = ops['DEL_X'], ops['DEL_Y'], ops['LAP_INV']
+    MASK = ops['DEALIAS']
 
     def rhs(t, y_real):
         theta_hat = (y_real[:n] + 1j * y_real[n:]).reshape(N, N)
 
-        # g = θ ∇(Δ⁻¹θ)
-        linv_th = LAP_INV * theta_hat
-        theta   = np.real(np.fft.ifft2(theta_hat))
-        gx_hat  = np.fft.fft2(theta * np.real(np.fft.ifft2(DEL_X * linv_th)))
-        gy_hat  = np.fft.fft2(theta * np.real(np.fft.ifft2(DEL_Y * linv_th)))
-
-        # Leray projection  P(g) = g − ∇Δ⁻¹(∇·g)
-        div_g = DEL_X * gx_hat + DEL_Y * gy_hat
-        pgx   = gx_hat - DEL_X * LAP_INV * div_g
-        pgy   = gy_hat - DEL_Y * LAP_INV * div_g
-
-        # v = −Δ⁻¹ P(g)
-        vx_hat = -LAP_INV * pgx
-        vy_hat = -LAP_INV * pgy
-
-        # ‖∇v‖_{L²} via Parseval:  ‖f‖_{L²} = ‖f̂‖₂ / N²
-        norm_v_hat = np.sqrt(
-            np.linalg.norm((DEL_X * vx_hat).ravel())**2 +
-            np.linalg.norm((DEL_X * vy_hat).ravel())**2 +
-            np.linalg.norm((DEL_Y * vx_hat).ravel())**2 +
-            np.linalg.norm((DEL_Y * vy_hat).ravel())**2
-        )
-        norm_v = norm_v_hat / N**2
+        vx_hat, vy_hat, gx_hat, gy_hat = ltd_velocity_hat(theta_hat, ops, dealias)
+        norm_v = gradient_l2_norm(vx_hat, vy_hat, ops)
 
         # Saddle-point warning
         norm_linv_g = np.linalg.norm(
@@ -184,10 +228,9 @@ def make_convection_hat(ops, F=1.0, tol=1e-3):
         uy = F * np.real(np.fft.ifft2(vy_hat)) / norm_v
 
         # ∂_t θ̂ = −FFT(u · ∇θ)
-        d = -np.fft.fft2(
-            ux * np.real(np.fft.ifft2(DEL_X * theta_hat)) +
-            uy * np.real(np.fft.ifft2(DEL_Y * theta_hat))
-        )
+        d = advection_hat(ux, uy, theta_hat, DEL_X, DEL_Y)
+        if dealias:
+            d = d * MASK
         return np.concatenate([d.real.ravel(), d.imag.ravel()])
 
     return rhs
@@ -262,7 +305,64 @@ def compute_norms(theta_hat_series, theta_series, N, dx, LAMBDA_INV,
 # Main simulation runner
 # ---------------------------------------------------------------------------
 
-def run_simulation(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3):
+def initial_data(a, idata_fn, ops, dealias=False):
+    """
+    Grid initial data θ₀ and its DFT.
+
+    With dealias=True the DFT is restricted to the 2/3-rule band and θ₀ is
+    rescaled to ‖θ₀‖_{L²} = 1 again, because the resolution check measures
+    |‖θ‖_{L²} − 1| in absolute terms.  With dealias=False this is exactly
+    the original construction.
+    """
+    theta0 = idata_fn(a, ops)
+    theta0_hat = np.fft.fft2(theta0)
+    if dealias:
+        theta0 = np.real(np.fft.ifft2(theta0_hat * ops['DEALIAS']))
+        theta0 = theta0 / (np.linalg.norm(theta0.ravel()) * ops['dx'])
+        theta0_hat = np.fft.fft2(theta0)
+    return theta0, theta0_hat
+
+
+def integrate(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3,
+              rtol=1e-6, atol=1e-8, dealias=False, stop_on_res_loss=True):
+    """
+    Integrate one run and return the raw solve_ivp solution.
+
+    Defaults reproduce the thesis runs exactly.  Returns
+    (sol, theta0, l4norm_init, l8norm_init).  sol.status == 1 means the
+    resolution-check event terminated the run.
+    """
+    N, dx = ops['N'], ops['dx']
+
+    if t_eval is None:
+        t_eval = np.arange(0.0, 10.05, 0.05)
+
+    theta0, theta0_hat = initial_data(a, idata_fn, ops, dealias=dealias)
+
+    l4norm_init = np.linalg.norm(theta0.ravel(), 4) * np.sqrt(dx)
+    l8norm_init = np.linalg.norm(theta0.ravel(), 8) * dx**0.25
+
+    rhs   = make_convection_hat(ops, F=F, tol=tol, dealias=dealias)
+    event = make_res_check(N, dx, l4norm_init, l8norm_init, tol=tol)
+
+    y0 = np.concatenate([theta0_hat.ravel().real, theta0_hat.ravel().imag])
+
+    sol = solve_ivp(
+        rhs,
+        t_span=(t_eval[0], t_eval[-1]),
+        y0=y0,
+        method='RK45',
+        t_eval=t_eval,
+        events=event if stop_on_res_loss else None,
+        rtol=rtol,
+        atol=atol,
+        dense_output=False,
+    )
+    return sol, theta0, l4norm_init, l8norm_init
+
+
+def run_simulation(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3,
+                   rtol=1e-6, atol=1e-8, dealias=False):
     """
     Run one optimal-mixing simulation for scale parameter a.
 
@@ -274,6 +374,8 @@ def run_simulation(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3):
     F        : float  enstrophy constraint
     t_eval   : 1-D array  output times (default 0 : 0.05 : 10)
     tol      : float  resolution-check tolerance
+    rtol, atol : RK45 tolerances (thesis values by default)
+    dealias  : apply the 2/3 rule (off by default, as in the thesis)
 
     Returns
     -------
@@ -282,31 +384,9 @@ def run_simulation(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3):
     N, dx = ops['N'], ops['dx']
     LAMBDA_INV = ops['LAMBDA_INV']
 
-    if t_eval is None:
-        t_eval = np.arange(0.0, 10.05, 0.05)
-
-    theta0      = idata_fn(a, ops)
-    theta0_hat  = np.fft.fft2(theta0)
-
-    l4norm_init = np.linalg.norm(theta0.ravel(), 4) * np.sqrt(dx)
-    l8norm_init = np.linalg.norm(theta0.ravel(), 8) * dx**0.25
-
-    rhs   = make_convection_hat(ops, F=F, tol=tol)
-    event = make_res_check(N, dx, l4norm_init, l8norm_init, tol=tol)
-
-    y0 = np.concatenate([theta0_hat.ravel().real, theta0_hat.ravel().imag])
-
-    sol = solve_ivp(
-        rhs,
-        t_span=(t_eval[0], t_eval[-1]),
-        y0=y0,
-        method='RK45',
-        t_eval=t_eval,
-        events=event,
-        rtol=1e-6,
-        atol=1e-8,
-        dense_output=False,
-    )
+    sol, _, l4norm_init, l8norm_init = integrate(
+        a, idata_fn, ops, F=F, t_eval=t_eval, tol=tol,
+        rtol=rtol, atol=atol, dealias=dealias)
 
     t = sol.t
     n = N * N
@@ -468,7 +548,9 @@ def replot_norms(results_list, a_range, t_trunc_fraction=1/3, ax=None):
 
     if len(a_range) > 3:
         p_log = np.polyfit(np.log(a_range), np.log(-slopes), 1)
-        print(f'Computed decay rate: a^{p_log[0]:.4f}  (predicted a^-1)')
+        # replot_figs.m printed "(Predicted a^-1)"; a^-1 is the scaling of the
+        # Iyer-Kiselev-Xu lower bound, a benchmark rather than a prediction for LTD.
+        print(f'Computed decay rate: a^{p_log[0]:.4f}  (IKX lower-bound scaling: a^-1)')
 
         p_lin = np.polyfit(a_range, inv_rates, 1)
         ax.plot(a_range, p_lin[0] * a_range + p_lin[1], '--r',
