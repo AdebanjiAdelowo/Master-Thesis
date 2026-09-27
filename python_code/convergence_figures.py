@@ -51,7 +51,7 @@ def akey(a):
 def save(fig, out, name):
     os.makedirs(out, exist_ok=True)
     fig.savefig(os.path.join(out, name + '.png'))
-    fig.savefig(os.path.join(out, name + '.pdf'), metadata={'CreationDate': None})   # reproducible bytes
+    fig.savefig(os.path.join(out, name + '.pdf'), metadata={'CreationDate': None})   # byte-stable for a given Matplotlib version
     plt.close(fig)
     print('  ', name)
 

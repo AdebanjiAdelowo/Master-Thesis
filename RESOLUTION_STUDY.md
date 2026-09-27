@@ -408,6 +408,10 @@ python convergence_study.py compare --tags sin-orig sin-orig-rtol1e-08 --referen
 python convergence_study.py figures --tag sin-orig --compare sin-orig_vs_sin-dealias --families diag-orig
 ```
 
+The figure step needs only the committed summaries. With a different Matplotlib version
+the regenerated images can differ slightly in layout (font metrics); the plotted data do
+not change.
+
 Raw output (about 3 GB for the four data sets above) is written to `results/raw/`,
 which is not tracked. `python convergence_study.py run --help` lists all options,
 including `--a`, `--t-end`, `--tol`, `--no-stop`, `--no-fields` and `--kappa`.
