@@ -25,9 +25,11 @@ Constructs all wavenumber arrays and spectral operators needed for the simulatio
 | `DEL_Y` | (N, 1) | Fourier multiplier for ∂/∂y: `2πi k_y` |
 | `LAP_INV` | (N, N) | Fourier multiplier for Δ⁻¹: `1/(kₓ² + k_y²)`, zero at k=0 |
 | `LAMBDA_INV` | (N, N) | Fourier multiplier for (-Δ)^{-1/2}: used for the H⁻¹ norm |
+| `LAP` | (N, N) | Fourier multiplier for Δ: `−4π²(kₓ² + k_y²)` (used by the optional diffusion term) |
+| `DEALIAS` | (N, N) | 2/3-rule mask, 1 where `|kₓ|, |k_y| < N/3` (used only when dealiasing is requested) |
 | `xx`, `yy` | (N, N) | Physical-space coordinate grids |
 
-The Nyquist mode of the first-derivative operators (`DEL_X`, `DEL_Y`) is zeroed to prevent aliasing errors. The zero mode of `LAP_INV` is left at zero (corresponding to enforcing zero mean on the inverse Laplacian).
+The Nyquist mode of the first-derivative operators (`DEL_X`, `DEL_Y`) is zeroed because the sign of an odd derivative of the Nyquist mode is ambiguous for real data; this does not remove aliasing from products. `LAP_INV` keeps the Nyquist mode, so the Leray projection is exact on all modes except the Nyquist lines. The zero mode of `LAP_INV` is left at zero (corresponding to enforcing zero mean on the inverse Laplacian).
 
 ---
 
@@ -90,7 +92,7 @@ The second harmonic (weight 0.1) introduces a small perturbation, breaking perfe
 
 ## ODE Right-Hand Side
 
-### `make_convection_hat(ops, F=1.0, tol=1e-3)`
+### `make_convection_hat(ops, F=1.0, tol=1e-3, dealias=False, kappa=0.0)`
 
 Factory that constructs and returns the ODE right-hand side function `rhs(t, y_real)` for `solve_ivp`.
 
@@ -108,6 +110,10 @@ Factory that constructs and returns the ODE right-hand side function `rhs(t, y_r
 5. **Normalise v** so that `‖∇v‖_{L²} = F` (the enstrophy constraint). The L² norm is computed via Parseval's theorem.
 6. **Saddle-point check:** if `‖∇v‖ < tol · ‖Δ⁻¹g‖`, print a warning — the system may be near a saddle point where the optimal velocity is ill-defined.
 7. **Compute the transport derivative** `∂_t θ̂ = −FFT(u · ∇θ)` and return the real-split version.
+
+Steps 2 to 4 are `ltd_velocity_hat(theta_hat, ops, dealias)` (with `leray_project(gx_hat, gy_hat, ops)` for step 3), step 5 uses `gradient_l2_norm(vx_hat, vy_hat, ops)`, and step 7 is `advection_hat(ux, uy, theta_hat, DEL_X, DEL_Y)`.
+
+**Options.** `dealias=True` multiplies both products (g and u·∇θ) by the 2/3-rule mask. `kappa > 0` adds the diffusion term `κΔθ` exactly in Fourier space. The defaults reproduce the thesis scheme bitwise.
 
 ---
 
@@ -146,14 +152,22 @@ The L⁴ and L⁸ norms serve as resolution monitors. The H⁻¹ norm is the pri
 
 ## Simulation Runner
 
-### `run_simulation(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3)`
+### `initial_data(a, idata_fn, ops, dealias=False)`
+
+Returns `(theta0, theta0_hat)`. With `dealias=True` the data are restricted to the 2/3-rule band and rescaled to unit L² norm.
+
+### `integrate(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3, rtol=1e-6, atol=1e-8, dealias=False, stop_on_res_loss=True, kappa=0.0)`
+
+Runs `solve_ivp` exactly as `run_simulation` does and returns `(sol, theta0, l4norm_init, l8norm_init)` without post-processing. `sol.status == 1` means the resolution check stopped the run. With `kappa > 0` the L^p check is not valid (the norms decay physically) and `stop_on_res_loss=False` is required.
+
+### `run_simulation(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3, rtol=1e-6, atol=1e-8, dealias=False)`
 
 Orchestrates a single simulation run:
 
 1. Builds the initial condition using `idata_fn(a, ops)`.
 2. Computes initial L⁴ and L⁸ norms (needed to normalise the resolution event).
 3. Constructs the RHS via `make_convection_hat` and the event via `make_res_check`.
-4. Calls `scipy.integrate.solve_ivp` with RK45, tolerances `rtol=1e-6, atol=1e-8`.
+4. Calls `scipy.integrate.solve_ivp` with RK45, tolerances `rtol=1e-6, atol=1e-8` (via `integrate`).
 5. Reconstructs θ̂ and θ from the solver output.
 6. Computes all norms via `compute_norms`.
 
@@ -243,3 +257,9 @@ Full sweep driver (equivalent to `gen_figures.m` in the original MATLAB code):
    - **Fig 3b** — Mixing timescale vs `a` (refined fit, last 2/3 of data).
    - **Snapshot fig** — 6 spatial snapshots for the last run.
 5. Optionally saves results and figures to disk if `save_path` is provided.
+
+---
+
+## Resolution-study modules
+
+`convergence.py` provides post-processing used by `convergence_study.py`: trigonometric interpolation between grids (`upsample_coeffs`), the exact relative L² difference of solutions on different grids (`relative_l2_difference`), the rigorous lower bound from content a coarse grid cannot represent (`unrepresentable_fraction`), shell spectra (`shell_spectrum`), band fractions, least-squares fits with residual diagnostics (`fit_line`, `fit_decay`, `fit_power_law`), and a Richardson-extrapolation check (`richardson_assessment`). See [`../RESOLUTION_STUDY.md`](../RESOLUTION_STUDY.md).

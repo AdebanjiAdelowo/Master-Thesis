@@ -15,3 +15,8 @@ optimal_mixing_report.pdf
 optimal_mixing_thesis_report_expanded.pdf
 optimal_mixing_report.tex
 optimal_mixing_thesis_report_expanded.tex
+
+# Raw convergence-study output (large; regenerate with convergence_study.py run)
+results/raw/
+.pytest_cache/
+results-demo/
