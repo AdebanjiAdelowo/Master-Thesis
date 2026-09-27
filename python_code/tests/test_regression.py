@@ -90,3 +90,19 @@ def test_save_load_round_trip(tmp_path):
         for k in r0:
             assert np.array_equal(r0[k], r1[k])
 
+
+def test_study_runner_matches_run_simulation(tmp_path):
+    """convergence_study.run_case must see exactly the thesis trajectory."""
+    import convergence_study as cs
+    cfg = dict(N=32, a=0.5, ic='sin', F=1.0, t_end=10.0, dt_out=0.05, tol=1e-3,
+               rtol=1e-6, atol=1e-8, dealias=False, stop=True, save_fields=True,
+               root=str(tmp_path), tag='t')
+    cs.run_case(cfg)
+    run = cs.load_tag(str(tmp_path), 't')[32][0.5]
+    ref = mx.run_simulation(0.5, mx.idata_sin, mx.build_operators(32))
+    assert np.array_equal(run['t'], ref['t'])
+    assert np.allclose(run['norm_hm1'], ref['norm_hm1'], rtol=1e-13)
+    assert np.allclose(run['norm_l8'], ref['norm_l8'], rtol=1e-13)
+    theta = np.load(run['theta_path'])
+    assert np.allclose(theta, ref['theta'], atol=1e-6)   # stored as float32
+    assert run['meta']['stopped_by_event'] and run['meta']['trigger'] == 'L8'
