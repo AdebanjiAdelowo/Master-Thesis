@@ -5,7 +5,7 @@ optimal-mixing simulations described in the [README](README.md) and in
 [`optimal_mixing_thesis_report.pdf`](optimal_mixing_thesis_report.pdf).
 
 The thesis fits an exponential decay rate $r(a)$ to the $H^{-1}$ mix norm for eight
-support sizes $a \in \{0.5, 0.5625, \dots, 0.9375\}$ and then a power law
+support sizes $a \in \lbrace0.5, 0.5625, \dots, 0.9375\rbrace$ and then a power law
 $r \propto a^{-\alpha}$. It reports $\alpha \approx 1.61$ at $N = 32$ and
 $\alpha \approx 1.78$ at $N = 64$, compared with the $a^{-1}$ scaling of the
 Iyer-Kiselev-Xu (IKX) enstrophy-constrained lower bound. The question studied here is
@@ -56,7 +56,7 @@ figure is regenerated from those summaries by
 Unless stated otherwise every run uses the thesis configuration: sine-bump initial
 data, $F = 1$, output times $t = 0, 0.05, \dots, 10$, RK45 with `rtol = 1e-6`,
 `atol = 1e-8`, the $L^2/L^4/L^8$ resolution check with tolerance $10^{-3}$, and the
-thesis fit (least squares on $\log\|\theta\|_{H^{-1}}$ over the last two thirds of
+thesis fit (least squares on $\log\Vert\theta\Vert_{H^{-1}}$ over the last two thirds of
 the samples in $[0, t_{\rm stop}]$). Only $N$ changes along the ladder.
 
 | Data set (tag) | Scheme | Resolutions |
@@ -89,16 +89,18 @@ point by point. The coarse solution is represented by its trigonometric
 interpolant (zero-padded Fourier coefficients, with the Nyquist coefficient split
 between $\pm N/2$), and
 
-$$E_N(t) = \frac{\|I\theta_N - \theta_{2N}\|_{L^2}}{\|\theta_{2N}\|_{L^2}}$$
+```math
+E_N(t) = \frac{\Vert I\theta_N - \theta_{2N}\Vert_{L^2}}{\Vert\theta_{2N}\Vert_{L^2}}
+```
 
 is evaluated exactly in Fourier space by Parseval's identity. The fraction of
-$\theta_{2N}$ carried by modes with $\max(|k_x|,|k_y|) > N/2$ cannot be represented
+$\theta_{2N}$ carried by modes with $\max(|k_x|,|k_y|) \gt N/2$ cannot be represented
 on the $N$ grid at all, so it is a rigorous lower bound on $E_N$.
 
-**Observable error.** $E^{H^{-1}}_N(t) = \big|\,\|\theta_N\|_{H^{-1}} - \|\theta_{2N}\|_{H^{-1}}\big| / \|\theta_{2N}\|_{H^{-1}}$ using unnormalised norms.
+**Observable error.** $`E^{H^{-1}}_N(t) = \big|\,\Vert\theta_N\Vert_{H^{-1}} - \Vert\theta_{2N}\Vert_{H^{-1}}\big| / \Vert\theta_{2N}\Vert_{H^{-1}}`$ using unnormalised norms.
 
 **Fixed windows.** The thesis fit window of a run at resolution $N_w$ is reused on
-the finer runs $N > N_w$. This separates the discretisation error in $r$ and
+the finer runs $N \gt N_w$. This separates the discretisation error in $r$ and
 $\alpha$ from the effect of the fit window moving when $t_{\rm stop}$ changes.
 
 **Local (fixed-time) exponent.** A local rate $r(t;a)$ is fitted on
@@ -106,8 +108,8 @@ $[t - 0.25, t + 0.25]$ for every $a$ whose run is still resolved there, and
 $\alpha(t)$ is fitted from $r(t;a) \propto a^{-\alpha(t)}$.
 
 **Spectra.** Shell sums $E(|k|) = \sum_{\mathrm{round}|k| = m} |\hat\theta_k|^2/N^4$
-(so that $\sum_m E = \|\theta\|^2_{L^2}$) and the variance fraction in modes with
-$\max(|k_x|,|k_y|) > N/4$.
+(so that $\sum_m E = \Vert\theta\Vert^2_{L^2}$) and the variance fraction in modes with
+$\max(|k_x|,|k_y|) \gt N/4$.
 
 **Fit statistics.** Each fit records slope, intercept, number of samples, window,
 RMS residual, OLS standard error and the lag-1 autocorrelation of the residuals.
@@ -140,7 +142,7 @@ The OLS intervals are regression statistics for eight points only. They do not
 include discretisation error or the dependence on the fit window, and the
 per-run fits behind them have strongly correlated residuals (lag-1
 autocorrelation 0.86 to 0.96 for $N \ge 128$), which indicates systematic
-curvature of $\log\|\theta\|_{H^{-1}}$ rather than random scatter.
+curvature of $\log\Vert\theta\Vert_{H^{-1}}$ rather than random scatter.
 
 ![Exponent versus resolution](images/convergence/alpha_vs_N.png)
 
@@ -171,7 +173,7 @@ longer, so its window covers later times.
 
 ![Local decay rate and fixed-time exponent](images/convergence/local_decay_rate.png)
 
-The instantaneous rate $r_{\rm loc}(t) = -\,d\log\|\theta\|_{H^{-1}}/dt$ is not
+The instantaneous rate $`r_{\rm loc}(t) = -\,d\log\Vert\theta\Vert_{H^{-1}}/dt`$ is not
 constant over any resolved interval. For every $a$ it rises to a maximum and then
 decreases; the maximum occurs near $t \approx 1$ for $a = 0.5$ and near
 $t \approx 2.3$ for $a = 0.9375$. The fixed-time exponent (sine data, $N = 512$;
@@ -197,7 +199,7 @@ The local exponent passes near 1 during $2.5 \lesssim t \lesssim 4$ and then kee
 changing. This is a statement about the observed interval only; it is not evidence
 that the scale dependence converges to $a^{-1}$.
 
-Where $n_a < 8$, the exponent rests on the largest $a$ values only and is not
+Where $n_a \lt 8$, the exponent rests on the largest $a$ values only and is not
 comparable with the full-set values. Near $t \approx 6$ the rates of the four
 largest $a$ are almost equal (0.095 to 0.099, dealiased $N = 512$ runs), and
 after $t \approx 6.25$ they change abruptly. These late-time observations lie
@@ -230,7 +232,7 @@ finer grid.
 * The $H^{-1}$ norm weights low wavenumbers and is much less sensitive: its
   successive-resolution difference is at most $2\times10^{-4}$ for 256/512.
 * At the stopping time, the variance fraction in modes with
-  $\max(|k_x|,|k_y|) > N/4$ lies between $1\times10^{-3}$ and $5.6\times10^{-3}$ for
+  $\max(|k_x|,|k_y|) \gt N/4$ lies between $1\times10^{-3}$ and $5.6\times10^{-3}$ for
   every $N$ and $a$. Measured this way, the $L^p$ criterion fires at a roughly
   resolution-independent level of spectral crowding. The study does not replace
   the $L^p$ criterion with a spectral threshold.
@@ -245,9 +247,9 @@ finer grid.
 
 The thesis scheme forms both quadratic products ($\theta\nabla\Delta^{-1}\theta$ and
 $u\cdot\nabla\theta$) on the $N$ grid without dealiasing. The optional
-dealiased scheme keeps $|k_x|, |k_y| < N/3$, restricts and renormalises the initial
+dealiased scheme keeps $|k_x|, |k_y| \lt N/3$, restricts and renormalises the initial
 data to that band, and truncates both products. With exact quadratic products the
-truncated system conserves $\|\theta\|_{L^2}$ exactly (checked by a test), so in
+truncated system conserves $\Vert\theta\Vert_{L^2}$ exactly (checked by a test), so in
 that scheme the $L^2$ part of the resolution check measures only time-integration
 error.
 
@@ -259,8 +261,8 @@ error.
 * The schemes stop at different times. With its effective cutoff at $N/3$, the
   dealiased scheme stops earlier at small $N$ (for $a = 0.5$ at $N = 32$ it stops
   at $t = 0.15$) and later at $N = 512$ (up to $t = 7.80$ against $6.45$).
-* With its own windows, the dealiased scheme gives $\alpha_N = 1.34, 1.67, 1.77,
-  1.67, 1.25$ for $N = 32, \dots, 512$.
+* With its own windows, the dealiased scheme gives
+  $\alpha_N = 1.34, 1.67, 1.77, 1.67, 1.25$ for $N = 32, \dots, 512$.
 
 The causal chain is therefore indirect. On common resolved time windows the two
 schemes produce nearly identical rates at $N \ge 128$, so the resolved dynamics do not
@@ -337,8 +339,8 @@ made.
 ## 5. Relation to the $a^{-1}$ benchmark
 
 The IKX theorem (Theorem 1.1 of the reference) is a lower bound on
-$\|\theta(t)\|_{H^{-1}}$ for any incompressible flow. Under an enstrophy constraint
-$\|\nabla u\|_{L^2} \le F$, the exponential rate appearing in the bound is
+$\Vert\theta(t)\Vert_{H^{-1}}$ for any incompressible flow. Under an enstrophy constraint
+$\Vert\nabla u\Vert_{L^2} \le F$, the exponential rate appearing in the bound is
 proportional to $F/m(A_\lambda)^{1/2}$, where $A_\lambda$ is a super-level set of the
 initial data; for support area of order $a^2$ this gives the $a^{-1}$ scaling used as
 the benchmark. The bound limits how fast any enstrophy-constrained flow can mix, up to
@@ -380,7 +382,7 @@ These define the scope of what has and has not been demonstrated.
 * The kinked initial data limit convergence to algebraic order.
 * The study keeps the thesis stopping rule. Fit windows defined by a physical
   criterion rather than by $t_{\rm stop}$ would be a natural refinement.
-* Optional diffusion ($\kappa > 0$) is implemented and tested, but no Peclet-number
+* Optional diffusion ($\kappa \gt 0$) is implemented and tested, but no Peclet-number
   study was performed.
 
 ## 7. Reproducing the study

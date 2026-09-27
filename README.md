@@ -13,12 +13,16 @@ ported from [Gautam Iyer's MATLAB code](https://www.math.cmu.edu/~gautam/researc
 
 The passive scalar $\theta(x,y,t)$ evolves by
 
-$$\partial_t\theta + (u\cdot\nabla)\theta = 0$$
+```math
+\partial_t\theta + (u\cdot\nabla)\theta = 0
+```
 
 The velocity $u$ is chosen at each instant to minimise the rate of change of
 the **$H^{-1}$ mix norm**, the instantaneous-optimal (greedy) mixing strategy:
 
-$$v = -\Delta^{-1} P(\theta\,\nabla\Delta^{-1}\theta), \qquad u = F\,\frac{v}{\|\nabla v\|_{L^2}}$$
+```math
+v = -\Delta^{-1} P(\theta\,\nabla\Delta^{-1}\theta), \qquad u = F\,\frac{v}{\Vert\nabla v\Vert_{L^2}}
+```
 
 where $P$ is the Leray projection and $F$ is the enstrophy constraint. The scalar transport
 equation is solved on $[0,1]^2$ using FFTs for spatial discretisation and an adaptive
@@ -62,7 +66,7 @@ under $L^p$ norm conservation as a resolution diagnostic and stopping criterion.
 
 For a representative case ($a = 0.5$, $N = 64$), the $H^{-1}$ mix norm decays approximately
 exponentially under LTD stirring, with fitted decay rate $r \approx 0.44$ (mixing timescale
-$\tau = 1/r \approx 2.27$). Across eight values of $a \in [0.5,\, 0.9375]$, a power-law fit
+$\tau = 1/r \approx 2.27$). Across eight values of $`a \in [0.5,\, 0.9375]`$, a power-law fit
 gives $r \propto a^{-1.78}$ at $N = 64$ and $r \propto a^{-1.61}$ at $N = 32$, compared with the
 $a^{-1}$ scaling characteristic of the Iyer-Kiselev-Xu enstrophy-constrained lower bound. Each
 rate is fitted over the last two thirds of a run, and each run ends when the $L^p$ resolution
@@ -78,11 +82,13 @@ figures are in [`RESOLUTION_STUDY.md`](RESOLUTION_STUDY.md).
 
 | N | 32 | 64 | 128 | 256 | 512 |
 |---|---:|---:|---:|---:|---:|
-| $\alpha_N$, thesis fit protocol | 1.612 | 1.777 | 1.663 | 1.481 | 1.401 |
+| $\alpha_N$, thesis protocol (own window at each $N$) | 1.612 | 1.777 | 1.663 | 1.481 | 1.401 |
 | $\alpha$ on the $N{=}32$ fit windows | 1.6117 | 1.6082 | 1.6073 | 1.6071 | 1.6070 |
 | $\alpha$ on the $N{=}64$ fit windows | | 1.7766 | 1.7751 | 1.7747 | 1.7746 |
 
-($r \propto a^{-\alpha}$, sine-bump data, $F = 1$.)
+($r \propto a^{-\alpha}$, sine-bump data, $F = 1$.) The first row fits each resolution over its
+own, resolution-dependent time window, so it is not a grid-convergence sequence for a single
+quantity; the other two rows hold the time windows fixed and vary only $N$.
 
 * **The thesis values are reproduced exactly**, including every entry of the thesis
   rate tables.
@@ -96,7 +102,7 @@ figures are in [`RESOLUTION_STUDY.md`](RESOLUTION_STUDY.md).
   intervals, and the sequence $\alpha_N$ (1.61, 1.78, 1.66, 1.48, 1.40) is not a conventional
   grid-convergence sequence; Richardson extrapolation is not justified for it.
 * **The effective exponent changes with time.** The local decay rate
-  $-d\log\|\theta\|_{H^{-1}}/dt$ rises and then falls for every $a$, and the local exponent
+  $-d\log\Vert\theta\Vert_{H^{-1}}/dt$ rises and then falls for every $a$, and the local exponent
   fitted at a fixed time drifts from about 2.9 near $t = 0$ to between 0.87 and 1.19 for
   $2.5 \le t \le 4$, then keeps changing. It agrees between $N = 256$ and $512$ to
   $2\times10^{-4}$. Passing near 1 over this interval does not establish $a^{-1}$ scaling.
@@ -140,14 +146,14 @@ filaments until the $L^p$ resolution check stops the run.
 
 ![Scalar field snapshots](images/scalar_snapshots.png)
 
-**Norm evolution.** Left: $\log \|\theta\|_{H^{-1}}$ for $a = 0.5$. Right: $L^2$, $L^4$ and
+**Norm evolution.** Left: $\log \Vert\theta\Vert_{H^{-1}}$ for $a = 0.5$. Right: $L^2$, $L^4$ and
 $L^8$ norms, which should remain constant; the drift in $L^8$ near the end signals loss of
 resolution and triggers the stopping criterion.
 
 ![H^-1 mix norm and Lp norm conservation](images/norm_evolution.png)
 
 **Multi-scale sweep.** Normalised mix-norm decay, $L^p$ conservation, and the fitted mixing
-timescale ($-1/\text{slope}$) for $a \in \{0.5, 0.625, 0.75, 0.875\}$.
+timescale ($-1/\text{slope}$) for $a \in \lbrace0.5, 0.625, 0.75, 0.875\rbrace$.
 
 ![Multi-scale sweep](images/multiscale_sweep.png)
 
@@ -316,7 +322,7 @@ plt.show()
 | Parameter | Default | Description |
 |---|---|---|
 | `N` | 64 | Spectral modes per direction (power of 2) |
-| `F` | 1.0 | Enstrophy constraint $\|\nabla u\|_{L^2} = F$ |
+| `F` | 1.0 | Enstrophy constraint $\Vert\nabla u\Vert_{L^2} = F$ |
 | `a` | 0.5 | Scale parameter (initial data support size) |
 | `tol` | 1e-3 | $L^p$ conservation tolerance (stopping criterion) |
 | `rtol`, `atol` | 1e-6, 1e-8 | RK45 tolerances |

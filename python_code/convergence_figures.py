@@ -273,31 +273,49 @@ def fig_compare(c, ts, out):
     Ns = sorted(int(n) for n in c['by_N'])
     col = n_colors(Ns)
     A, B = c['tags']
+    ref_tag, ref_N = c['reference'].split(':')
     a = 0.5
-    fig, axes = plt.subplots(1, 2, figsize=(9.5, 3.4))
+    fig, axes = plt.subplots(1, 2, figsize=(10, 3.7))
     for N in Ns:
         d = ts.get(f'{N}/{akey(a)}')
         if not d:
             continue
         t = np.array(d['t'])
-        axes[0].semilogy(t, d['E_A_vs_ref'], color=col[N], label=f'N={N}')
-        axes[0].semilogy(t, d['E_B_vs_ref'], color=col[N], ls='--')
-    axes[0].set_title(f'a = {a:g}: $L^2$ error vs reference {c["reference"]}')
+        axes[0].semilogy(t, d['E_A_vs_ref'], color=col[N])
+        if not (B == ref_tag and str(N) == ref_N):          # the reference itself has zero error
+            axes[0].semilogy(t, d['E_B_vs_ref'], color=col[N], ls='--')
+    axes[0].set_title(f'a = {a:g}: difference from the {ref_tag} N={ref_N} solution')
     axes[0].set_xlabel('t')
+    axes[0].set_ylabel(r'relative $L^2$ difference')
     h = [Line2D([], [], color=col[N], label=f'N={N}') for N in Ns]
     h += [Line2D([], [], color=INK2, label=A), Line2D([], [], color=INK2, ls='--', label=B)]
     axes[0].legend(handles=h, fontsize=7)
-    al = np.array([c['by_N'][str(N)]['alpha'] for N in Ns])
-    axes[1].plot(Ns, al[:, 0], 'o-', color=CAT[0], label=A)
-    axes[1].plot(Ns, al[:, 1], 's--', color=CAT[1], label=B)
+
+    # exponent: own windows (differ between schemes because their stopping times differ)
+    # versus common windows (the same time windows for both schemes)
+    own = np.array([c['by_N'][str(N)]['alpha'] for N in Ns])
+    axes[1].plot(Ns, own[:, 0], 'o-', color=CAT[0], label=f'{A}, own windows')
+    axes[1].plot(Ns, own[:, 1], 's-', color=CAT[1], label=f'{B}, own windows')
+    Nc, com = [], []
+    for N in Ns:
+        rows = c['by_N'][str(N)]['rows']
+        if all(r['common_window'] for r in rows):
+            aa = np.log([r['a'] for r in rows])
+            com.append([-np.polyfit(aa, np.log([r['r_common_window'][k] for r in rows]), 1)[0]
+                        for k in (0, 1)])
+            Nc.append(N)
+    com = np.array(com)
+    axes[1].plot(Nc, com[:, 0], 'o:', color=CAT[0], mfc='none', label=f'{A}, common windows')
+    axes[1].plot(Nc, com[:, 1], 's:', color=CAT[1], mfc='none', ms=8, label=f'{B}, common windows')
     axes[1].set_xscale('log', base=2)
     axes[1].set_xticks(Ns)
     axes[1].set_xticklabels([str(N) for N in Ns])
     axes[1].minorticks_off()
     axes[1].set_xlabel('N')
-    axes[1].set_ylabel(r'$\alpha$ (own fit windows)')
-    axes[1].set_title('fitted exponent, original vs 2/3-rule dealiased')
-    axes[1].legend()
+    axes[1].set_ylabel(r'fitted exponent $\alpha$')
+    axes[1].set_title('own windows: differ because the stopping times differ\n'
+                      'common windows: overlap of both schemes\' windows at each N', fontsize=8.5)
+    axes[1].legend(fontsize=7)
     save(fig, out, 'dealias_comparison')
 
 
