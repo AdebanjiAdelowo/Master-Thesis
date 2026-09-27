@@ -44,6 +44,8 @@ THESIS_A = np.arange(0.5, 15 / 16 + 1e-9, 1 / 16)
 
 def default_tag(args):
     tag = f"{args.ic}-{'dealias' if args.dealias else 'orig'}"
+    if args.kappa:
+        tag += f'-kappa{args.kappa:g}'
     if (args.rtol, args.atol) != (1e-6, 1e-8):
         tag += f'-rtol{args.rtol:g}'
     if args.tol != 1e-3:
@@ -86,7 +88,7 @@ def run_case(cfg):
     sol, theta0, l4i, l8i = mixing.integrate(
         a, idata_fn, ops, F=cfg['F'], t_eval=t_eval, tol=cfg['tol'],
         rtol=cfg['rtol'], atol=cfg['atol'], dealias=cfg['dealias'],
-        stop_on_res_loss=cfg['stop'])
+        stop_on_res_loss=cfg['stop'], kappa=cfg.get('kappa', 0.0))
     runtime = time.perf_counter() - t0
 
     n = N * N
@@ -150,6 +152,9 @@ def run_case(cfg):
 
 
 def cmd_run(args):
+    if args.kappa and not args.no_stop:
+        raise SystemExit('--kappa > 0 needs --no-stop: L^p norms are not conserved with diffusion, '
+                         'so the L^p resolution check is not a valid stopping rule')
     tag = args.tag or default_tag(args)
     a_values = np.array(args.a) if args.a else THESIS_A
     cases = []
@@ -161,7 +166,7 @@ def cmd_run(args):
             cases.append(dict(
                 N=int(N), a=float(a), ic=args.ic, F=args.F, t_end=args.t_end,
                 dt_out=args.dt_out, tol=args.tol, rtol=args.rtol, atol=args.atol,
-                dealias=args.dealias, stop=not args.no_stop,
+                dealias=args.dealias, kappa=args.kappa, stop=not args.no_stop,
                 save_fields=not args.no_fields, root=args.root, tag=tag))
     print(f'tag={tag}: {len(cases)} case(s), {args.workers} worker(s)', flush=True)
     if args.workers <= 1:
@@ -205,11 +210,11 @@ def theta_frames(run):
 
 
 def _check_comparable(runs):
-    keys = ('ic', 'F', 't_end', 'dt_out', 'tol', 'rtol', 'atol', 'dealias', 'stop')
+    keys = ('ic', 'F', 't_end', 'dt_out', 'tol', 'rtol', 'atol', 'dealias', 'stop', 'kappa')
     ref = None
     for N in runs:
         for a in runs[N]:
-            m = {k: runs[N][a]['meta'][k] for k in keys}
+            m = {k: runs[N][a]['meta'].get(k, 0.0 if k == 'kappa' else None) for k in keys}
             if ref is None:
                 ref = m
             elif m != ref:
@@ -619,6 +624,8 @@ def main(argv=None):
     r.add_argument('--rtol', type=float, default=1e-6)
     r.add_argument('--atol', type=float, default=1e-8)
     r.add_argument('--dealias', action='store_true', help='2/3-rule dealiasing')
+    r.add_argument('--kappa', type=float, default=0.0,
+                   help='diffusivity κ in θ_t + u·∇θ = κΔθ (0 = thesis model; needs --no-stop)')
     r.add_argument('--no-stop', action='store_true', help='disable the L^p stopping event')
     r.add_argument('--no-fields', action='store_true', help='do not store θ snapshots')
     r.add_argument('--tag', help='output tag (default derived from options)')

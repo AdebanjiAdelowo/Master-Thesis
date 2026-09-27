@@ -185,7 +185,7 @@ def gradient_l2_norm(vx_hat, vy_hat, ops):
     return norm_v_hat / N**2
 
 
-def make_convection_hat(ops, F=1.0, tol=1e-3, dealias=False):
+def make_convection_hat(ops, F=1.0, tol=1e-3, dealias=False, kappa=0.0):
     """
     Build the ODE RHS for the optimal-mixing transport equation.
 
@@ -199,6 +199,9 @@ def make_convection_hat(ops, F=1.0, tol=1e-3, dealias=False):
     dealias : if True, apply the 2/3-rule mask ops['DEALIAS'] to both
               quadratic products (g = θ∇Δ⁻¹θ and u·∇θ).  The default False
               is the original, un-dealiased scheme used for the thesis.
+    kappa   : molecular diffusivity.  kappa > 0 adds κΔθ, applied exactly in
+              Fourier space (−4π²|k|² κ θ̂).  kappa = 0 is the thesis model and
+              leaves the RHS bitwise unchanged.
 
     Returns
     -------
@@ -208,6 +211,7 @@ def make_convection_hat(ops, F=1.0, tol=1e-3, dealias=False):
     n = N * N
     DEL_X, DEL_Y, LAP_INV = ops['DEL_X'], ops['DEL_Y'], ops['LAP_INV']
     MASK = ops['DEALIAS']
+    LAP = ops['LAP']
 
     def rhs(t, y_real):
         theta_hat = (y_real[:n] + 1j * y_real[n:]).reshape(N, N)
@@ -231,6 +235,8 @@ def make_convection_hat(ops, F=1.0, tol=1e-3, dealias=False):
         d = advection_hat(ux, uy, theta_hat, DEL_X, DEL_Y)
         if dealias:
             d = d * MASK
+        if kappa:
+            d = d + kappa * LAP * theta_hat
         return np.concatenate([d.real.ravel(), d.imag.ravel()])
 
     return rhs
@@ -324,15 +330,26 @@ def initial_data(a, idata_fn, ops, dealias=False):
 
 
 def integrate(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3,
-              rtol=1e-6, atol=1e-8, dealias=False, stop_on_res_loss=True):
+              rtol=1e-6, atol=1e-8, dealias=False, stop_on_res_loss=True,
+              kappa=0.0):
     """
     Integrate one run and return the raw solve_ivp solution.
 
-    Defaults reproduce the thesis runs exactly.  Returns
+    Defaults reproduce the thesis runs exactly.  With kappa > 0 the L^p
+    norms decay physically, so the L^p resolution check is not a valid
+    stopping criterion and must be disabled explicitly
+    (stop_on_res_loss=False).  The diffusion term is integrated explicitly
+    by RK45; this is adequate while κ(πN)² is not large compared with the
+    advective rates, and becomes inefficient (stiff) beyond that.  Returns
     (sol, theta0, l4norm_init, l8norm_init).  sol.status == 1 means the
     resolution-check event terminated the run.
     """
     N, dx = ops['N'], ops['dx']
+    if kappa < 0:
+        raise ValueError('kappa must be non-negative')
+    if kappa and stop_on_res_loss:
+        raise ValueError('the L^p resolution check assumes conserved L^p norms; '
+                         'pass stop_on_res_loss=False when kappa > 0')
 
     if t_eval is None:
         t_eval = np.arange(0.0, 10.05, 0.05)
@@ -342,7 +359,7 @@ def integrate(a, idata_fn, ops, F=1.0, t_eval=None, tol=1e-3,
     l4norm_init = np.linalg.norm(theta0.ravel(), 4) * np.sqrt(dx)
     l8norm_init = np.linalg.norm(theta0.ravel(), 8) * dx**0.25
 
-    rhs   = make_convection_hat(ops, F=F, tol=tol, dealias=dealias)
+    rhs   = make_convection_hat(ops, F=F, tol=tol, dealias=dealias, kappa=kappa)
     event = make_res_check(N, dx, l4norm_init, l8norm_init, tol=tol)
 
     y0 = np.concatenate([theta0_hat.ravel().real, theta0_hat.ravel().imag])
